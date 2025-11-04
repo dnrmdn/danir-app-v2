@@ -8,8 +8,10 @@ export interface Task {
 
 export interface Member {
   name: string;
-  color: string;      // Tailwind class e.g. "bg-blue-50"
-  iconColor: string;  // Tailwind class e.g. "bg-blue-200"
+  bgColor: string;      
+  taskColor: string;      
+  taskColorDone: string;      
+  iconColor: string;  
   checkColor: string;
-  tasks: Task[];      // list tugas milik member
+  tasks: Task[];      
 }

@@ -1,9 +1,11 @@
 export const members = [
   {
     name: "Anna",
-    color: "bg-gray-50",
-    iconColor: "bg-blue-300",
-    checkColor: "bg-red-400",
+    bgColor: "bg-gray-50",
+    taskColor: "bg-gray-100",
+    taskColorDone: "bg-gray-200",
+    iconColor: "bg-gray-300",
+    checkColor: "bg-gray-300",
     tasks: [
       { label: "Brush Teeth yang akan dibasuh oleh adik saya yang akan membuat kalian berhenti mencoba", period: "Evening", icon: "🪥", done: false },
       { label: "Shower", period: "Evening", icon: "🚿", done: true },
@@ -11,9 +13,11 @@ export const members = [
   },
   {
     name: "Dad",
-    color: "bg-blue-50",
-    iconColor: "bg-blue-200",
-    checkColor: "bg-red-400",
+    bgColor: "bg-red-50",
+    taskColor: "bg-red-100",
+    taskColorDone: "bg-red-200",
+    iconColor: "bg-red-300",
+    checkColor: "bg-red-300",
     tasks: [
       { label: "Bathroom Clean", period: "5h late", icon: "🧼", done: false },
       { label: "Laundry", period: "4d late", icon: "👕", done: false },
@@ -25,9 +29,11 @@ export const members = [
   },
   {
     name: "Jon",
-    color: "bg-orange-50",
-    iconColor: "bg-orange-200",
-    checkColor: "bg-red-400",
+    bgColor: "bg-yellow-50",
+    taskColor: "bg-yellow-100",
+    taskColorDone: "bg-yellow-200",
+    iconColor: "bg-yellow-300",
+    checkColor: "bg-yellow-300",
     tasks: [
       { label: "Brush Teeth", period: "Evening", icon: "🪥", done: false },
       { label: "Fold Laundry", period: "1 day late", icon: "🧺", done: true },
@@ -37,9 +43,11 @@ export const members = [
   },
   {
     name: "Lacey",
-    color: "bg-amber-50",
-    iconColor: "bg-amber-200",
-    checkColor: "bg-red-400",
+    bgColor: "bg-green-50",
+    taskColor: "bg-green-100",
+    taskColorDone: "bg-green-200",
+    iconColor: "bg-green-300",
+    checkColor: "bg-green-300",
     tasks: [
       { label: "Brush Teeth", period: "Daily", icon: "🪥", done: false },
       { label: "Walk Spot", period: "Daily", icon: "🐶", done: false },
@@ -48,9 +56,11 @@ export const members = [
   },
   {
     name: "Dad",
-    color: "bg-blue-50",
-    iconColor: "bg-blue-200",
-    checkColor: "bg-red-400",
+    bgColor: "bg-blue-50",
+    taskColor: "bg-blue-100",
+    taskColorDone: "bg-blue-200",
+    iconColor: "bg-blue-300",
+    checkColor: "bg-blue-300",
     tasks: [
       { label: "Bathroom Clean", period: "5h late", icon: "🧼", done: false },
       { label: "Laundry", period: "4d late", icon: "👕", done: false },
@@ -68,9 +78,11 @@ export const members = [
   },
   {
     name: "Jon",
-    color: "bg-orange-50",
-    iconColor: "bg-orange-200",
-    checkColor: "bg-red-400",
+    bgColor: "bg-cyan-50",
+    taskColor: "bg-cyan-100",
+    taskColorDone: "bg-cyan-200",
+    iconColor: "bg-cyan-300",
+    checkColor: "bg-cyan-300",
     tasks: [
       { label: "Brush Teeth", period: "Evening", icon: "🪥", done: false },
       { label: "Fold Laundry", period: "1 day late", icon: "🧺", done: false },
@@ -80,9 +92,11 @@ export const members = [
   },
   {
     name: "Dad",
-    color: "bg-blue-50",
-    iconColor: "bg-blue-200",
-    checkColor: "bg-red-400",
+    bgColor: "bg-purple-50",
+    taskColor: "bg-purple-100",
+    taskColorDone: "bg-purple-200",
+    iconColor: "bg-purple-300",
+    checkColor: "bg-purple-300",
     tasks: [
       { label: "Bathroom Clean", period: "5h late", icon: "🧼", done: false },
       { label: "Laundry", period: "4d late", icon: "👕", done: false },
@@ -94,9 +108,11 @@ export const members = [
   },
   {
     name: "Jon",
-    color: "bg-orange-50",
-    iconColor: "bg-orange-200",
-    checkColor: "bg-red-400",
+    bgColor: "bg-rose-50",
+    taskColor: "bg-rose-100",
+    taskColorDone: "bg-rose-200",
+    iconColor: "bg-rose-300",
+    checkColor: "bg-rose-300",
     tasks: [
       { label: "Brush Teeth", period: "Evening", icon: "🪥", done: false },
       { label: "Fold Laundry", period: "1 day late", icon: "🧺", done: false },
@@ -106,9 +122,11 @@ export const members = [
   },
   {
     name: "Lacey",
-    color: "bg-amber-50",
-    iconColor: "bg-amber-200",
-    checkColor: "bg-red-400",
+    bgColor: "bg-teal-50",
+    taskColor: "bg-teal-100",
+    taskColorDone: "bg-teal-200",
+    iconColor: "bg-teal-300",
+    checkColor: "bg-teal-300",
     tasks: [
       { label: "Brush Teeth", period: "Daily", icon: "🪥", done: false },
       { label: "Walk Spot", period: "Daily", icon: "🐶", done: false },
@@ -117,9 +135,11 @@ export const members = [
   },
   {
     name: "Dad",
-    color: "bg-blue-50",
-    iconColor: "bg-blue-200",
-    checkColor: "bg-red-400",
+    bgColor: "bg-orange-50",
+    taskColor: "bg-orange-100",
+    taskColorDone: "bg-orange-200",
+    iconColor: "bg-orange-300",
+    checkColor: "bg-orange-300",
     tasks: [
       { label: "Bathroom Clean", period: "5h late", icon: "🧼", done: false },
       { label: "Laundry", period: "4d late", icon: "👕", done: false },

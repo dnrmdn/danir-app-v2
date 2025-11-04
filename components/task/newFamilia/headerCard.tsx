@@ -1,0 +1,37 @@
+import { Member, Task } from "@/types/typeData";
+
+type TaskItemProps = {
+  task: Task;
+  member: Member;
+};
+
+export default function HeaderCard({ task, member }: TaskItemProps) {
+  const completed = member.tasks.filter((t) => t.done).length;
+  const reward = { star: null };
+  const hasReward = reward.star !== null && reward.star !== undefined;
+
+  return (
+    <div className="">
+      <div className="flex px-4">
+        <div className={`relative w-20 h-20 rounded-full ${member.iconColor} flex items-center justify-center`}>
+          <p className="font-bold text-white text-3xl">{member.name[0]}</p>
+        </div>
+        <div className="w-72 h-20">
+          <p className="text-2xl pl-2">{member.name}</p>
+          {hasReward ? (
+            <div className="flex p-2 justify-around">
+              <div className="bg-blue-100 w-20 h-8 rounded-lg flex items-center justify-center">{task.done}</div>
+              <div className="bg-blue-100 w-20 h-8 rounded-lg flex items-center justify-center">{reward.star}</div>
+            </div>
+          ) : (
+            <div className="flex p-2">
+              <div className="bg-blue-100 w-full h-8 rounded-lg flex items-center justify-center">
+                {completed}/{member.tasks.length}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}

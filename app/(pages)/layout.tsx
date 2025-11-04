@@ -26,16 +26,18 @@ export default function PageLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning className="overflow-hidden">
-        <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-      <SidebarProvider>
-        <AppSidebar/>
-        <main className="w-full y-20">
-          <Navbar/>
-          <div className="px-1">
-{children}
-          </div>
-        </main>
-      </SidebarProvider>
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        
+        <SidebarProvider>
+          <AppSidebar />
+          <main className="w-full y-20">
+            <Navbar />
+            <div className="px-1">
+              
+              {children}
+            </div>
+          </main>
+        </SidebarProvider>
       </body>
     </html>
   );

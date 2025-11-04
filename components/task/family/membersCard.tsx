@@ -7,7 +7,7 @@ export default function MemberCard({ member }: { member: Member }) {
   const completed = member.tasks.filter((t) => t.done).length;
 
   return (
-    <div className={`rounded-3xl w-[410px] h-[90vh] shadow-sm border pt-4 pb-4 px-4 flex flex-col ${member.color}`}>
+    <div className={`rounded-3xl w-[410px] h-[90vh] shadow-sm border pt-4 pb-4 px-4 flex flex-col ${member.taskColor}`}>
       <div className="flex items-center gap-3 mb-4">
         <div className={`w-10 h-10 rounded-full flex items-center justify-center text-lg font-semibold ${member.iconColor}`}>
           {member.name[0]}

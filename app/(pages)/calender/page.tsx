@@ -1,16 +1,13 @@
-import CheckButton from "@/components/task/family/checkButton";
-import FamilyCard from "@/components/task/family/familyCard";
-import HeaderCard from "@/components/task/family/headerCard";
-import TaskCard from "@/components/task/family/taskCard";
+
+import { members } from "@/components/task/data/members";
+import FamilyCard from "@/components/task/newFamilia/familyCard";
 
 export default function CalenderPage() {
-  
+
+  const member = members[0];
   return (
     <div>
-      <CheckButton/>
-    <TaskCard/>
-    <FamilyCard/>
-    <HeaderCard/>
+      <FamilyCard member={member} />
     </div>
   );
 }
