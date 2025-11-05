@@ -25,6 +25,12 @@ export const members = [
       { label: "Brush Teeth", period: "Any day", icon: "🪥", done: false },
       { label: "Rake leaves", period: "Any day", icon: "🍂", done: false },
       { label: "New", period: "Any day", icon: "✨", done: true },
+      { label: "Bathroom Clean", period: "5h late", icon: "🧼", done: false },
+      { label: "Laundry", period: "4d late", icon: "👕", done: false },
+      { label: "Dinner Prep", period: "Daily", icon: "🍽️", done: false },
+      { label: "Brush Teeth", period: "Any day", icon: "🪥", done: false },
+      { label: "Rake leaves", period: "Any day", icon: "🍂", done: false },
+      { label: "New", period: "Any day", icon: "✨", done: true },
     ],
   },
   {

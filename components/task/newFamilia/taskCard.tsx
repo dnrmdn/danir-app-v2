@@ -15,7 +15,7 @@ export default function TaskCard({ task, member }: TaskItemProps) {
           <p className="px-4 font-bold line-clamp-1">{task.label}</p>
           <p className="px-4 text-gray-500 text-sm truncate">{task.period}</p>
         </div>
-        <CheckButton member={member} />
+        <CheckButton member={member} task={task} />
       </div>
     </Card>
   );
