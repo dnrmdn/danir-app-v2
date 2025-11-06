@@ -5,7 +5,7 @@ import HeaderCard from "./headerCard";
 import TaskCard from "./taskCard";
 import { Member } from "@/types/typeData";
 import { members } from "../data/members";
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion, useMotionValue } from "framer-motion";
 
 export default function FamilyCard({ member }: { member: Member }) {

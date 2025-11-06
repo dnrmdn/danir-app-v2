@@ -1,6 +1,9 @@
+import Link from "next/link";
 
 export default function Home() {
   return (
-    <div>Home</div>
+    <div>Home
+      <Link href={"/calender"}>Klik disini</Link>
+    </div>
   )
 }
