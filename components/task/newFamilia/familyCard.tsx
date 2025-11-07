@@ -1,4 +1,4 @@
-"use client"; 
+"use client";
 
 import { Card } from "@/components/ui/card";
 import HeaderCard from "./headerCard";
@@ -8,107 +8,112 @@ import { members } from "../data/members";
 import { useEffect, useRef, useState } from "react";
 import { motion, useMotionValue } from "framer-motion";
 
-export default function FamilyCard({ member }: { member: Member }) {
-  /**
-   * Custom hook: useScrollConstraints
-   * ----------------------------------
-   * Tujuan:
-   *  - Menghitung batas kiri dan kanan untuk drag horizontal (x-axis)
-   *  - Agar konten tidak bisa di-drag keluar dari area tampilan
-   *
-   * Parameter:
-   *  - ref → referensi ke elemen wrapper (viewport)
-   *
-   * Output:
-   *  - { left, right } → nilai batas drag pada sumbu X
-   */
+function useScrollConstraints(ref: React.RefObject<HTMLDivElement>) {
+  const [constraints, setConstraints] = useState({ left: 0, right: 0 });
 
-  function useScrollConstraints(ref) {
-    const [constraints, setConstraints] = useState({ left: 0, right: 0 });
+  useEffect(() => {
+    const element = ref.current;
+    if (!element || !element.firstElementChild) return;
 
-    useEffect(() => {
-      const element = ref.current;
-      if (!element) return;
-
-      // Lebar tampilan yang terlihat (viewport)
+    const updateConstraints = () => {
       const viewportWidth = element.offsetWidth;
+      const content = element.firstElementChild as HTMLElement;
+      const contentWidth = content.scrollWidth;
 
-      // Lebar konten sebenarnya di dalam wrapper
-      const contentWidth = element.firstChild.scrollWidth + 200;
+      // 💡 Deteksi ukuran layar
+      const screenWidth = window.innerWidth;
+      let offset = 0;
 
-      // Hitung batas kiri dan kanan
-      // Misal konten lebih panjang dari viewport, maka 'left' akan bernilai negatif
-      setConstraints({ left: viewportWidth - contentWidth, right: 0 });
-    }, []);
+      // Sesuaikan offset berdasarkan device
+      if (screenWidth >= 1024) {
+        // Desktop
+        offset = 0; // tidak perlu tambahan
+      } else if (screenWidth >= 640) {
+        // Tablet
+        offset = 200; // supaya pas di tengah
+      } else {
+        // Mobile
+        offset = 0; // normal tanpa tambahan
+      }
 
-    return constraints;
-  }
+      const totalWidth = contentWidth + offset;
 
-  // useMotionValue: menyimpan posisi X (horizontal offset) yang bisa diubah dengan Framer Motion
+      setConstraints({
+        left: Math.min(0, viewportWidth - totalWidth),
+        right: 0,
+      });
+    };
+
+    updateConstraints();
+    window.addEventListener("resize", updateConstraints);
+    return () => window.removeEventListener("resize", updateConstraints);
+  }, [ref]);
+
+  return constraints;
+}
+
+export default function FamilyCard({ member }: { member: Member }) {
+  const ref = useRef<HTMLDivElement>(null);
   const x = useMotionValue(0);
-
-  // Ref ke elemen pembungkus utama (digunakan untuk hitung constraint)
-  const ref = useRef(null);
-
-  // Ambil nilai batas kiri dan kanan dari custom hook di atas
   const { left, right } = useScrollConstraints(ref);
 
-  
-
-  /**
-   * handleWheel (optional)
-   * ----------------------
-   * Fungsi untuk menangani scroll dengan mouse wheel
-   * - Ketika pengguna scroll vertikal (deltaY), kita ubah jadi pergeseran horizontal (X)
-   * - clamp() menjaga posisi X agar tidak keluar dari batas kiri/kanan
-   */
-  // function handleWheel(event) {
-  //   event.preventDefault();
-  //   const newX = x.get() - event.deltaY; // gunakan deltaY untuk geser horizontal
-  //   const clampedX = clamp(left, right, newX);
-  //   x.stop(); // hentikan animasi sebelumnya
-  //   x.set(clampedX); // set posisi baru
-  // }
-
-  // Jika tidak ada member diberikan ke komponen, tampilkan fallback text
   if (!member) {
     return <div className="p-4">No member provided</div>;
   }
 
-  /**
-   * Bagian utama render komponen
-   * ----------------------------
-   * Struktur:
-   *  - <div> utama: pembungkus yang menyembunyikan overflow (hanya tampil area viewport)
-   *  - <motion.div>: elemen yang bisa di-drag secara horizontal
-   *  - Di dalamnya ada list member (Card) yang ditampilkan berdampingan
-   */
+  // Maksimal 4 card di layar besar
+  const maxVisibleCards = 4;
+  const enableDrag = members.length > maxVisibleCards;
+
   return (
     <div className="overflow-hidden" ref={ref}>
       <motion.div
-        drag="x" // aktifkan drag horizontal
-        dragConstraints={{ left, right }} // batasi pergerakan sesuai hasil perhitungan
+        drag={enableDrag ? "x" : false}
+        dragConstraints={{ left, right }}
+        style={{ x }}
         className="scrollable"
-        style={{ x }} // hubungkan nilai motionValue agar posisi X bisa berubah dinamis
       >
-        {/* Wrapper untuk semua Card member */}
         <div className="flex gap-6 p-4 scroll-smooth">
-          {/* Render semua anggota keluarga (member) */}
           {members.map((member, index) => (
-            <Card key={index} className={`max-w-[400px] h-[90vh] ${member.bgColor} rounded-4xl flex flex-col`}>
-              {/* Header setiap kartu */}
+            <Card
+              key={index}
+              className={`flex flex-col rounded-3xl ${member.bgColor} transition-all duration-300`}
+              style={{
+                height: "90vh",
+                flex: "0 0 auto",
+                width: "calc(100% / 1.1)",
+                maxWidth: "400px",
+              }}
+            >
               <HeaderCard member={member} />
-
-              {/* Daftar task milik member, bisa di-scroll vertikal */}
-              <div className="px-4 overflow-y-auto max-w-[400px] h-[90vh] rounded-[50px] space-y-4 no-scrollbar">
+              <div className="px-4 overflow-y-auto h-full rounded-[40px] space-y-4 no-scrollbar">
                 {member.tasks.map((task, i) => (
-                  <TaskCard key={`${member.name}-${task.label}-${i}`} task={task} member={member} />
+                  <TaskCard
+                    key={`${member.name}-${task.label}-${i}`}
+                    task={task}
+                    member={member}
+                  />
                 ))}
               </div>
             </Card>
           ))}
         </div>
       </motion.div>
+
+      <style jsx>{`
+        @media (min-width: 640px) {
+          /* Tablet: 2 card */
+          .scrollable > div > div {
+            width: calc(50% - 1rem);
+          }
+        }
+        @media (min-width: 1024px) {
+          /* Desktop: 4 card */
+          .scrollable > div > div {
+            width: calc(25% - 1rem);
+          }
+        }
+      `}</style>
     </div>
   );
 }

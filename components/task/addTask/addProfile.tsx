@@ -1,40 +1,33 @@
-import { Member } from "@/types/typeData";
-import { PlusIcon, Users } from "lucide-react";
 
-type AddProfileProps = {
-  members: Member[];
-};
+import ModalOverlay from "./modalOverlayUI";
+import GlassCard from "./glassCardUI";
+import { ArrowLeft } from "lucide-react";
+import InputWithIcon from "./addTitleInput";
+import ColorPicker from "./colorsPicker";
 
-export default function AddProfile({ members }: AddProfileProps) {
-  if (!members || members.length === 0) {
-    return <p className="text-gray-500 italic px-4">No members found</p>;
-  }
-
+export default function AddProfile({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
   return (
-    <div className="bg-gray-100 rounded-lg py-3 px-4">
-      {/* Header */}
-      <div className="flex items-center gap-3 mb-4">
-        <Users size={28} className="text-gray-600" />
-        <p className="text-gray-700 text-xl font-medium">Profile</p>
-      </div>
-
-      {/* Looping member */}
-      <div className="flex flex-wrap gap-3">
-        {members.map((member, index) => (
-          <div key={index} className="flex flex-col items-center text-center gap-2">
-            <div className={`relative w-10 h-10 rounded-full flex items-center justify-center ${member.taskColorDone}`}>
-              <p className="font-bold text-white text-md">{member.name?.[0] ?? "?"}</p>
-            </div>
-            <p className="text-gray-800 font-bold text-sm">{member.name}</p>
-          </div>
-        ))}
-        <div className="flex flex-col items-center gap-2">
-          <div className="flex items-center justify-center w-10 h-10 bg-gray-500 rounded-full">
-            <PlusIcon color="white" />
-          </div>
-          <p className="text-sm font-bold text-gray-800">Add</p>
+    <ModalOverlay isOpen={isOpen} onClose={onClose}>
+      <GlassCard className="h-full rounded-l-4xl flex flex-col">
+        {/* Header */}
+        <div className="flex gap-4 items-center mb-6">
+          <button onClick={onClose} className="p-1 rounded-full hover:bg-black/50 transition">
+            <ArrowLeft size={22} className="text-black hover:text-white transition" />
+          </button>
+          <h2 className="text-4xl font-semibold">Add Profile</h2>
         </div>
-      </div>
-    </div>
+
+        {/* Form */}
+        <div className="flex flex-col gap-4">
+          <InputWithIcon label="Name" placeholder="Create your name here..." />
+          <div>
+            <div>
+              <ColorPicker/>
+            </div>
+          </div>
+          <button className="bg-blue-500 text-white rounded-xl p-3 hover:bg-blue-600 transition">Add Task</button>
+        </div>
+      </GlassCard>
+    </ModalOverlay>
   );
 }

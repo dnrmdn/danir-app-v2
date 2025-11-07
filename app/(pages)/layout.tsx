@@ -1,18 +1,8 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/sidebar/app-sidebar";
 import Navbar from "@/components/navbar/navbar";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -25,20 +15,12 @@ export default function PageLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning className="overflow-hidden">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        
-        <SidebarProvider>
-          <AppSidebar />
-          <main className="w-full y-20">
-            <Navbar />
-            <div className="px-1">
-              
-              {children}
-            </div>
-          </main>
-        </SidebarProvider>
-      </body>
-    </html>
+    <SidebarProvider>
+      <AppSidebar />
+      <main className="w-full y-20">
+        <Navbar />
+        <div className="px-1">{children}</div>
+      </main>
+    </SidebarProvider>
   );
 }
