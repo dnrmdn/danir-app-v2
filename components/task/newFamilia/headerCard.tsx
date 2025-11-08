@@ -1,11 +1,13 @@
 import { Member } from "@/types/typeData";
+import TodoProgressBar from "./progressBar";
 
 type HeaderCardProps = {
   member: Member;
 };
 
 export default function HeaderCard({ member }: HeaderCardProps) {
-  const completed = member.tasks.filter((t) => t.done).length;
+  const total =  member.tasks.length;
+  const completed = member.tasks.filter((t) => t.completed).length;
   const reward = { star: null };
   const hasReward = reward.star !== null && reward.star !== undefined;
 
@@ -17,7 +19,7 @@ export default function HeaderCard({ member }: HeaderCardProps) {
         >
           <p className="font-bold text-white text-3xl">{member.name[0]}</p>
         </div>
-        <div className="w-72 h-20">
+        <div className="w-72 h-16">
           <p className="text-2xl pl-2">{member.name}</p>
           {hasReward ? (
             <div className="flex p-2 justify-around">
@@ -27,9 +29,10 @@ export default function HeaderCard({ member }: HeaderCardProps) {
             </div>
           ) : (
             <div className="flex p-2">
-              <div className={` w-full h-8 rounded-2xl flex items-center justify-center ${member.taskColor}`}>
+              <TodoProgressBar completed={completed} total={total} member={member}/>
+              {/* <div className={` w-full h-8 rounded-2xl flex items-center justify-center ${member.taskColor}`}>
                 {completed}/{member.tasks.length}
-              </div>
+              </div> */}
             </div>
           )}
         </div>

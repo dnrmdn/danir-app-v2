@@ -74,10 +74,10 @@ export default function FamilyCard({ member }: { member: Member }) {
         className="scrollable"
       >
         <div className="flex gap-6 p-4 scroll-smooth">
-          {members.map((member, index) => (
+          {members.map((person, index) => (
             <Card
               key={index}
-              className={`flex flex-col rounded-3xl ${member.bgColor} transition-all duration-300`}
+              className={`flex flex-col rounded-3xl ${person.bgColor} transition-all duration-300`}
               style={{
                 height: "90vh",
                 flex: "0 0 auto",
@@ -85,13 +85,13 @@ export default function FamilyCard({ member }: { member: Member }) {
                 maxWidth: "400px",
               }}
             >
-              <HeaderCard member={member} />
+              <HeaderCard member={person} />
               <div className="px-4 overflow-y-auto h-full rounded-[40px] space-y-4 no-scrollbar">
-                {member.tasks.map((task, i) => (
+                {person.tasks.map((task, i) => (
                   <TaskCard
-                    key={`${member.name}-${task.label}-${i}`}
+                    key={`${person.name}-${task.label}-${i}`}
                     task={task}
-                    member={member}
+                    member={person}
                   />
                 ))}
               </div>
