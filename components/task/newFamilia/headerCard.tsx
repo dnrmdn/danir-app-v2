@@ -1,38 +1,40 @@
 import { Member } from "@/types/typeData";
 import TodoProgressBar from "./progressBar";
+import RewardsBar from "./rewardsBar";
 
 type HeaderCardProps = {
   member: Member;
 };
 
 export default function HeaderCard({ member }: HeaderCardProps) {
-  const total =  member.tasks.length;
+  const total = member.tasks.length;
   const completed = member.tasks.filter((t) => t.completed).length;
-  const reward = { star: null };
+  const reward = { star: 12 }; // contoh
   const hasReward = reward.star !== null && reward.star !== undefined;
 
   return (
-    <div>
-      <div className="flex px-4">
-        <div
-          className={`relative w-20 h-20 rounded-full ${member.iconColor} flex items-center justify-center`}
-        >
-          <p className="font-bold text-white text-3xl">{member.name[0]}</p>
-        </div>
-        <div className="w-72 h-16">
-          <p className="text-2xl pl-2">{member.name}</p>
-          {hasReward ? (
-            <div className="flex p-2 justify-around">
-              <div className="bg-blue-100 w-20 h-8 rounded-lg flex items-center justify-center">
-                {reward.star}
-              </div>
-            </div>
-          ) : (
-            <div className="flex p-2">
-              <TodoProgressBar completed={completed} total={total} member={member}/>
-              {/* <div className={` w-full h-8 rounded-2xl flex items-center justify-center ${member.taskColor}`}>
-                {completed}/{member.tasks.length}
-              </div> */}
+    <div className="flex items-center px-4 py-2">
+      {/* Avatar */}
+      <div
+        className={`w-10 h-10 sm:w-14 sm:h-14 rounded-full ${member.iconColor} flex items-center justify-center`}
+      >
+        <p className="font-bold text-white text-lg sm:text-xl">{member.name[0]}</p>
+      </div>
+
+      {/* Konten kanan */}
+      <div className="flex flex-col flex-1 ml-3">
+        {/* Nama */}
+        <p className="text-lg sm:text-xl font-semibold">{member.name}</p>
+
+        {/* Bar bawah (progress + rewards sejajar) */}
+        <div className="flex items-center gap-2 mt-1">
+          <div className="flex-1">
+            <TodoProgressBar completed={completed} total={total} member={member} />
+          </div>
+
+          {hasReward && (
+            <div className="h-6 flex items-center">
+              <RewardsBar member={member} completed={completed} />
             </div>
           )}
         </div>

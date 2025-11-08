@@ -17,7 +17,7 @@ export const members: Member[] = [
         date: "2025-11-08",
         time: "19:00",
         completed: true,
-        icon: "🪥",
+        reward: 5,
         createdAt: new Date("2025-11-08T19:00:00Z"),
       },
       {
@@ -26,7 +26,7 @@ export const members: Member[] = [
         date: "2025-11-08",
         time: "20:00",
         completed: true,
-        icon: "🚿",
+        reward: 2,
         createdAt: new Date("2025-11-08T20:00:00Z"),
       },
     ],
@@ -46,7 +46,6 @@ export const members: Member[] = [
         date: "2025-11-07",
         time: "10:00",
         completed: false,
-        icon: "🧼",
         createdAt: new Date("2025-11-07T10:00:00Z"),
       },
       {
@@ -55,7 +54,6 @@ export const members: Member[] = [
         date: "2025-11-05",
         time: "13:00",
         completed: false,
-        icon: "👕",
         createdAt: new Date("2025-11-05T13:00:00Z"),
       },
       {
@@ -64,7 +62,6 @@ export const members: Member[] = [
         date: "2025-11-08",
         time: "17:30",
         completed: false,
-        icon: "🍽️",
         createdAt: new Date("2025-11-08T17:30:00Z"),
       },
       {
@@ -73,7 +70,6 @@ export const members: Member[] = [
         date: "2025-11-06",
         time: "15:00",
         completed: false,
-        icon: "🍂",
         createdAt: new Date("2025-11-06T15:00:00Z"),
       },
       {
@@ -82,7 +78,6 @@ export const members: Member[] = [
         date: "2025-11-08",
         time: "09:00",
         completed: true,
-        icon: "🚗",
         createdAt: new Date("2025-11-08T09:00:00Z"),
       },
     ],
@@ -102,7 +97,7 @@ export const members: Member[] = [
         date: "2025-11-08",
         time: "18:00",
         completed: false,
-        icon: "📚",
+        reward: 4,
         createdAt: new Date("2025-11-08T18:00:00Z"),
       },
       {
@@ -111,7 +106,6 @@ export const members: Member[] = [
         date: "2025-11-07",
         time: "21:00",
         completed: true,
-        icon: "🧺",
         createdAt: new Date("2025-11-07T21:00:00Z"),
       },
       {
@@ -120,7 +114,6 @@ export const members: Member[] = [
         date: "2025-11-06",
         time: "16:00",
         completed: false,
-        icon: "🧹",
         createdAt: new Date("2025-11-06T16:00:00Z"),
       },
       {
@@ -129,7 +122,7 @@ export const members: Member[] = [
         date: "2025-11-08",
         time: "22:00",
         completed: true,
-        icon: "🎸",
+        reward: 10,
         createdAt: new Date("2025-11-08T22:00:00Z"),
       },
     ],
@@ -149,7 +142,6 @@ export const members: Member[] = [
         date: "2025-11-08",
         time: "06:00",
         completed: true,
-        icon: "🏃‍♀️",
         createdAt: new Date("2025-11-08T06:00:00Z"),
       },
       {
@@ -158,7 +150,7 @@ export const members: Member[] = [
         date: "2025-11-08",
         time: "07:00",
         completed: false,
-        icon: "🧘‍♀️",
+        reward: 5,
         createdAt: new Date("2025-11-08T07:00:00Z"),
       },
       {
@@ -167,7 +159,6 @@ export const members: Member[] = [
         date: "2025-11-08",
         time: "20:30",
         completed: false,
-        icon: "📖",
         createdAt: new Date("2025-11-08T20:30:00Z"),
       },
     ],

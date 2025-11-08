@@ -5,7 +5,7 @@ export interface Task {
   date: string;
   time: string;
   completed: boolean;
-  icon: string;
+  reward?: number;
   createdAt: Date
 
 }
