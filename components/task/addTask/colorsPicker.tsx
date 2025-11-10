@@ -17,7 +17,7 @@ export default function ColorPicker() {
           key={color}
           onClick={() => setSelected(color)}
           className={`w-10 h-10 rounded-full cursor-pointer transition-all duration-200 border-2 ${
-            selected === color ? "border-gray-700 scale-110" : "border-transparent"
+            selected === color ? "border-white border-4 scale-100" : "border-transparent"
           }`}
           style={{ backgroundColor: color }}
         />
