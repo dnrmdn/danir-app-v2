@@ -19,7 +19,7 @@
 //         }
 
 //         // 🔹 Ambil todos milik user yang login
-//         const todos = await prisma.todo.findMany({
+//         const todos = await prisma.task.findMany({
 //             where: { userId: session.userId },
 //             orderBy: { createdAt: "desc" },
 //         });
