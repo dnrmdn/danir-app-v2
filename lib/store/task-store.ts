@@ -1,75 +1,173 @@
 import { Task } from "@/types/typeData";
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
-import { useMemberStore } from "./member-store";
 
 interface TaskStore {
-  addTask: (memberId: number, task: Omit<Task, "id" | "createdAt" | "completed">) => void;
-  toggleTask: (memberId: number, taskId: number) => void;
-  deleteTask: (memberId: number, taskId: number) => void;
-  getTasks: (memberId: number) => Task[];
+  // State
+  tasks: Task[];
+  isLoading: boolean;
+  error: string | null;
+
+  // Actions
+  fetchTasks: (memberId?: number) => Promise<void>;
+  addTask: (data: Omit<Task, "id" | "createdAt">) => Promise<void>;
+  updateTask: (id: number, data: Partial<Task>) => Promise<void>;
+  deleteTask: (id: number) => Promise<void>;
+  toggleTask: (id: number) => Promise<void>;
+
+  // Helpers
+  setLoading: (loading: boolean) => void;
+  setError: (error: string | null) => void;
+
+  // Computed
+  getTaskStats: () => {
+    total: number;
+    completed: number;
+    active: number;
+  };
 }
 
-export const useTaskStore = create<TaskStore>()(
-  persist(
-    () => ({
-      // ✅ ADD TASK
-      addTask: (memberId, taskData) => {
-        const memberStore = useMemberStore.getState();
-        const member = memberStore.getMember(memberId);
-        if (!member) return;
+export const useTaskStore = create<TaskStore>((set, get) => ({
+  tasks: [],
+  isLoading: true,
+  error: null,
 
-        const newTask: Task = {
-          id: Date.now(),
-          createdAt: new Date(),
-          completed: false,
-          ...taskData,
-        };
+  setLoading: (loading) => set({ isLoading: loading }),
+  setError: (error) => set({ error }),
 
-        // update hanya bagian tasks
-        const updatedMember = {
-          ...member,
-          tasks: [...member.tasks, newTask],
-        };
+  // GET tasks (optional filter by member)
+  fetchTasks: async (memberId) => {
+    set({ isLoading: true, error: null });
 
-        memberStore.deleteMember(memberId);
-        memberStore.addMember(updatedMember);
-      },
+    try {
+      const url = memberId ? `/api/tasks?memberId=${memberId}` : "/api/tasks";
 
-      // ✅ TOGGLE TASK
-      toggleTask: (memberId, taskId) => {
-        const memberStore = useMemberStore.getState();
-        const member = memberStore.getMember(memberId);
-        if (!member) return;
+      const res = await fetch(url);
+      const result = await res.json();
 
-        const updatedTasks = member.tasks.map((t) =>
-          t.id === taskId ? { ...t, completed: !t.completed } : t
-        );
+      if (result.success) {
+        set({ tasks: result.data, isLoading: false });
+      } else {
+        set({ error: result.error, isLoading: false });
+      }
+    } catch (error) {
+      console.error("Failed to fetch tasks:", error);
+      set({ error: "Failed to fetch tasks", isLoading: false });
+    }
+  },
 
-        const updatedMember = { ...member, tasks: updatedTasks };
-        memberStore.deleteMember(memberId);
-        memberStore.addMember(updatedMember);
-      },
+  // CREATE task
+  addTask: async (data) => {
+    set({ isLoading: true, error: null });
 
-      // ✅ DELETE TASK
-      deleteTask: (memberId, taskId) => {
-        const memberStore = useMemberStore.getState();
-        const member = memberStore.getMember(memberId);
-        if (!member) return;
+    try {
+      const res = await fetch("/api/tasks", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
 
-        const filteredTasks = member.tasks.filter((t) => t.id !== taskId);
-        const updatedMember = { ...member, tasks: filteredTasks };
-        memberStore.deleteMember(memberId);
-        memberStore.addMember(updatedMember);
-      },
+      const result = await res.json();
 
-      // ✅ GET TASKS
-      getTasks: (memberId) => {
-        const memberStore = useMemberStore.getState();
-        const member = memberStore.getMember(memberId);
-        return member ? member.tasks : [];
-      },
-    }),
-    { name: "task-storage" }
-  )
-);
+      if (result.success) {
+        const newTask = result.data;
+
+        set((state) => ({
+          tasks: [newTask, ...state.tasks],
+          isLoading: false,
+        }));
+      } else {
+        set({
+          error: result.error || "Failed to add task",
+          isLoading: false,
+        });
+      }
+    } catch (error) {
+      console.error("Add task failed:", error);
+      set({ error: "Failed to connect to server", isLoading: false });
+    }
+  },
+
+  // UPDATE task
+  updateTask: async (id, data) => {
+    set({ isLoading: true, error: null });
+
+    const original = get().tasks;
+
+    // Optimistic UI update
+    set((state) => ({
+      tasks: state.tasks.map((t) =>
+        t.id === id ? { ...t, ...data } : t
+      ),
+    }));
+
+    try {
+      const res = await fetch(`/api/tasks/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+
+      const result = await res.json();
+
+      if (result.success) {
+        const updated = result.data;
+
+        set((state) => ({
+          tasks: state.tasks.map((t) =>
+            t.id === id ? updated : t
+          ),
+          isLoading: false,
+        }));
+      } else {
+        set({ tasks: original, error: result.error, isLoading: false });
+      }
+    } catch (error) {
+      console.error("Update task failed:", error);
+      set({ tasks: original, error: "Server error", isLoading: false });
+    }
+  },
+
+  // TOGGLE completed
+  toggleTask: async (id) => {
+    const task = get().tasks.find((t) => t.id === id);
+    if (!task) return;
+
+    await get().updateTask(id, { completed: !task.completed });
+  },
+
+  // DELETE task
+  deleteTask: async (id) => {
+    set({ isLoading: true, error: null });
+
+    try {
+      const res = await fetch(`/api/tasks/${id}`, {
+        method: "DELETE",
+      });
+
+      const result = await res.json();
+
+      if (result.success) {
+        set((state) => ({
+          tasks: state.tasks.filter((t) => t.id !== id),
+          isLoading: false,
+        }));
+      } else {
+        set({ error: result.error, isLoading: false });
+      }
+    } catch (error) {
+      console.error("Delete task failed:", error);
+      set({ error: "Failed to delete task", isLoading: false });
+    }
+  },
+
+  // COMPUTED
+  getTaskStats: () => {
+    const { tasks } = get();
+
+    return {
+      total: tasks.length,
+      completed: tasks.filter((t) => t.completed).length,
+      active: tasks.filter((t) => !t.completed).length,
+    };
+  },
+}));

@@ -1,23 +1,39 @@
 import { useState } from "react";
 
-export default function ColorPicker() {
+interface ColorPickerProps {
+  onSelect: (index: number) => void;
+}
+
+export default function ColorPicker({ onSelect }: ColorPickerProps) {
   const colors = [
-    "#e74c3c", "#d35400", "#f1c40f", "#1abc9c",
-    "#e67e22", "#f39c12", "#f7dc6f", "#76d7c4",
-    "#27ae60", "#48c9b0", "#5dade2", "#3498db",
-    "#9b59b6", "#af7ac5", "#ec7063", "#95a5a6"
+    "#93c5fd", // blue-300
+    "#fca5a5", // red-300
+    "#86efac", // green-300
+    "#fde047", // yellow-300
+    "#c4b5fd", // purple-300
+    "#f9a8d4", // pink-300
+    "#a5b4fc", // indigo-300
+    "#5eead4", // teal-300
+    "#fdba74", // orange-300
+    "#d1d5db", // gray-300
   ];
 
-  const [selected, setSelected] = useState<string | null>(null);
+  
+  const [selected, setSelected] = useState<number | null>(null);
+
+  const handleSelect = (index: number) => {
+    setSelected(index);
+    onSelect(index);
+  };
 
   return (
     <div className="grid grid-cols-5 gap-4 p-4 bg-gray-100 rounded-xl max-w-full">
-      {colors.map((color) => (
+      {colors.map((color, index) => (
         <div
-          key={color}
-          onClick={() => setSelected(color)}
+          key={index}
+          onClick={() => handleSelect(index)}
           className={`w-10 h-10 rounded-full cursor-pointer transition-all duration-200 border-2 ${
-            selected === color ? "border-white border-4 scale-100" : "border-transparent"
+            selected === index ? "border-white border-4 scale-100" : "border-transparent"
           }`}
           style={{ backgroundColor: color }}
         />

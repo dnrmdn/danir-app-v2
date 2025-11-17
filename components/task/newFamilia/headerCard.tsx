@@ -1,13 +1,12 @@
-import { Member, Task } from "@/types/typeData";
+import { Member } from "@/types/typeData";
 import TodoProgressBar from "./progressBar";
 import RewardsBar from "./rewardsBar";
 
 type HeaderCardProps = {
   member: Member;
-  task: Task
 };
 
-export default function HeaderCard({task, member }: HeaderCardProps) {
+export default function HeaderCard({ member }: HeaderCardProps) {
   const total = member.tasks.length;
   const completed = member.tasks.filter((t) => t.completed).length;
   const reward = { star: 12 }; // contoh
