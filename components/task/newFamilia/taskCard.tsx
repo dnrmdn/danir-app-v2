@@ -4,6 +4,7 @@ import CheckButton from "./checkButton";
 import { Member, Task } from "@/types/typeData";
 import { formatTimeToAmPm } from "@/helper/timeFormat";
 import { Star } from "lucide-react";
+import { useTaskStore } from "@/lib/store/task-store";
 
 type TaskItemProps = {
   task: Task;
@@ -11,7 +12,7 @@ type TaskItemProps = {
 };
 
 export default function TaskCard({ task, member }: TaskItemProps) {
-  // const toggleTask = useTaskStore((state) => state.toggleTask); // ✅ digunakan di CheckButton
+  const toggleTask = useTaskStore((state) => state.toggleTask); // ✅ digunakan di CheckButton
 
   return (
     <Card className={`max-w-[400px] rounded-4xl ${task.completed ? member.taskColorDone : member.taskColor}`}>
@@ -34,7 +35,7 @@ export default function TaskCard({ task, member }: TaskItemProps) {
           </div>
         </div>
         <div className="shrink-0">
-          <CheckButton member={member} task={task} />
+          <CheckButton member={member} checked={task.completed} onToggle={() => toggleTask(task.id)} />
         </div>
       </div>
     </Card>

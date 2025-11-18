@@ -64,7 +64,7 @@ export const useMemberStore = create<MemberStore>((set, get) => ({
         const newMember = result.data;
 
         set((state) => ({
-          members: [newMember, ...state.members],
+          members: [ ...state.members, newMember],
           isAdding: false
         }));
 

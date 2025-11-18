@@ -93,7 +93,7 @@ export async function GET(req: Request) {
         const members = await prisma.member.findMany({
             where: { userId },
             include: { tasks: true },
-            orderBy: { createdAt: "desc" }
+            orderBy: { createdAt: "asc" }
         });
 
         return NextResponse.json({ success: true, data: members });
