@@ -39,7 +39,7 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
     set({ isLoading: true, error: null });
 
     try {
-      const url = memberId ? `/api/tasks?memberId=${memberId}` : "/api/tasks";
+      const url = memberId ? `/api/task?memberId=${memberId}` : "/api/task";
 
       const res = await fetch(url);
       const result = await res.json();
@@ -60,7 +60,7 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
     set({ isLoading: true, error: null });
 
     try {
-      const res = await fetch("/api/tasks", {
+      const res = await fetch("/api/task", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
@@ -101,7 +101,7 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
     }));
 
     try {
-      const res = await fetch(`/api/tasks/${id}`, {
+      const res = await fetch(`/api/task/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
@@ -118,6 +118,11 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
           ),
           isLoading: false,
         }));
+
+        const { useMemberStore } = await import("./member-store");
+
+        useMemberStore.getState().updateMemberTask(updated);
+
       } else {
         set({ tasks: original, error: result.error, isLoading: false });
       }
@@ -140,7 +145,7 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
     set({ isLoading: true, error: null });
 
     try {
-      const res = await fetch(`/api/tasks/${id}`, {
+      const res = await fetch(`/api/task/${id}`, {
         method: "DELETE",
       });
 

@@ -3,7 +3,7 @@ import prisma from "@/lib/db";
 import { Session } from "better-auth";
 import { NextRequest, NextResponse } from "next/server";
 
-export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(req: NextRequest, context: { params: Promise<{ id: string }> }) {
     try {
         const sessionResponse = await auth.api.getSession({
             headers: req.headers,
@@ -17,7 +17,8 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
                 { status: 401 }
             );
         }
-        const taskId = Number(params.id)
+        const { id } = await context.params;
+        const taskId = Number(id);
 
         const task = await prisma.task.findUnique(
             {
@@ -57,7 +58,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     }
 }
 
-export async function DELETE(req: NextRequest, context: { params: Promise<{ id: string }>}) {
+export async function DELETE(req: NextRequest, context: { params: Promise<{ id: string }> }) {
     try {
         const sessionResponse = await auth.api.getSession({
             headers: req.headers,

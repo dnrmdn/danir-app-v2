@@ -34,7 +34,13 @@ export default function AddProfile({ isOpen, onClose }: { isOpen: boolean; onClo
       <GlassCard className="h-full rounded-l-4xl flex flex-col">
         {/* Header */}
         <div className="flex gap-4 items-center mb-6">
-          <button onClick={onClose} className="p-1 rounded-full hover:bg-black/50 transition">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onClose();
+            }}
+            className="p-1 rounded-full hover:bg-black/50 transition"
+          >
             <ArrowLeft size={22} className="text-black hover:text-white transition" />
           </button>
           <h2 className="text-4xl font-semibold">Add Profile</h2>

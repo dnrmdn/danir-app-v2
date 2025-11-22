@@ -1,4 +1,4 @@
-import { Member } from "@/types/typeData";
+import { Member, Task } from "@/types/typeData";
 import { create } from "zustand";
 
 interface MemberStore {
@@ -12,6 +12,7 @@ interface MemberStore {
   fetchMembers: () => Promise<void>
   addMember: (data: { name: string, colorIndex: number }) => Promise<boolean>
   updateMember: (id: number, data: Partial<Member>) => Promise<void>
+  updateMemberTask: (updatedTask: Task) => void
   deleteMember: (id: number) => Promise<void>
 
   //Helper
@@ -65,7 +66,7 @@ export const useMemberStore = create<MemberStore>((set, get) => ({
 
         set((state) => ({
           members: [ ...state.members, newMember],
-          isAdding: false
+          isAdding: false,
         }));
 
         return true;            // ⬅️ WAJIB
@@ -123,6 +124,20 @@ export const useMemberStore = create<MemberStore>((set, get) => ({
       set({ members: original, error: "Server update failed", isLoading: false })
     }
   },
+
+  updateMemberTask: (updatedTask: Task) =>
+  set((state) => ({
+    members: state.members.map((m) => {
+      if (m.id !== updatedTask.memberId) return m;
+
+      return {
+        ...m,
+        tasks: m.tasks.map((t) =>
+          t.id === updatedTask.id ? updatedTask : t
+        ),
+      };
+    }),
+  })),
 
   // Delete Member
   deleteMember: async (id) => {

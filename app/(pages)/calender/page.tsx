@@ -7,7 +7,7 @@ export default function CalenderPage() {
   return (
     <div className="relative">
       {/* FamilyCard di bawah */}
-      <FamilyCard />
+      <FamilyCard/>
 
       {/* FloatButton di atas */}
       <div className="fixed bottom-10 right-10 sm:bottom-10 rounded-full shadow-sm  sm:right-15 z-50 ">

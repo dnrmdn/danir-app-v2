@@ -1,30 +1,25 @@
 "use client";
 
 import { Card } from "@/components/ui/card";
-import HeaderCard from "./headerCard";
-import TaskCard from "./taskCard";
 import { useMemberStore } from "@/lib/store/member-store";
-import { useTaskStore } from "@/lib/store/task-store";
 import { useEffect } from "react";
+import HeaderCard from "../newFamilia/headerCard";
+import TaskCard from "../newFamilia/taskCard";
 
-export default function FamilyCard() {
-
+export default function MemberItem() {
   const { members, isLoading, fetchMembers } = useMemberStore();
 
-  // Ambil task store
-  const tasks = useTaskStore((s) => s.tasks);
-  const fetchTasks = useTaskStore((s) => s.fetchTasks);
-
-  // Ambil data members + tasks saat mount
+  // Ambil data saat component mount
   useEffect(() => {
     fetchMembers();
-    fetchTasks(); // ⬅️ WAJIB supaya task ada di store
-  }, [fetchMembers, fetchTasks]);
+  }, [fetchMembers]);
 
+  // Jika loading
   if (isLoading) {
     return <div className="p-4"> Loading members...</div>;
   }
 
+  // Jika kosong
   if (!members || members.length === 0) {
     return <div className="p-4">No member provided</div>;
   }
@@ -32,10 +27,10 @@ export default function FamilyCard() {
   return (
     <div className="overflow-hidden">
       <div className="flex gap-6 p-4 scroll-smooth">
-        {members.map((person) => (
+        {members.map((member) => (
           <Card
-            key={person.id}
-            className={`flex flex-col rounded-3xl ${person.bgColor} transition-all duration-300`}
+            key={member.id}
+            className={`flex flex-col rounded-3xl ${member.bgColor} transition-all duration-300`}
             style={{
               height: "90vh",
               flex: "0 0 auto",
@@ -43,15 +38,11 @@ export default function FamilyCard() {
               maxWidth: "400px",
             }}
           >
-            <HeaderCard member={person} />
+            <HeaderCard member={member} />
             <div className="px-4 overflow-y-auto h-full rounded-[40px] space-y-4 no-scrollbar">
-
-              {tasks
-                .filter((t) => t.memberId === person.id)
-                .map((task) => (
-                  <TaskCard key={task.id} task={task} member={person} />
-                ))}
-
+              {member.tasks.map((task, i) => (
+                <TaskCard key={`${member.id}-${task.label}-${i}`} task={task} member={member} />
+              ))}
             </div>
           </Card>
         ))}

@@ -7,6 +7,7 @@ export interface Task {
   completed: boolean;
   reward?: number;
   createdAt: Date
+  memberId: number
 
 }
 

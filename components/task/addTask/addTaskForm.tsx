@@ -14,7 +14,13 @@ export default function AddTaskForm({ isOpen, onClose }: { isOpen: boolean; onCl
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-4xl pl-4 font-semibold">Add Task</h2>
-          <button onClick={onClose} className="p-1 rounded-full hover:bg-black/50 transition">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onClose();
+            }}
+            className="p-1 rounded-full hover:bg-black/50 transition"
+          >
             <X size={22} className="text-black hover:text-white transition" />
           </button>
         </div>
@@ -27,7 +33,6 @@ export default function AddTaskForm({ isOpen, onClose }: { isOpen: boolean; onCl
           <AddTimeInput />
           <button className="bg-blue-500 text-white rounded-xl p-3 hover:bg-blue-600 transition">Add Task</button>
         </div>
-        
       </GlassCard>
     </ModalOverlay>
   );

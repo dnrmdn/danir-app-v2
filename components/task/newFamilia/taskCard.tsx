@@ -13,6 +13,7 @@ type TaskItemProps = {
 
 export default function TaskCard({ task, member }: TaskItemProps) {
   const toggleTask = useTaskStore((state) => state.toggleTask); // ✅ digunakan di CheckButton
+  
 
   return (
     <Card className={`max-w-[400px] rounded-4xl ${task.completed ? member.taskColorDone : member.taskColor}`}>

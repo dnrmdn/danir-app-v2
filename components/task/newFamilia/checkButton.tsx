@@ -1,16 +1,14 @@
-
 import { Member } from "@/types/typeData";
 import { Check } from "lucide-react";
 
 type TodoCheckboxProps = {
-  member: Member
+  member: Member;
   checked: boolean;
   onToggle: () => void;
 };
 
 export default function CheckButton({ member, checked, onToggle }: TodoCheckboxProps) {
   
-
   return (
     <label className="relative w-10 h-10 cursor-pointer">
       {/* Checkbox invisible tapi tetap accessible */}

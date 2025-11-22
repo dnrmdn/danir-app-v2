@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/db";
-import { NextResponse } from "next/server";
+import { Session } from "better-auth";
+import { NextRequest, NextResponse } from "next/server";
 
 // 10 warna default
 const DEFAULT_COLORS = [
@@ -77,82 +78,93 @@ const DEFAULT_COLORS = [
 ];
 
 
-export async function GET(req: Request) {
+export async function GET(req: NextRequest) {
     try {
-        const sessionResp = await auth.api.getSession({ headers: req.headers });
+        // 🔹 Ambil session yang sedang aktif dari header
+        const sessionResponse = await auth.api.getSession({ headers: req.headers });
 
-        if (!sessionResp || !sessionResp.user) {
+        // 🔹 Gunakan type assertion supaya aman
+        const session = sessionResponse?.session as Session | null;
+
+        if (!session?.userId) {
             return NextResponse.json(
-                { success: false, message: "Unauthorized" },
+                { success: false, error: "Unauthorized" },
                 { status: 401 }
             );
         }
 
-        const userId = sessionResp.user.id;
-
         const members = await prisma.member.findMany({
-            where: { userId },
+            where: { userId: session.userId },
             include: { tasks: true },
             orderBy: { createdAt: "asc" }
         });
 
         return NextResponse.json({ success: true, data: members });
+
     } catch (error) {
         console.error("Get member error:", error)
         return NextResponse.json(
             { success: false, message: "Failed to load member" },
             { status: 500 }
-        )
+        );
     }
 }
 
 
-export async function POST(req: Request) {
-    try {
-        const sessionResp = await auth.api.getSession({ headers: req.headers });
 
-        if (!sessionResp || !sessionResp.user) {
+export async function POST(req: NextRequest) {
+    try {
+        const sessionResponse = await auth.api.getSession({ headers: req.headers });
+        const session = sessionResponse?.session as Session | null;
+
+        if (!session?.userId) {
             return NextResponse.json(
                 { success: false, message: "Unauthorized" },
                 { status: 401 }
             );
         }
 
-        const userId = sessionResp.user.id;
+        const userId = session.userId;
 
-        const body = await req.json()
-        const { name, colorIndex } = body
+        const body = await req.json();
+        const { name, colorIndex } = body;
 
         if (!name || typeof name !== "string") {
             return NextResponse.json(
                 { success: false, message: "Name is required" },
                 { status: 400 }
-            )
+            );
         }
+
         if (colorIndex === undefined || colorIndex === null || isNaN(Number(colorIndex))) {
             return NextResponse.json(
                 { success: false, message: "Color is required" },
                 { status: 400 }
-            )
+            );
         }
-        // Ambil profile warna
-        const selectedColor = DEFAULT_COLORS[colorIndex] || DEFAULT_COLORS[0]
+
+        const selectedColor = DEFAULT_COLORS[colorIndex] || DEFAULT_COLORS[0];
 
         const newMember = await prisma.member.create({
             data: {
                 userId,
                 name,
-                ...selectedColor
-            }
-        })
+                ...selectedColor,
+            },
+            include: { tasks: true}
+        });
+
         return NextResponse.json(
-            { success: true, data: newMember }
-        )
+            { success: true, data: newMember },
+            { status: 201 }
+        );
+
     } catch (error) {
-        console.error("Post member error:", error)
+        console.error("Post member error:", error);
         return NextResponse.json(
             { success: false, message: "Failed to create member" },
             { status: 500 }
-        )
+        );
     }
 }
+
