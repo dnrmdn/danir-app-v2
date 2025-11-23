@@ -10,7 +10,7 @@ interface InputWithIconProps {
   inputClassName?: string;
 }
 
-export default function InputWithIcon({ icon, label, placeholder = "Enter text...", value, onChange, className = "", inputClassName = "" }: InputWithIconProps) {
+export default function AddMemberName({ icon, label, placeholder = "Enter text...", value, onChange, className = "", inputClassName = "" }: InputWithIconProps) {
   return (
     <div className={`bg-gray-100 rounded-lg ${className}`}>
       <div className="flex items-center px-4 gap-2">

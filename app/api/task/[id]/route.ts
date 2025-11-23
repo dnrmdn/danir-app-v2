@@ -37,11 +37,17 @@ export async function PUT(req: NextRequest, context: { params: Promise<{ id: str
                 { status: 403 }
             )
         }
-
+        const body = await req.json();
         const updateTask = await prisma.task.update(
             {
                 where: { id: taskId },
-                data: { completed: !task.completed }
+                data: {
+                    label: body.label ?? task.label,
+                    date: body.date ?? task.date,
+                    time: body.time ?? task.time,
+                    reward: body.reward ?? task.reward,
+                    completed: body.completed ?? task.completed
+                }
             }
         )
         return NextResponse.json(

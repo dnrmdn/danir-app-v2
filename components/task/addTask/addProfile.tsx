@@ -1,10 +1,10 @@
 import ModalOverlay from "./modalOverlayUI";
 import GlassCard from "./glassCardUI";
 import { ArrowLeft } from "lucide-react";
-import InputWithIcon from "./addTitleInput";
 import ColorPicker from "./colorsPicker";
 import { useState } from "react";
 import { useMemberStore } from "@/lib/store/member-store";
+import AddMemberName from "./addTitleInput";
 
 export default function AddProfile({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
   const addMember = useMemberStore((state) => state.addMember);
@@ -48,7 +48,7 @@ export default function AddProfile({ isOpen, onClose }: { isOpen: boolean; onClo
 
         {/* Form */}
         <div className="flex flex-col gap-4">
-          <InputWithIcon label="Name" placeholder="Create your name here..." value={name} onChange={(e) => setName(e.target.value)} />
+          <AddMemberName label="Name" placeholder="Create your name here..." value={name} onChange={(e) => setName(e.target.value)} />
 
           {/* Color Picker */}
           <ColorPicker onSelect={(i) => setColorIndex(i)} />

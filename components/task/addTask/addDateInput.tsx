@@ -7,7 +7,11 @@ import { cn } from "@/lib/utils";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 
-export default function AddDateInput() {
+export default function AddDateInput({
+  onChange,
+}: {
+  onChange?: (d: Date | undefined) => void;
+}) {
   const [date, setDate] = useState<Date | undefined>(new Date());
 
   return (
@@ -25,7 +29,15 @@ export default function AddDateInput() {
             </PopoverTrigger>
 
             <PopoverContent className="p-0 w-auto bg-white border shadow-lg rounded-xl">
-              <Calendar mode="single" selected={date} onSelect={setDate} initialFocus />
+              <Calendar
+                mode="single"
+                selected={date}
+                onSelect={(d) => {
+                  setDate(d);
+                  onChange?.(d);
+                }}
+                initialFocus
+              />
             </PopoverContent>
           </Popover>
         </div>
