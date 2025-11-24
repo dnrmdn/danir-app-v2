@@ -1,7 +1,7 @@
 "use client"
 
 import AddButtonTask from "@/components/task/addTask/addButtonTask";
-import FamilyCard from "@/components/task/newFamilia/familyCard";
+import FamilyCard from "@/components/task/familyCard";
 
 export default function CalenderPage() {
   return (

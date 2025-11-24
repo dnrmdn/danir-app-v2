@@ -1,24 +1,22 @@
 "use client";
 
 import { Clock } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 
-export default function AddTimeInput({
-  onChange,
-}: {
-  onChange?: (t: string) => void;
-}) {
+export default function AddTimeInput({ onChange }: { onChange?: (t: string) => void }) {
   const [includeTime, setIncludeTime] = useState(true);
 
   const [time, setTime] = useState(() => {
     const now = new Date();
-    const hours = now.getHours().toString().padStart(2, "0");
-    const minutes = now.getMinutes().toString().padStart(2, "0");
-    return `${hours}:${minutes}`; // Format 24 jam untuk input type="time"
+    return `${now.getHours().toString().padStart(2, "0")}:${now.getMinutes().toString().padStart(2, "0")}`;
   });
+
+  useEffect(() => {
+    onChange?.(time); // kirim default time saat mount
+  }, []);
 
   const handleTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setTime(e.target.value);
@@ -45,41 +43,19 @@ export default function AddTimeInput({
 
           <Popover>
             <PopoverTrigger asChild>
-              <button
-                disabled={!includeTime}
-                className={cn(
-                  "w-full h-10 mb-1 px-2 rounded-md text-xl text-left",
-                  includeTime ? "cursor-pointer" : "text-black cursor-not-allowed"
-                )}
-              >
+              <button disabled={!includeTime} className={cn("w-full h-10 mb-1 px-2 rounded-md text-xl text-left", includeTime ? "cursor-pointer" : "text-black cursor-not-allowed")}>
                 {includeTime ? time : "No time selected"}
               </button>
             </PopoverTrigger>
 
             <PopoverContent className="p-3 w-auto bg-white border shadow-lg rounded-xl flex justify-center">
-              <input
-                type="time"
-                value={time}
-                onChange={handleTimeChange}
-                className="text-xl p-2 rounded-md border border-gray-300 focus:outline-none"
-              />
+              <input type="time" value={time} onChange={handleTimeChange} className="text-xl p-2 rounded-md border border-gray-300 focus:outline-none" />
             </PopoverContent>
           </Popover>
         </div>
 
-        <div
-          onClick={toggleIncludeTime}
-          className={cn(
-            "w-12 h-6 flex items-center rounded-full p-1 cursor-pointer transition-colors",
-            includeTime ? "bg-blue-500" : "bg-gray-400"
-          )}
-        >
-          <motion.div
-            layout
-            transition={{ type: "spring", stiffness: 500, damping: 30 }}
-            className="w-5 h-5 bg-white rounded-full"
-            animate={{ x: includeTime ? 24 : 0 }}
-          />
+        <div onClick={toggleIncludeTime} className={cn("w-12 h-6 flex items-center rounded-full p-1 cursor-pointer transition-colors", includeTime ? "bg-blue-500" : "bg-gray-400")}>
+          <motion.div layout transition={{ type: "spring", stiffness: 500, damping: 30 }} className="w-5 h-5 bg-white rounded-full" animate={{ x: includeTime ? 24 : 0 }} />
         </div>
       </div>
     </div>

@@ -3,8 +3,8 @@
 import { Card } from "@/components/ui/card";
 import { useMemberStore } from "@/lib/store/member-store";
 import { useEffect } from "react";
-import HeaderCard from "../newFamilia/headerCard";
-import TaskCard from "../newFamilia/taskCard";
+import HeaderCard from "../task/headerCard";
+import TaskCard from "../task/taskCard/taskCard";
 
 export default function MemberItem() {
   const { members, isLoading, fetchMembers } = useMemberStore();

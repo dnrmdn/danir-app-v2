@@ -1,18 +1,18 @@
 "use client";
 
 import { CalendarRange } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 
-export default function AddDateInput({
-  onChange,
-}: {
-  onChange?: (d: Date | undefined) => void;
-}) {
+export default function AddDateInput({ onChange }: { onChange?: (d: Date | undefined) => void }) {
   const [date, setDate] = useState<Date | undefined>(new Date());
+
+  useEffect(() => {
+    onChange?.(new Date()); // kirim default date saat mount
+  }, []);
 
   return (
     <div className="bg-gray-100 rounded-lg">
@@ -23,9 +23,7 @@ export default function AddDateInput({
 
           <Popover>
             <PopoverTrigger asChild>
-              <button className={cn("w-full h-10 mb-1 px-2 rounded-md text-xl text-left", !date && "text-gray-400")}>
-                {date ? format(date, "EEEE, dd MMM yyyy") : "Select date"}
-              </button>
+              <button className={cn("w-full h-10 mb-1 px-2 rounded-md text-xl text-left", !date && "text-gray-400")}>{date ? format(date, "EEEE, dd MMM yyyy") : "Select date"}</button>
             </PopoverTrigger>
 
             <PopoverContent className="p-0 w-auto bg-white border shadow-lg rounded-xl">

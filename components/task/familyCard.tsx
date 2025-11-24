@@ -2,10 +2,10 @@
 
 import { Card } from "@/components/ui/card";
 import HeaderCard from "./headerCard";
-import TaskCard from "./taskCard";
 import { useMemberStore } from "@/lib/store/member-store";
 import { useTaskStore } from "@/lib/store/task-store";
 import { useEffect, useRef } from "react";
+import TaskCard from "./taskCard/taskCard";
 
 export default function FamilyCard() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -42,7 +42,8 @@ export default function FamilyCard() {
                 {tasks
                   .filter((t) => t.memberId === person.id)
                   .map((task) => (
-                    <TaskCard key={task.id} task={task} member={person} />
+                    <TaskCard key={task.id} task={task} member={person}/>
+                    // <TaskCard key={task.id} task={task} member={person} />
                   ))}
               </div>
             </Card>
