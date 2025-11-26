@@ -8,6 +8,9 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ======================
+// USER
+// ======================
 model User {
   id            String    @id
   name          String
@@ -16,14 +19,19 @@ model User {
   image         String?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @default(now()) @updatedAt
+
   sessions      Session[]
   accounts      Account[]
   members       Member[]
+  rewards       Reward[]        // 🔥 Tambahkan relasi reward
 
   @@unique([email])
   @@map("user")
 }
 
+// ======================
+// SESSION
+// ======================
 model Session {
   id        String   @id
   expiresAt DateTime
@@ -32,6 +40,7 @@ model Session {
   updatedAt DateTime @updatedAt
   ipAddress String?
   userAgent String?
+
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -39,6 +48,9 @@ model Session {
   @@map("session")
 }
 
+// ======================
+// ACCOUNT
+// ======================
 model Account {
   id                    String    @id
   accountId             String
@@ -58,6 +70,9 @@ model Account {
   @@map("account")
 }
 
+// ======================
+// VERIFICATION
+// ======================
 model Verification {
   id         String   @id
   identifier String
@@ -69,10 +84,13 @@ model Verification {
   @@map("verification")
 }
 
+// ======================
+// MEMBER
+// ======================
 model Member {
-  id     Int    @id @default(autoincrement())
-  userId String
-  user   User   @relation(fields: [userId], references: [id])
+  id            Int      @id @default(autoincrement())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id])
 
   name          String
   bgColor       String
@@ -81,17 +99,21 @@ model Member {
   iconColor     String
   checkColor    String
 
-  tasks Task[]
+  tasks         Task[]
+  rewardClaims  RewardClaim[]
 
-  createdAt DateTime @default(now())
+  createdAt     DateTime @default(now())
 
   @@map("member")
 }
 
+// ======================
+// TASK
+// ======================
 model Task {
-  id       Int    @id @default(autoincrement())
-  memberId Int
-  member   Member @relation(fields: [memberId], references: [id])
+  id        Int      @id @default(autoincrement())
+  memberId  Int
+  member    Member   @relation(fields: [memberId], references: [id])
 
   label     String
   date      String
@@ -101,4 +123,42 @@ model Task {
   createdAt DateTime @default(now())
 
   @@map("task")
+}
+
+// ======================
+// REWARD (master reward)
+// ======================
+model Reward {
+  id        Int      @id @default(autoincrement())
+  
+  userId    String                         // 🔥 Add this
+  user      User     @relation(fields: [userId], references: [id])
+
+  name      String
+  minStars  Int
+  image     String
+
+  claims    RewardClaim[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("reward")
+}
+
+// ======================
+// REWARD CLAIM (riwayat klaim reward oleh member)
+// ======================
+model RewardClaim {
+  id        Int      @id @default(autoincrement())
+
+  memberId  Int
+  rewardId  Int
+
+  member    Member   @relation(fields: [memberId], references: [id])
+  reward    Reward   @relation(fields: [rewardId], references: [id])
+
+  claimedAt DateTime @default(now())
+
+  @@map("reward_claim")
 }

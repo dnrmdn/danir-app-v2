@@ -42,7 +42,7 @@ export function useSignUpHandler() {
             } else { // ✅ Berhasil daftar → redirect ke login
                 setSuccess(true);
                 setTimeout(() => {
-                    router.push("/dashboard");
+                    router.push("/calender");
                 }, 1000);
             }
 

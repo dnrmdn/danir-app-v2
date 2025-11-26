@@ -5,11 +5,7 @@ import { Plus, Users } from "lucide-react";
 import AddProfile from "./addProfile";
 import { useMemberStore } from "@/lib/store/member-store";
 
-export default function Profile({
-  onSelect,
-}: {
-  onSelect?: (ids: number[]) => void;
-}) {
+export default function Profile({ onSelect }: { onSelect?: (ids: number[]) => void }) {
   const { members, isLoading } = useMemberStore();
   const [selectedMembers, setSelectedMembers] = useState<number[]>([]);
   const [openAdd, setOpenAdd] = useState(false);
@@ -20,12 +16,10 @@ export default function Profile({
   }, [selectedMembers, onSelect]);
 
   if (isLoading) return <div className="p-4"> Loading members...</div>;
-  if (!members || members.length === 0) return <p className="text-gray-500 italic px-4">No members found</p>;
+  const hasMembers = members && members.length > 0;
 
   const toggleSelect = (id: number) => {
-    setSelectedMembers((prev) =>
-      prev.includes(id) ? prev.filter((n) => n !== id) : [...prev, id]
-    );
+    setSelectedMembers((prev) => (prev.includes(id) ? prev.filter((n) => n !== id) : [...prev, id]));
   };
 
   return (
@@ -36,41 +30,30 @@ export default function Profile({
       </div>
 
       <div className="flex flex-wrap gap-3">
-        {members.map((member) => {
-          const isSelected = selectedMembers.includes(member.id);
+        {hasMembers ? (
+          members.map((member) => {
+            const isSelected = selectedMembers.includes(member.id);
 
-          return (
-            <div
-              key={member.id}
-              className={`flex flex-col items-center text-center gap-2 transition-all duration-300 cursor-pointer ${
-                isSelected ? "scale-105" : "opacity-40 hover:opacity-100"
-              }`}
-              onClick={() => toggleSelect(member.id)}
-            >
-              <div
-                className={`relative w-10 h-10 rounded-full flex items-center justify-center 
+            return (
+              <div key={member.id} className={`flex flex-col items-center text-center gap-2 transition-all duration-300 cursor-pointer ${isSelected ? "scale-105" : "opacity-40 hover:opacity-100"}`} onClick={() => toggleSelect(member.id)}>
+                <div
+                  className={`relative w-10 h-10 rounded-full flex items-center justify-center 
                 ${member.iconColor} transition-all duration-300
                 ${isSelected ? "border-2 border-white shadow-[0_0_10px_rgba(255,255,255,0.7)]" : ""}`}
-              >
-                <p className="font-bold text-white text-md">{member.name?.[0] ?? "?"}</p>
+                >
+                  <p className="font-bold text-white text-md">{member.name?.[0] ?? "?"}</p>
+                </div>
+                <p className={`text-sm font-bold transition-all ${isSelected ? "text-gray-900" : "text-gray-500"}`}>{member.name}</p>
               </div>
-              <p className={`text-sm font-bold transition-all ${isSelected ? "text-gray-900" : "text-gray-500"}`}>
-                {member.name}
-              </p>
-            </div>
-          );
-        })}
+            );
+          })
+        ) : (
+          <p className="text-gray-500 italic px-4"></p>
+        )}
 
+        {/* ADD BUTTON SELALU ADA */}
         <div className="flex flex-col items-center gap-2">
-          <FloatButton
-            floating={false}
-            bgColor="bg-green-500"
-            shadow={false}
-            size="w-10 h-10"
-            icon={<Plus color="white" size={20} />}
-            onClick={() => setOpenAdd(true)}
-            position="fixed"
-          />
+          <FloatButton floating={false} bgColor="bg-green-500" shadow={false} size="w-10 h-10" icon={<Plus color="white" size={20} />} onClick={() => setOpenAdd(true)} position="fixed" />
           <p className="text-sm font-bold text-gray-800">Add</p>
         </div>
       </div>

@@ -19,7 +19,7 @@ export default function TaskCardDialog({ task, member, setOpen, isEditing, setIs
   return (
     <DialogContent className="rounded-4xl w-[450px] p-6">
       <DialogHeader>
-        <DialogTitle className="text-4xl font-semibold mb-4">{isEditing ? "Edit Task" : task.label}</DialogTitle>
+        <DialogTitle className="text-4xl font-semibold mb-4 line-clamp-2">{isEditing ? "Edit Task" : task.label}</DialogTitle>
       </DialogHeader>
 
       {isEditing ? (
