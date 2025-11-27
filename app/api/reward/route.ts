@@ -66,13 +66,21 @@ export async function POST(req: NextRequest) {
             );
         }
 
+        if (!image || typeof image !== "string") {
+            return NextResponse.json(
+                { success: false, message: "Image is required" },
+                { status: 400 }
+            );
+        }
+
+
         // 🔹 Create reward
         const newReward = await prisma.reward.create({
             data: {
                 userId: session.userId,
                 name,
                 minStars: Number(minStars),
-                image: image || null,
+                image: image ?? undefined
             }
         });
 

@@ -1,8 +1,18 @@
 import { create } from "zustand";
 import { Reward } from "@/types/typeData";
 
+interface RewardFormData {
+    name: string;
+    image: string | null;
+    minStar: number;
+}
+
 interface RewardStore {
-    // State
+    // Form State (untuk AddReward form)
+    rewardData: RewardFormData;
+    setRewardData: (data: RewardFormData) => void;
+
+    // State utama
     rewards: Reward[];
     isLoading: boolean;
     error: string | null;
@@ -25,6 +35,16 @@ interface RewardStore {
 }
 
 export const useRewardStore = create<RewardStore>((set, get) => ({
+    // FORM STATE UNTUK ADD REWARD
+    rewardData: {
+        name: "",
+        image: null,
+        minStar: 0,
+    },
+
+    setRewardData: (data) => set({ rewardData: data }),
+
+    // STATE UTAMA
     rewards: [],
     isLoading: false,
     error: null,
@@ -88,7 +108,6 @@ export const useRewardStore = create<RewardStore>((set, get) => ({
 
         const original = get().rewards;
 
-        // Optimistic UI update
         set((state) => ({
             rewards: state.rewards.map((r) =>
                 r.id === id ? { ...r, ...data } : r

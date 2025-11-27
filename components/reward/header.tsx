@@ -11,7 +11,6 @@ export default function HeaderReward({ member }: HeaderCardProps) {
   // Total star hanya dari task completed
   const totalStar = completedTasks.reduce((sum, t) => sum + (t.reward || 0), 0);
 
-  const hasReward = totalStar > 0;
 
   return (
     <div className="flex items-center px-4 py-2">
@@ -23,7 +22,7 @@ export default function HeaderReward({ member }: HeaderCardProps) {
       <div className="flex flex-col flex-1 ml-3">
         <p className="text-lg sm:text-xl font-semibold">{member.name}</p>
 
-        {hasReward && (
+        { (
           <div className="h-6 pt-1 flex items-center">
             <div className="relative w-full h-6">
               {/* Background */}
