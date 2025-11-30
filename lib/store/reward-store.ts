@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { Reward } from "@/types/typeData";
+import { CreateRewardPayload, Reward } from "@/types/typeData";
 
 interface RewardFormData {
     name: string;
@@ -19,7 +19,7 @@ interface RewardStore {
 
     // Actions
     fetchRewards: () => Promise<void>;
-    addReward: (data: Omit<Reward, "id" | "createdAt">) => Promise<void>;
+    addReward: (data: CreateRewardPayload) => Promise<void>;
     updateReward: (id: number, data: Partial<Reward>) => Promise<void>;
     deleteReward: (id: number) => Promise<void>;
 
@@ -72,7 +72,7 @@ export const useRewardStore = create<RewardStore>((set, get) => ({
     },
 
     // CREATE reward
-    addReward: async (data) => {
+    addReward: async (data: CreateRewardPayload) => {
         set({ isLoading: true, error: null });
 
         try {

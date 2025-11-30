@@ -8,49 +8,52 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ======================
-// USER
-// ======================
+/**
+ * ======================
+ * USER
+ * ======================
+ */
 model User {
-  id            String    @id
+  id            String   @id
   name          String
-  email         String
-  emailVerified Boolean   @default(false)
+  email         String   @unique
+  emailVerified Boolean  @default(false)
   image         String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @default(now()) @updatedAt
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @default(now()) @updatedAt
 
-  sessions      Session[]
-  accounts      Account[]
-  members       Member[]
-  rewards       Reward[]        // 🔥 Tambahkan relasi reward
+  sessions Session[]
+  accounts Account[]
+  members  Member[] // USER → MEMBER
 
-  @@unique([email])
   @@map("user")
 }
 
-// ======================
-// SESSION
-// ======================
+/**
+ * ======================
+ * SESSION
+ * ======================
+ */
 model Session {
   id        String   @id
   expiresAt DateTime
-  token     String
+  token     String   @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   ipAddress String?
   userAgent String?
 
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([token])
   @@map("session")
 }
 
-// ======================
-// ACCOUNT
-// ======================
+/**
+ * ======================
+ * ACCOUNT
+ * ======================
+ */
 model Account {
   id                    String    @id
   accountId             String
@@ -70,9 +73,11 @@ model Account {
   @@map("account")
 }
 
-// ======================
-// VERIFICATION
-// ======================
+/**
+ * ======================
+ * VERIFICATION
+ * ======================
+ */
 model Verification {
   id         String   @id
   identifier String
@@ -84,13 +89,15 @@ model Verification {
   @@map("verification")
 }
 
-// ======================
-// MEMBER
-// ======================
+/**
+ * ======================
+ * MEMBER
+ * ======================
+ */
 model Member {
-  id            Int      @id @default(autoincrement())
-  userId        String
-  user          User     @relation(fields: [userId], references: [id])
+  id     Int    @id @default(autoincrement())
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
 
   name          String
   bgColor       String
@@ -99,21 +106,24 @@ model Member {
   iconColor     String
   checkColor    String
 
-  tasks         Task[]
-  rewardClaims  RewardClaim[]
+  tasks        Task[]
+  rewardClaims RewardClaim[]
+  rewards      Reward[] // MEMBER → REWARD
 
-  createdAt     DateTime @default(now())
+  createdAt DateTime @default(now())
 
   @@map("member")
 }
 
-// ======================
-// TASK
-// ======================
+/**
+ * ======================
+ * TASK
+ * ======================
+ */
 model Task {
-  id        Int      @id @default(autoincrement())
-  memberId  Int
-  member    Member   @relation(fields: [memberId], references: [id])
+  id       Int    @id @default(autoincrement())
+  memberId Int
+  member   Member @relation(fields: [memberId], references: [id])
 
   label     String
   date      String
@@ -125,20 +135,22 @@ model Task {
   @@map("task")
 }
 
-// ======================
-// REWARD (master reward)
-// ======================
+/**
+ * ======================
+ * REWARD (Milih Member)
+ * ======================
+ */
 model Reward {
-  id        Int      @id @default(autoincrement())
-  
-  userId    String                         // 🔥 Add this
-  user      User     @relation(fields: [userId], references: [id])
+  id Int @id @default(autoincrement())
 
-  name      String
-  minStars  Int
-  image     String
+  memberId Int
+  member   Member @relation(fields: [memberId], references: [id])
 
-  claims    RewardClaim[]
+  name     String
+  minStars Int
+  image    String
+
+  claims RewardClaim[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -146,17 +158,19 @@ model Reward {
   @@map("reward")
 }
 
-// ======================
-// REWARD CLAIM (riwayat klaim reward oleh member)
-// ======================
+/**
+ * ======================
+ * REWARD CLAIM (riwayat klaim reward oleh member)
+ * ======================
+ */
 model RewardClaim {
-  id        Int      @id @default(autoincrement())
+  id Int @id @default(autoincrement())
 
-  memberId  Int
-  rewardId  Int
+  memberId Int
+  rewardId Int
 
-  member    Member   @relation(fields: [memberId], references: [id])
-  reward    Reward   @relation(fields: [rewardId], references: [id])
+  member Member @relation(fields: [memberId], references: [id])
+  reward Reward @relation(fields: [rewardId], references: [id])
 
   claimedAt DateTime @default(now())
 

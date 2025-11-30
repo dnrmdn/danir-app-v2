@@ -3,7 +3,7 @@
 import { Card } from "@/components/ui/card";
 import { useMemberStore } from "@/lib/store/member-store";
 import { useEffect } from "react";
-import HeaderCard from "../task/headerCard";
+import HeaderCard from "../shared/headerCard";
 import TaskCard from "../task/taskCard/taskCard";
 
 export default function MemberItem() {

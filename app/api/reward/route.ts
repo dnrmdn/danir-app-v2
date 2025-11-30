@@ -5,7 +5,6 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest) {
     try {
-        // 🔹 Ambil session
         const sessionResponse = await auth.api.getSession({ headers: req.headers });
         const session = sessionResponse?.session as Session | null;
 
@@ -16,9 +15,12 @@ export async function GET(req: NextRequest) {
             );
         }
 
-        // 🔹 Ambil reward milik user
+        const memberId = req.nextUrl.searchParams.get("memberId");
+
         const rewards = await prisma.reward.findMany({
-            where: { userId: session.userId },
+            where: {
+                ...(memberId && { memberId: Number(memberId) }) // ⬅ filter berdasarkan member
+            },
             orderBy: { createdAt: "asc" }
         });
 
@@ -36,6 +38,7 @@ export async function GET(req: NextRequest) {
 
 
 
+
 export async function POST(req: NextRequest) {
     try {
         const sessionResponse = await auth.api.getSession({ headers: req.headers });
@@ -49,38 +52,37 @@ export async function POST(req: NextRequest) {
         }
 
         const body = await req.json();
-        const { name, minStars, image } = body;
+        const { name, minStars, image, memberId } = body;
 
         // 🔹 Validasi
-        if (!name || typeof name !== "string") {
+        if (!name) {
             return NextResponse.json(
                 { success: false, message: "Reward name is required" },
                 { status: 400 }
             );
         }
 
-        if (minStars === undefined || isNaN(Number(minStars))) {
+        if (minStars === undefined) {
             return NextResponse.json(
                 { success: false, message: "Minimal star is required" },
                 { status: 400 }
             );
         }
 
-        if (!image || typeof image !== "string") {
+        if (!memberId) {
             return NextResponse.json(
-                { success: false, message: "Image is required" },
+                { success: false, message: "memberId is required" },
                 { status: 400 }
             );
         }
 
-
-        // 🔹 Create reward
+        // 🔹 Create reward per-member
         const newReward = await prisma.reward.create({
             data: {
-                userId: session.userId,
+                memberId: Number(memberId), // ⬅ wajib
                 name,
                 minStars: Number(minStars),
-                image: image ?? undefined
+                image
             }
         });
 
@@ -88,7 +90,6 @@ export async function POST(req: NextRequest) {
             { success: true, data: newReward },
             { status: 201 }
         );
-
 
     } catch (error) {
         console.error("POST reward error:", error);
@@ -98,3 +99,4 @@ export async function POST(req: NextRequest) {
         );
     }
 }
+

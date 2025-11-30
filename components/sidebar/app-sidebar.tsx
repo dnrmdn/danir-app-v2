@@ -53,7 +53,6 @@ const data = {
       title: "Calender",
       url: "/calender",
       icon: Calendar1,
-      isActive: true,
       
     },
     {

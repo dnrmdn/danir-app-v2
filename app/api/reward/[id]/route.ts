@@ -24,6 +24,7 @@ async function updateRewardHandler(req: NextRequest, rewardId: number) {
 
     const reward = await prisma.reward.findUnique({
         where: { id: rewardId },
+        include: { member: true }
     });
 
     if (!reward) {
@@ -33,7 +34,7 @@ async function updateRewardHandler(req: NextRequest, rewardId: number) {
         );
     }
 
-    if (reward.userId !== session.userId) {
+    if (reward.member.userId !== session.userId) {
         return NextResponse.json(
             { success: false, error: "Forbidden: You do not own this reward" },
             { status: 403 }
@@ -96,10 +97,7 @@ export async function PUT(
 // ===============================
 // 🔹 DELETE (params tidak boleh Promise)
 // ===============================
-export async function DELETE(
-    req: NextRequest,
-    { params }: { params: { id: string } }
-) {
+export async function DELETE(req: Request, context: { params: Promise<{ id: string }> }) {
     try {
         const sessionResponse = await auth.api.getSession({
             headers: req.headers,
@@ -114,10 +112,12 @@ export async function DELETE(
             );
         }
 
-        const rewardId = Number(params.id);
+        const { id } = await context.params; // <= WAJIB await
+        const rewardId = Number(id);
 
         const reward = await prisma.reward.findUnique({
             where: { id: rewardId },
+            include: { member: true }
         });
 
         if (!reward) {
@@ -127,7 +127,7 @@ export async function DELETE(
             );
         }
 
-        if (reward.userId !== session.userId) {
+        if (reward.member.userId !== session.userId) {
             return NextResponse.json(
                 { success: false, error: "Forbidden: You do not own this reward" },
                 { status: 403 }

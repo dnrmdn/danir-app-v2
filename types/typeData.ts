@@ -33,6 +33,7 @@ export interface Member {
 export interface Reward {
   id: number;
   userId: string
+  memberId: string
   name: string;
   minStars: number;   // minimal star untuk claim
   image: string;      // URL image
@@ -68,3 +69,12 @@ export type UpdateRewardInput = Partial<{
   minStars: number;
   image: string;
 }>;
+
+export type CreateRewardPayload = {
+  name: string;
+  image: string | null;
+  minStars: number;
+  memberId: number;
+  userId: number; // ini WAJIB dari server/auth
+};
+

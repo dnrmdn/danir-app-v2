@@ -1,43 +1,41 @@
 "use client";
 
-import { type LucideIcon } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import { ComponentType, SVGProps } from "react";
+
+export type NavItem = {
+  title: string;
+  url: string;
+  icon?: ComponentType<SVGProps<SVGSVGElement>>;
+};
 
 import { Collapsible, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { SidebarGroup, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
-import { useRouter } from "next/navigation";
 
-export function NavMain({
-  items,
-}: {
-  items: {
-    title: string;
-    url: string;
-    icon?: LucideIcon;
-    isActive?: boolean;
-    items?: {
-      title: string;
-      url: string;
-    }[];
-  }[];
-}) {
-  const router = useRouter()
+export function NavMain({ items }: { items: NavItem[] }) {
+  const router = useRouter();
+  const pathname = usePathname();
+
   return (
     <SidebarGroup>
       <SidebarGroupLabel>Platform</SidebarGroupLabel>
       <SidebarMenu>
-        {items.map((item) => (
-          <Collapsible key={item.title} asChild defaultOpen={item.isActive} className="group/collapsible">
-            <SidebarMenuItem>
-              <CollapsibleTrigger asChild>
-                <SidebarMenuButton tooltip={item.title} onClick={() => router.push(item.url)} >
-                  {item.icon && <item.icon  className="!size-6" />}
-                  <span>{item.title}</span>
-                  {/* <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" /> */}
-                </SidebarMenuButton>
-              </CollapsibleTrigger>
-            </SidebarMenuItem>
-          </Collapsible>
-        ))}
+        {items.map((item) => {
+          const isActive = pathname.startsWith(item.url);
+
+          return (
+            <Collapsible key={item.title} asChild defaultOpen={isActive} className="group/collapsible">
+              <SidebarMenuItem>
+                <CollapsibleTrigger asChild>
+                  <SidebarMenuButton tooltip={item.title} onClick={() => router.push(item.url)} className={`transition-colors ${isActive ? "bg-primary/15 text-primary font-semibold rounded-lg" : ""}`}>
+                    {item.icon && <item.icon className="!size-6" />}
+                    <span>{item.title}</span>
+                  </SidebarMenuButton>
+                </CollapsibleTrigger>
+              </SidebarMenuItem>
+            </Collapsible>
+          );
+        })}
       </SidebarMenu>
     </SidebarGroup>
   );

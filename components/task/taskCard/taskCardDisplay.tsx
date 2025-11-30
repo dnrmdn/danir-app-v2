@@ -3,7 +3,7 @@ import { formatDate } from "@/helper/dateFormat";
 import { formatTimeToAmPm } from "@/helper/timeFormat";
 import { Member, Task } from "@/types/typeData";
 import { Star } from "lucide-react";
-import CheckButton from "../checkButton";
+import CheckButton from "../addTask/checkButton";
 import { useTaskStore } from "@/lib/store/task-store";
 
 type Props = {
