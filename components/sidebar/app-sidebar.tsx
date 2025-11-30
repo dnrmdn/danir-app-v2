@@ -11,6 +11,7 @@ import {
   Image,
   List,
   Stars,
+  Wallet,
 } from "lucide-react"
 
 import { NavMain } from "@/components/sidebar/nav-main"
@@ -69,6 +70,12 @@ const data = {
       title: "Meal",
       url: "/meal",
       icon: ForkKnifeIcon,
+    },
+    
+    {
+      title: "MoneyTracker",
+      url: "/money",
+      icon: Wallet,
     },
     {
       title: "Photos",
