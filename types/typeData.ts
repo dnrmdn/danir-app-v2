@@ -7,42 +7,46 @@ export interface Task {
   date: string;
   time: string;
   completed: boolean;
-  reward?: number;      // jumlah star yang didapat dari task
+  reward?: number;
   createdAt: Date;
-  memberId: number;
+  memberId: number;   // ✔ number sesuai Prisma
 }
 
 // =========================
 // MEMBER
 // =========================
 export interface Member {
-  id: number;
+  id: number;          // ✔ number
   name: string;
   bgColor: string;
   taskColor: string;
   taskColorDone: string;
   iconColor: string;
   checkColor: string;
+
   tasks: Task[];
-  rewards?: RewardClaim[]; // reward yang sudah diklaim
+  rewards?: RewardClaim[];
 }
 
 // =========================
-// REWARD (master data reward)
+// REWARD
 // =========================
 export interface Reward {
   id: number;
-  userId: string
-  memberId: string
+
+  memberId: number;   // FIXED ✔ wajib number (Prisma: Int)
+  userId: string;     // FIXED ✔ Prisma: String
+
   name: string;
-  minStars: number;   // minimal star untuk claim
-  image: string;      // URL image
+  minStars: number;
+  image: string;
+
   createdAt: Date;
   updatedAt: Date;
 }
 
 // =========================
-// REWARD CLAIM (riwayat klaim reward oleh member)
+// REWARD CLAIM
 // =========================
 export interface RewardClaim {
   id: number;
@@ -61,7 +65,7 @@ export type CreateRewardInput = {
   name: string;
   minStars: number;
   image: string;
-  userId?: number; // optional kalau reward dibuat oleh member
+  userId?: string;  // FIXED ✔ Prisma: String
 };
 
 export type UpdateRewardInput = Partial<{
@@ -74,7 +78,7 @@ export type CreateRewardPayload = {
   name: string;
   image: string | null;
   minStars: number;
-  memberId: number;
-  userId: number; // ini WAJIB dari server/auth
-};
 
+  memberId: number; // FIXED ✔ number
+  userId: string;   // FIXED ✔ string (from session.userId)
+};

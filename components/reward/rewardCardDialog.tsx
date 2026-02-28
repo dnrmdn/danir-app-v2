@@ -7,6 +7,7 @@ import RewardEditForm from "./rewardEditForm";
 import { useState } from "react";
 import Confetti from "./convetti";
 import RewardClaim from "./rewardClaim";
+import { checkRewardEligibility } from "@/lib/reward/rewardEligibility";
 
 type Props = {
   reward: Reward;
@@ -18,6 +19,7 @@ type Props = {
 
 export default function RewardCardDialog({ reward, member, setOpen, isEditing, setIsEditing }: Props) {
   const [celebrating, setCelebrating] = useState(false);
+  const { eligible, remaining } = checkRewardEligibility(member, reward);
 
   const handleClaim = () => {
     setCelebrating(true);
@@ -82,7 +84,13 @@ export default function RewardCardDialog({ reward, member, setOpen, isEditing, s
           {/* CLAIM */}
           {celebrating && <Confetti />}
 
-          <RewardClaim onClaim={handleClaim} celebrating={celebrating} />
+          <RewardClaim
+            celebrating={false}
+            onClaim={() => {
+              if (!eligible) return alert(`Butuh ${remaining} stars lagi!`);
+              handleClaim();
+            }}
+          />
         </>
       )}
     </DialogContent>

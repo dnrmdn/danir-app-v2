@@ -5,6 +5,7 @@ import { Member, Task } from "@/types/typeData";
 import { Star } from "lucide-react";
 import CheckButton from "../addTask/checkButton";
 import { useTaskStore } from "@/lib/store/task-store";
+import { capitalize } from "@/helper/capitalized";
 
 type Props = {
   task: Task;
@@ -18,7 +19,7 @@ export default function TaskCardDisplay({ task, member, onOpen }: Props) {
     <Card onClick={onOpen} className={`max-w-[400px] rounded-4xl cursor-pointer ${task.completed ? member.taskColorDone : member.taskColor}`}>
       <div className="flex justify-between items-start px-4 py-3 gap-3">
         <div className="flex flex-col flex-1 pl-2 items-start">
-          <p className="font-bold line-clamp-1 text-left">{task.label}</p>
+          <p className="font-bold line-clamp-1 text-left">{capitalize(task.label)}</p>
 
           <div className="flex items-center flex-wrap gap-2 mt-1">
             {task.date && <p className="text-gray-500 text-sm">{formatDate(task.date)}</p>}

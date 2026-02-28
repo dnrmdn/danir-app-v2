@@ -10,38 +10,35 @@ import { useSession } from "@/lib/auth-client";
 
 export default function AddRewardForm({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
   const { rewardData, setRewardData, addReward } = useRewardStore();
+  const { resetRewardData } = useRewardStore();
   const [memberIds, setMemberIds] = useState<number[]>([]);
   const { data: session } = useSession();
 
   const handleSubmit = async () => {
-    const userId = session?.user?.id;
+    const userId = String(session?.user?.id);
 
     if (!userId) {
-      alert("User belum login!");
+      alert("User tidak ditemukan.");
       return;
     }
 
-    if (!rewardData.name.trim()) {
-      alert("Reward name required");
-      return;
-    }
+    const baseReward = {
+      name: rewardData.name,
+      image: rewardData.image,
+      minStars: rewardData.minStar,
+      userId, // string
+    };
 
-    if (memberIds.length === 0) {
-      alert("Pilih minimal satu member");
-      return;
-    }
+    const rewardPromises = memberIds.map((id) =>
+      addReward({
+        ...baseReward,
+        memberId: id,
+      })
+    );
 
-    // ⬅ MULTI-USER INSERT seperti task
-    for (const id of memberIds) {
-      await addReward({
-        name: rewardData.name,
-        image: rewardData.image,
-        minStars: rewardData.minStar,
-        userId: Number(userId),
-        memberId: id, // ⬅ tambahan: reward dikaitkan ke member
-      });
-    }
-
+    await Promise.all(rewardPromises);
+    resetRewardData();
+    setMemberIds([]);
     onClose();
   };
 
@@ -82,15 +79,12 @@ export default function AddRewardForm({ isOpen, onClose }: { isOpen: boolean; on
         <label className="text-sm font-medium text-gray-700">Reward Image</label>
 
         <div className="mt-2 flex-row items-center space-y-2">
-          {/* Preview Image */}
           <div className="w-24 h-24 bg-white/70 rounded-xl border border-gray-300 flex items-center justify-center">
             {rewardData.image ? <Image src={rewardData.image} alt="reward" width={200} height={200} className="w-full h-full rounded-xl object-cover" /> : <ImageIcon size={32} className="text-gray-500" />}
           </div>
 
-          {/* Hidden file input */}
           <input id="imageInput" type="file" accept="image/*" className="hidden" onChange={(e) => handleImageUpload(e.target.files?.[0] ?? null)} />
 
-          {/* Trigger button */}
           <button onClick={() => document.getElementById("imageInput")?.click()} className="flex w-full cursor-pointer items-center gap-2 px-3 py-2 rounded-lg bg-blue-500 hover:bg-blue-600 text-white transition">
             <Pencil size={16} />
             Insert Image

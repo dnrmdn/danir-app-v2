@@ -17,6 +17,19 @@ export async function GET(req: NextRequest) {
 
         const memberId = req.nextUrl.searchParams.get("memberId");
 
+        // Validasi memberId benar-benar ada
+        const member = await prisma.member.findUnique({
+            where: { id: Number(memberId) }
+        });
+
+        if (!member) {
+            return NextResponse.json(
+                { success: false, message: "Member not found" },
+                { status: 404 }
+            );
+        }
+
+
         const rewards = await prisma.reward.findMany({
             where: {
                 ...(memberId && { memberId: Number(memberId) }) // ⬅ filter berdasarkan member

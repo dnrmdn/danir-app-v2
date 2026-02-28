@@ -21,11 +21,11 @@ export default function MainTaskCard() {
           <HeaderTask member={member} />
 
           <div className="px-4 overflow-y-auto h-full rounded-[40px] space-y-4 no-scrollbar">
-            {tasks
-              .filter((t) => t.memberId === member.id)
-              .map((task) => (
-                <TaskCard key={task.id} task={task} member={member} />
-              ))}
+            {(() => {
+              const memberTasks = tasks.filter((t) => t.memberId === member.id);
+
+              return memberTasks.length > 0 ? memberTasks.map((task) => <TaskCard key={task.id} task={task} member={member} />) : <p className="text-center text-gray-400 py-10">Belum ada task untuk member ini</p>;
+            })()}
           </div>
         </>
       )}

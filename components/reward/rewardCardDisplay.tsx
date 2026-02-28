@@ -1,4 +1,5 @@
 import { Card } from "@/components/ui/card";
+import { checkRewardEligibility } from "@/lib/reward/rewardEligibility";
 import { Member, Reward } from "@/types/typeData";
 import { Star } from "lucide-react";
 import Image from "next/image";
@@ -10,6 +11,7 @@ type Props = {
 };
 
 export default function RewardCardDisplay({ reward, member, onOpen }: Props) {
+  const { eligible, remaining } = checkRewardEligibility(member, reward);
   const rewardName = reward?.name || "Reward";
   const rewardStars = reward?.minStars ?? 0;
 
@@ -23,7 +25,13 @@ export default function RewardCardDisplay({ reward, member, onOpen }: Props) {
         ${member.taskColor} 
         hover:scale-[1.02]
         transition-all
+        ${eligible ? "ring-2 ring-green-400" : "opacity-80"}
       `}
+      title={
+        eligible
+          ? "You can claim this reward!"
+          : `Need ${remaining} more stars to claim`
+      }
     >
       <div className="flex items-start p-4 gap-4">
         {/* IMAGE */}

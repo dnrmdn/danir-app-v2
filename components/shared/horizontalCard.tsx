@@ -24,13 +24,13 @@ export default function HorizontalCards({ children, autoFetch = true }: Horizont
   return (
     <div className="relative">
       <div ref={containerRef} tabIndex={0} className="overflow-x-auto pb-2 scroll-smooth hide-scrollbar snap-x snap-mandatory" style={{ scrollBehavior: "smooth" }}>
-        <div className="flex gap-6 py-4 flex-nowrap">
+        <div className="flex gap-6 px-2 py-4 flex-nowrap">
           {members.map((member: Member) => (
             <Card
               key={member.id}
               className={`flex flex-col rounded-3xl ${member.bgColor ?? ""} transition-all duration-300 snap-start`}
               style={{
-                height: "90vh",
+                height: "89vh",
                 flex: "0 0 auto",
                 width: "calc(100% / 1.1)",
                 maxWidth: "400px",
