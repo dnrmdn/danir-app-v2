@@ -6,9 +6,13 @@ import { NextRequest, NextResponse } from "next/server";
 // 🔹 UPDATE Member (PATCH)
 export async function PATCH(
   req: NextRequest,
-  context: { params: { id: string } }
+  context: { params: Promise<{ id: string }> } // ✅ Type updated to Promise
 ) {
   try {
+    // ✅ Next.js 16: You must await params
+    const { id } = await context.params;
+    const memberId = Number(id);
+
     const sessionResponse = await auth.api.getSession({
       headers: req.headers,
     });
@@ -21,7 +25,6 @@ export async function PATCH(
       );
     }
 
-    const memberId = Number(context.params.id);
     const body = await req.json();
 
     const member = await prisma.member.findUnique({
@@ -67,9 +70,13 @@ export async function PATCH(
 // 🔹 DELETE Member
 export async function DELETE(
   req: NextRequest,
-  context: { params: { id: string } }
+  context: { params: Promise<{ id: string }> } // ✅ Type updated to Promise
 ) {
   try {
+    // ✅ Next.js 16: You must await params
+    const { id } = await context.params;
+    const memberId = Number(id);
+
     const sessionResponse = await auth.api.getSession({
       headers: req.headers,
     });
@@ -81,8 +88,6 @@ export async function DELETE(
         { status: 401 }
       );
     }
-
-    const memberId = Number(context.params.id);
 
     const member = await prisma.member.findUnique({
       where: { id: memberId },
@@ -102,6 +107,7 @@ export async function DELETE(
       );
     }
 
+    // Delete tasks first to maintain referential integrity
     await prisma.task.deleteMany({
       where: { memberId },
     });
