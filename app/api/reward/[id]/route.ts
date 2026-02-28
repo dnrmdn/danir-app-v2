@@ -4,7 +4,7 @@ import { Session } from "better-auth";
 import { NextRequest, NextResponse } from "next/server";
 
 // ===============================
-// 🔹 Helper: Update Logic (dipakai PUT & PATCH)
+// 🔹 Helper: Update Logic
 // ===============================
 async function updateRewardHandler(req: NextRequest, rewardId: number) {
     const sessionResponse = await auth.api.getSession({
@@ -24,7 +24,7 @@ async function updateRewardHandler(req: NextRequest, rewardId: number) {
 
     const reward = await prisma.reward.findUnique({
         where: { id: rewardId },
-        include: { member: true }
+        include: { member: true },
     });
 
     if (!reward) {
@@ -36,7 +36,7 @@ async function updateRewardHandler(req: NextRequest, rewardId: number) {
 
     if (reward.member.userId !== session.userId) {
         return NextResponse.json(
-            { success: false, error: "Forbidden: You do not own this reward" },
+            { success: false, error: "Forbidden" },
             { status: 403 }
         );
     }
@@ -57,14 +57,15 @@ async function updateRewardHandler(req: NextRequest, rewardId: number) {
 }
 
 // ===============================
-// 🔹 PATCH (existing)
+// 🔹 PATCH
 // ===============================
 export async function PATCH(
     req: NextRequest,
-    { params }: { params: { id: string } }
+    context: { params: Promise<{ id: string }> }
 ) {
     try {
-        return await updateRewardHandler(req, Number(params.id));
+        const { id } = await context.params;
+        return await updateRewardHandler(req, Number(id));
     } catch (error) {
         console.error("❌ PATCH Error:", error);
         return NextResponse.json(
@@ -75,7 +76,7 @@ export async function PATCH(
 }
 
 // ===============================
-// 🔹 PUT → delegate ke PATCH handler
+// 🔹 PUT
 // ===============================
 export async function PUT(
     req: NextRequest,
@@ -83,7 +84,6 @@ export async function PUT(
 ) {
     try {
         const { id } = await context.params;
-
         return await updateRewardHandler(req, Number(id));
     } catch (error) {
         console.error("❌ PUT Error:", error);
@@ -95,9 +95,12 @@ export async function PUT(
 }
 
 // ===============================
-// 🔹 DELETE (params tidak boleh Promise)
+// 🔹 DELETE
 // ===============================
-export async function DELETE(req: Request, context: { params: Promise<{ id: string }> }) {
+export async function DELETE(
+    req: NextRequest,
+    context: { params: Promise<{ id: string }> }
+) {
     try {
         const sessionResponse = await auth.api.getSession({
             headers: req.headers,
@@ -112,12 +115,12 @@ export async function DELETE(req: Request, context: { params: Promise<{ id: stri
             );
         }
 
-        const { id } = await context.params; // <= WAJIB await
+        const { id } = await context.params;
         const rewardId = Number(id);
 
         const reward = await prisma.reward.findUnique({
             where: { id: rewardId },
-            include: { member: true }
+            include: { member: true },
         });
 
         if (!reward) {
@@ -129,7 +132,7 @@ export async function DELETE(req: Request, context: { params: Promise<{ id: stri
 
         if (reward.member.userId !== session.userId) {
             return NextResponse.json(
-                { success: false, error: "Forbidden: You do not own this reward" },
+                { success: false, error: "Forbidden" },
                 { status: 403 }
             );
         }
@@ -139,7 +142,7 @@ export async function DELETE(req: Request, context: { params: Promise<{ id: stri
         });
 
         return NextResponse.json(
-            { success: true, message: "Reward deleted successfully" },
+            { success: true },
             { status: 200 }
         );
     } catch (error) {
