@@ -4,7 +4,7 @@ import { HeroSection } from "@/components/dashboard/hero-section";
 import { MealPlan } from "@/components/dashboard/meal-plan";
 import { MoneyTracker } from "@/components/dashboard/money-tracker";
 import { RewardsSystem } from "@/components/dashboard/rewards-system";
-import { SavedVideos } from "@/components/dashboard/saved-videos";
+import { SavedLinks } from "@/components/dashboard/saved-links";
 import { TaskOverview } from "@/components/dashboard/task-overview";
 
 export default function Dashboard() {
@@ -41,7 +41,7 @@ export default function Dashboard() {
 
         {/* Grid Section 3 */}
         <section className="grid grid-cols-1 lg:grid-cols-2 gap-6 auto-rows-fr">
-          <SavedVideos />
+          <SavedLinks />
           <MoneyTracker />
         </section>
 

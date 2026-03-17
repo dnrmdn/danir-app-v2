@@ -1,18 +1,27 @@
 "use client";
 
 import { useState } from "react";
-import { LayoutDashboard, Grid, FolderKanban, CreditCard, ChartNoAxesCombined } from "lucide-react";
+import { ChartNoAxesCombined, CreditCard, FolderKanban, Grid, LayoutDashboard, Target, Tags } from "lucide-react";
 
-export default function MoneyTrackerNavbar() {
-  const [active, setActive] = useState("map");
+type MoneyNavId = "dashboard" | "transactions" | "categories" | "budgets" | "accounts" | "analytics" | "goals";
+
+export default function MoneyTrackerNavbar({
+  active,
+  onChange,
+}: {
+  active: MoneyNavId;
+  onChange: (id: MoneyNavId) => void;
+}) {
   const [hovering, setHovering] = useState<string | null>(null);
 
   const items = [
-    { id: "map", label: "Dashboard", icon: LayoutDashboard },
-    { id: "star", label: "Categories", icon: Grid },
-    { id: "send", label: "Budgets", icon: FolderKanban },
-    { id: "clock", label: "Accounts", icon: CreditCard },
-    { id: "download", label: "Analytics", icon: ChartNoAxesCombined },
+    { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
+    { id: "transactions", label: "Transactions", icon: Grid },
+    { id: "categories", label: "Categories", icon: Tags },
+    { id: "budgets", label: "Budgets", icon: FolderKanban },
+    { id: "accounts", label: "Accounts", icon: CreditCard },
+    { id: "analytics", label: "Analytics", icon: ChartNoAxesCombined },
+    { id: "goals", label: "Goals", icon: Target },
   ];
 
   return (
@@ -28,7 +37,7 @@ export default function MoneyTrackerNavbar() {
             <div key={item.id} className="relative group">
               {/* Floating Button Container */}
               <button
-                onClick={() => setActive(item.id)}
+                onClick={() => onChange(item.id as MoneyNavId)}
                 onMouseEnter={() => setHovering(item.id)}
                 onMouseLeave={() => setHovering(null)}
                 className={`relative flex flex-col items-center gap-2 transition-all duration-300 ${isActive || isHovered ? "transform -translate-y-4" : "transform translate-y-0"}`}

@@ -9,6 +9,7 @@ import {
   ForkKnifeIcon,
   GalleryVerticalEnd,
   Image,
+  Link2,
   List,
   Stars,
   Wallet,
@@ -81,6 +82,11 @@ const data = {
       title: "Photos",
       url: "/photo",
       icon: Image,
+    },
+    {
+      title: "Saved Links",
+      url: "/saved-links",
+      icon: Link2,
     },
     {
       title: "List",

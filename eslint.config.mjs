@@ -11,6 +11,8 @@ const eslintConfig = defineConfig([
     ".next/**",
     "out/**",
     "build/**",
+    "lib/generated/**",
+    "prisma/migrations/**",
     "next-env.d.ts",
   ]),
 ]);
