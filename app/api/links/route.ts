@@ -53,7 +53,7 @@ export async function POST(req: Request) {
     }
 }
 
-export async function GET(_req: Request) {
+export async function GET() {
     try {
         const session = await auth.api.getSession({
             headers: await headers()

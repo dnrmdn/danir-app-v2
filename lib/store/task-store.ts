@@ -1,4 +1,4 @@
-import { Task } from "@/types/typeData";
+import { Task } from "@/types/domain";
 import { create } from "zustand";
 
 interface TaskStore {
@@ -176,3 +176,4 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
     };
   },
 }));
+

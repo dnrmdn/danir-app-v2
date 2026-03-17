@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Reward } from "@/types/typeData";
+import { Reward } from "@/types/domain";
 import { useRewardStore } from "@/lib/store/reward-store";
 import Image from "next/image";
 
@@ -92,3 +92,4 @@ export default function RewardEditForm({ reward, setOpen, setIsEditing }: Props)
     </div>
   );
 }
+

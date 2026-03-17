@@ -33,7 +33,7 @@ export function useSignInHandler() {
             } else {
                 setSuccess(true);
                 setTimeout(() => {
-                    router.push("/calender");
+                    router.push("/calendar");
                 }, 1000);
             }
 
@@ -56,3 +56,4 @@ export function useSignInHandler() {
         handleSubmit,
     }
 }
+

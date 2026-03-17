@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { CreateRewardPayload, Reward } from "@/types/typeData";
+import { CreateRewardPayload, Reward } from "@/types/domain";
 
 interface RewardFormData {
     name: string;
@@ -212,3 +212,4 @@ export const useRewardStore = create<RewardStore>((set, get) => ({
         };
     },
 }));
+

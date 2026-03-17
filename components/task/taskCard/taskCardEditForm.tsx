@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useTaskStore } from "@/lib/store/task-store";
-import { Task } from "@/types/typeData";
+import { Task } from "@/types/domain";
 
 type Props = {
   task: Task;
@@ -73,3 +73,4 @@ export default function TaskCardEditForm({ task, setOpen, setIsEditing }: Props)
     </div>
   );
 }
+

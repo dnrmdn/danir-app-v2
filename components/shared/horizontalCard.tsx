@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 import { Card } from "@/components/ui/card";
 import { useMemberStore } from "@/lib/store/member-store";
-import type { Member } from "@/types/typeData"; // 👉 pakai tipe yang sudah ada
+import type { Member } from "@/types/domain"; // 👉 pakai tipe yang sudah ada
 
 type HorizontalCardsProps = {
   children: (member: Member) => React.ReactNode;
@@ -46,3 +46,4 @@ export default function HorizontalCards({ children, autoFetch = true }: Horizont
     </div>
   );
 }
+

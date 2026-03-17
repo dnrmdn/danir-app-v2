@@ -16,6 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { getThumbnailUrl } from "@/lib/link-utils";
 
 interface SaveLinkDialogProps {
@@ -188,14 +189,14 @@ export function SaveLinkDialog({ open, onOpenChange, initialUrl = "", onSuccess 
 
             <div className="flex flex-col md:flex-row gap-6 items-center bg-primary/5 p-4 rounded-2xl border border-primary/10">
               <div className="aspect-video w-full md:w-48 rounded-xl overflow-hidden border-2 border-primary/10 bg-muted shrink-0 shadow-sm relative group">
-                <img 
-                  src={linkData.previewImage} 
-                  alt="Preview" 
-                  className="w-full h-full object-cover transition-transform group-hover:scale-110"
+                <Image
+                  src={linkData.previewImage || "https://images.unsplash.com/photo-1611162617474-5b21e879e113?q=80&w=400&h=225&auto=format&fit=crop"}
+                  alt="Preview"
+                  fill
+                  sizes="(max-width: 768px) 100vw, 192px"
+                  unoptimized
                   referrerPolicy="no-referrer"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).src = `https://images.unsplash.com/photo-1611162617474-5b21e879e113?q=80&w=400&h=225&auto=format&fit=crop`;
-                  }}
+                  className="object-cover transition-transform group-hover:scale-110"
                 />
                 <div className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                   <ImageIcon className="text-white" size={24} />

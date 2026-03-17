@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useUserSession } from "@/hooks/useUserSession";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Link2, Save, X, Plus, Folder } from "lucide-react";
+import { Link2, Save } from "lucide-react";
 import { SaveLinkDialog } from "@/components/dashboard/save-link-dialog";
 
 export function HeroSection() {
@@ -108,7 +108,7 @@ export function HeroSection() {
         <div className="mt-20 grid grid-cols-2 md:grid-cols-4 gap-6">
           {[
             { icon: "🔗", label: "Saved Links", href: "/saved-links" },
-            { icon: "📅", label: "Calendar", href: "/calender" },
+            { icon: "📅", label: "Calendar", href: "/calendar" },
             { icon: "✅", label: "Tasks", href: "/task" },
             { icon: "🏆", label: "Rewards", href: "/reward" },
           ].map((feature, i) => (
@@ -133,3 +133,4 @@ export function HeroSection() {
     </section>
   );
 }
+

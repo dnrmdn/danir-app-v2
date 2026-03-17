@@ -1,4 +1,4 @@
-import { Member } from "@/types/typeData";
+import { Member } from "@/types/domain";
 import { Check } from "lucide-react";
 
 type TodoCheckboxProps = {
@@ -24,3 +24,4 @@ export default function CheckButton({ member, checked, onToggle }: TodoCheckboxP
     </label>
   );
 }
+

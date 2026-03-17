@@ -1,11 +1,11 @@
 import { Card } from "@/components/ui/card";
-import { formatDate } from "@/helper/dateFormat";
-import { formatTimeToAmPm } from "@/helper/timeFormat";
-import { Member, Task } from "@/types/typeData";
+import { formatDate } from "@/lib/helpers/dateFormat";
+import { formatTimeToAmPm } from "@/lib/helpers/timeFormat";
+import { Member, Task } from "@/types/domain";
 import { Star } from "lucide-react";
 import CheckButton from "../addTask/checkButton";
 import { useTaskStore } from "@/lib/store/task-store";
-import { capitalize } from "@/helper/capitalized";
+import { capitalize } from "@/lib/helpers/capitalized";
 
 type Props = {
   task: Task;
@@ -41,3 +41,4 @@ export default function TaskCardDisplay({ task, member, onOpen }: Props) {
     </Card>
   );
 }
+

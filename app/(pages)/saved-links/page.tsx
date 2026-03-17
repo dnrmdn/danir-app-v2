@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import { useUserSession } from "@/hooks/useUserSession";
 import { 
   Link2, 
@@ -229,14 +230,14 @@ export default function SavedLinksPage() {
                   className={`group relative overflow-hidden transition-all border-2 border-primary/5 hover:border-primary/20 hover:shadow-xl hover:-translate-y-1 ${viewMode === "list" ? "flex flex-row h-24" : "flex flex-col"}`}
                 >
                   <div className={`${viewMode === "list" ? "w-40 h-full" : "aspect-video w-full"} bg-muted relative overflow-hidden shrink-0`}>
-                    <img 
-                      src={link.previewImage || getThumbnailUrl(link.url)} 
-                      alt={link.title} 
+                    <Image
+                      src={link.previewImage || getThumbnailUrl(link.url) || "https://images.unsplash.com/photo-1611162617474-5b21e879e113?q=80&w=400&h=225&auto=format&fit=crop"}
+                      alt={link.title}
+                      fill
+                      sizes={viewMode === "list" ? "160px" : "(max-width: 1280px) 50vw, 33vw"}
+                      unoptimized
                       referrerPolicy="no-referrer"
-                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src = `https://images.unsplash.com/photo-1611162617474-5b21e879e113?q=80&w=400&h=225&auto=format&fit=crop`;
-                      }}
+                      className="object-cover transition-transform duration-700 group-hover:scale-110"
                     />
                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                       <Button variant="secondary" size="icon" className="h-9 w-9 rounded-full shadow-lg" asChild>

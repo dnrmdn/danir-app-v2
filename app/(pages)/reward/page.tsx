@@ -3,7 +3,7 @@
 import AddButtonReward from "@/components/reward/addButtonReward";
 import MemberReward from "@/components/reward/memberReward";
 
-export default function CalenderPage() {
+export default function RewardPage() {
   return (
     <div className="relative">
       {/* FamilyCard di bawah */}

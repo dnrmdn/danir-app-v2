@@ -1,4 +1,4 @@
-import { Member } from "@/types/typeData";
+import { Member } from "@/types/domain";
 import { Star } from "lucide-react";
 import HeaderCard from "../shared/headerCard";
 
@@ -26,3 +26,4 @@ export default function HeaderReward({ member }: HeaderCardProps) {
     </HeaderCard>
   );
 }
+

@@ -1,6 +1,6 @@
 import { Card } from "@/components/ui/card";
 import { checkRewardEligibility } from "@/lib/reward/rewardEligibility";
-import { Member, Reward } from "@/types/typeData";
+import { Member, Reward } from "@/types/domain";
 import { Star } from "lucide-react";
 import Image from "next/image";
 
@@ -71,3 +71,4 @@ export default function RewardCardDisplay({ reward, member, onOpen }: Props) {
     </Card>
   );
 }
+

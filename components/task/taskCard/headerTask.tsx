@@ -1,4 +1,4 @@
-import { Member } from "@/types/typeData";
+import { Member } from "@/types/domain";
 import TodoProgressBar from "../addTask/progressBar";
 import RewardsBar from "../addTask/rewardsBar";
 import HeaderCard from "@/components/shared/headerCard";
@@ -31,3 +31,4 @@ export default function HeaderTask({ member }: HeaderTaskProps) {
     </HeaderCard>
   );
 }
+

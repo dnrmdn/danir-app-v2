@@ -1,6 +1,6 @@
 import Image from "next/image";
 import { Star, Users } from "lucide-react";
-import { Member, Reward } from "@/types/typeData";
+import { Member, Reward } from "@/types/domain";
 
 type Props = {
   reward: Reward;
@@ -42,3 +42,4 @@ export default function RewardCardInfo({ reward, member }: Props) {
     </div>
   );
 }
+

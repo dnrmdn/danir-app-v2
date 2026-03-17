@@ -1,6 +1,6 @@
 // lib/reward/rewardEligibility.ts
 
-import { Member, Reward } from "@/types/typeData";
+import { Member, Reward } from "@/types/domain";
 
 export type EligibilityResult = {
   eligible: boolean;      // boleh claim atau tidak
@@ -34,3 +34,4 @@ export function checkRewardEligibility(member: Member, reward: Reward): Eligibil
     remaining
   };
 }
+

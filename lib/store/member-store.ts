@@ -1,4 +1,4 @@
-import { Member, Task } from "@/types/typeData";
+import { Member, Task } from "@/types/domain";
 import { create } from "zustand";
 
 interface MemberStore {

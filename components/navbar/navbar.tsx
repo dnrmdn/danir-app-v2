@@ -36,7 +36,7 @@ export default function Navbar() {
             setLoginState("returning");
           }
         });
-      }, [session?.user.id, user?.email, isPending]); // use stable dependencies
+      }, [isPending, session, user?.email]);
     
       if (isPending) {
         return (

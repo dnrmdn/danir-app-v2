@@ -1,6 +1,6 @@
 import { Calendar, Users } from "lucide-react";
-import { formatTimeToAmPm } from "@/helper/timeFormat";
-import { Member, Task } from "@/types/typeData";
+import { formatTimeToAmPm } from "@/lib/helpers/timeFormat";
+import { Member, Task } from "@/types/domain";
 
 type TaskCardProps = {
   task: Task;
@@ -27,3 +27,4 @@ export default function TaskCardInfo({ task, member } : TaskCardProps) {
     </div>
   );
 }
+

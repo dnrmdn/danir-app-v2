@@ -4,7 +4,7 @@ import { useEffect, useMemo } from "react";
 import { useRewardStore } from "@/lib/store/reward-store";
 import HeaderReward from "./headerReward";
 import Redeem from "./redeem";
-import { Member } from "@/types/typeData";
+import { Member } from "@/types/domain";
 
 interface MemberRewardContentProps {
   member: Member;
@@ -43,3 +43,4 @@ export default function MemberRewardContent({ member } : MemberRewardContentProp
     </>
   );
 }
+

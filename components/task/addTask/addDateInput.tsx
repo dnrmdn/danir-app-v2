@@ -11,8 +11,8 @@ export default function AddDateInput({ onChange }: { onChange?: (d: Date | undef
   const [date, setDate] = useState<Date | undefined>(new Date());
 
   useEffect(() => {
-    onChange?.(new Date()); // kirim default date saat mount
-  }, []);
+    onChange?.(new Date());
+  }, [onChange]);
 
   return (
     <div className="bg-gray-100 rounded-lg">

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Dialog, DialogTrigger } from "@/components/animate-ui/components/radix/dialog";
 
-import { Member, Reward } from "@/types/typeData";
+import { Member, Reward } from "@/types/domain";
 import RewardCardDisplay from "./rewardCardDisplay";
 import RewardCardDialog from "./rewardCardDialog";
 
@@ -34,3 +34,4 @@ export default function Redeem({ reward, member }: RedeemProps) {
     </Dialog>
   );
 }
+

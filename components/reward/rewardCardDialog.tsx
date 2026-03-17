@@ -1,7 +1,7 @@
 import Image from "next/image";
 import { DialogContent, DialogHeader, DialogTitle } from "@/components/animate-ui/components/radix/dialog";
 import { Pencil, Trash2, Star } from "lucide-react";
-import { Member, Reward } from "@/types/typeData";
+import { Member, Reward } from "@/types/domain";
 import { useRewardStore } from "@/lib/store/reward-store";
 import RewardEditForm from "./rewardEditForm";
 import { useState } from "react";
@@ -96,3 +96,4 @@ export default function RewardCardDialog({ reward, member, setOpen, isEditing, s
     </DialogContent>
   );
 }
+

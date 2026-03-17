@@ -10,7 +10,7 @@ const rewards = [
 ]
 
 export function RewardsSystem() {
-  const [points, setPoints] = useState(850)
+  const [points] = useState(850)
 
   return (
     <div className="rounded-xl border border-border bg-card p-6 shadow-sm">

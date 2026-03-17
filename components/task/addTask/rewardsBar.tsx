@@ -1,4 +1,4 @@
-import { Member } from "@/types/typeData";
+import { Member } from "@/types/domain";
 import { Star } from "lucide-react";
 
 interface RewardsBarProps {
@@ -33,3 +33,4 @@ export default function RewardsBar({ member }: RewardsBarProps) {
     </div>
   );
 }
+

@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { Dialog } from "@/components/animate-ui/components/radix/dialog";
-import { Member, Task } from "@/types/typeData";
+import { Member, Task } from "@/types/domain";
 import TaskCardDisplay from "./taskCardDisplay";
 import TaskCardDialog from "./taskCardDialog";
 
@@ -28,3 +28,4 @@ export default function TaskCard({ task, member } : TaskCardProps) {
     </Dialog>
   );
 }
+

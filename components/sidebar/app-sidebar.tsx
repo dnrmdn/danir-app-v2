@@ -52,8 +52,8 @@ const data = {
   ],
   navMain: [
     {
-      title: "Calender",
-      url: "/calender",
+      title: "Calendar",
+      url: "/calendar",
       icon: Calendar1,
       
     },
@@ -130,3 +130,4 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     </Sidebar>
   )
 }
+

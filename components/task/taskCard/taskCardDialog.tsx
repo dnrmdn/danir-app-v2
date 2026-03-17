@@ -2,7 +2,7 @@ import { DialogContent, DialogHeader, DialogTitle } from "@/components/animate-u
 import { Pencil, Trash2 } from "lucide-react";
 import { useTaskStore } from "@/lib/store/task-store";
 import TaskCardEditForm from "./taskCardEditForm";
-import { Member, Task } from "@/types/typeData";
+import { Member, Task } from "@/types/domain";
 import TaskCardInfo from "./taskCardInfo";
 
 type Props = {
@@ -62,3 +62,4 @@ export default function TaskCardDialog({ task, member, setOpen, isEditing, setIs
     </DialogContent>
   );
 }
+

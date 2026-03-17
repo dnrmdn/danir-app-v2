@@ -1,4 +1,4 @@
-import { Member } from "@/types/typeData";
+import { Member } from "@/types/domain";
 
 type HeaderCardProps = {
   member: Member;
@@ -22,3 +22,4 @@ export default function HeaderCard({ member, children }: HeaderCardProps) {
     </div>
   );
 }
+

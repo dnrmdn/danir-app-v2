@@ -240,7 +240,7 @@ function asAccountType(value: string): "CASH" | "BANK" | "EWALLET" {
 
   const monthStartEnd = useMemo(() => monthRange(month), [month]);
 
-  const reloadCore = async () => {
+  const reloadCore = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -260,9 +260,9 @@ function asAccountType(value: string): "CASH" | "BANK" | "EWALLET" {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const reloadMonthData = async () => {
+  const reloadMonthData = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -285,17 +285,17 @@ function asAccountType(value: string): "CASH" | "BANK" | "EWALLET" {
     } finally {
       setLoading(false);
     }
-  };
+  }, [month, monthStartEnd]);
 
   useEffect(() => {
     if (!session) return;
     reloadCore();
-  }, [session]);
+  }, [session, reloadCore]);
 
   useEffect(() => {
     if (!session) return;
     reloadMonthData();
-  }, [session, month]);
+  }, [session, reloadMonthData]);
 
   const resetTxForm = () => {
     setTxEditing(null);

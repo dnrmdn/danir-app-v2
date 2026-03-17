@@ -1,4 +1,4 @@
-import { Member } from "@/types/typeData";
+import { Member } from "@/types/domain";
 import { Check } from "lucide-react";
 
 interface TodoProgressBarProps {
@@ -29,3 +29,4 @@ export default function TodoProgressBar({ total, completed, member }: TodoProgre
     </div>
   );
 }
+

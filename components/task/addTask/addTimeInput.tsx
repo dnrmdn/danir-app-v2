@@ -15,8 +15,8 @@ export default function AddTimeInput({ onChange }: { onChange?: (t: string) => v
   });
 
   useEffect(() => {
-    onChange?.(time); // kirim default time saat mount
-  }, []);
+    onChange?.(time);
+  }, [onChange, time]);
 
   const handleTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setTime(e.target.value);

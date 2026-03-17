@@ -1,6 +1,7 @@
 "use client"
 
-import { Play, BookmarkPlus, Link2, ExternalLink } from "lucide-react"
+import { Link2, ExternalLink } from "lucide-react"
+import Image from "next/image"
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import { useUserSession } from "@/hooks/useUserSession"
@@ -70,14 +71,14 @@ export function SavedLinks() {
               className="flex items-center gap-3 p-3 rounded-lg border border-border hover:bg-muted transition-colors group"
             >
               <div className="relative w-16 h-12 bg-muted rounded-lg flex items-center justify-center overflow-hidden shrink-0">
-                <img 
-                  src={link.previewImage || getThumbnailUrl(link.url)} 
-                  alt="" 
+                <Image
+                  src={link.previewImage || getThumbnailUrl(link.url) || "https://images.unsplash.com/photo-1611162617474-5b21e879e113?q=80&w=400&h=225&auto=format&fit=crop"}
+                  alt=""
+                  fill
+                  sizes="64px"
+                  unoptimized
                   referrerPolicy="no-referrer"
-                  className="w-full h-full object-cover" 
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).src = `https://images.unsplash.com/photo-1611162617474-5b21e879e113?q=80&w=400&h=225&auto=format&fit=crop`;
-                  }}
+                  className="object-cover"
                 />
               </div>
               <div className="flex-1 min-w-0">
