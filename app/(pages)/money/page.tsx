@@ -1,18 +1,22 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { format } from "date-fns";
 import {
+  AlertTriangle,
+  ArrowDownRight,
   ArrowLeftRight,
+  ArrowUpRight,
   Download,
   FileUp,
+  Landmark,
+  Pencil,
+  PiggyBank,
   Plus,
   RefreshCcw,
   Trash2,
-  Pencil,
-  AlertTriangle,
+  WalletCards,
 } from "lucide-react";
-import MoneyTrackerNavbar from "@/components/money-tracker/moneyNavbar";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -591,6 +595,28 @@ function asAccountType(value: string): "CASH" | "BANK" | "EWALLET" {
     return insights.totalsByCurrency;
   }, [insights]);
 
+  const totalIncome = useMemo(
+    () => dashboardTotals.reduce((sum, item) => sum + item.income, 0),
+    [dashboardTotals]
+  );
+
+  const totalExpense = useMemo(
+    () => dashboardTotals.reduce((sum, item) => sum + item.expense, 0),
+    [dashboardTotals]
+  );
+
+  const totalBalance = useMemo(
+    () => dashboardTotals.reduce((sum, item) => sum + item.balance, 0),
+    [dashboardTotals]
+  );
+
+  const budgetAlertCount = useMemo(
+    () => (insights?.budgetUsage || []).filter((item) => item.progress >= 80).length,
+    [insights]
+  );
+
+  const recentTransactions = useMemo(() => transactions.slice(0, 6), [transactions]);
+
   if (!session) {
     return (
       <div className="max-w-4xl mx-auto px-4 py-16">
@@ -624,17 +650,17 @@ function asAccountType(value: string): "CASH" | "BANK" | "EWALLET" {
                 className="h-10 w-[160px] rounded-2xl"
               />
             </div>
-            <Button variant="outline" className="rounded-2xl" onClick={() => reloadMonthData()} disabled={loading}>
+            <Button variant="outline" className="rounded-2xl border border-white/10 bg-[#07111f]/80 text-slate-100 hover:border-cyan-300/20 hover:bg-white/10 hover:text-white" onClick={() => reloadMonthData()} disabled={loading}>
               <RefreshCcw className="mr-2" size={18} />
               Refresh
             </Button>
-            <Button variant="outline" className="rounded-2xl" asChild>
+            <Button variant="outline" className="rounded-2xl border border-white/10 bg-[#07111f]/80 text-slate-100 hover:border-cyan-300/20 hover:bg-white/10 hover:text-white" asChild>
               <a href={exportUrl}>
                 <Download className="mr-2" size={18} />
                 Export CSV
               </a>
             </Button>
-            <Button variant="outline" className="rounded-2xl" onClick={handleImportClick} disabled={loading}>
+            <Button variant="outline" className="rounded-2xl border border-white/10 bg-[#07111f]/80 text-slate-100 hover:border-cyan-300/20 hover:bg-white/10 hover:text-white" onClick={handleImportClick} disabled={loading}>
               <FileUp className="mr-2" size={18} />
               Import CSV
             </Button>
@@ -655,103 +681,247 @@ function asAccountType(value: string): "CASH" | "BANK" | "EWALLET" {
         )}
 
         {active === "dashboard" && (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            <div className="lg:col-span-8 space-y-6">
-              <Card className="p-6 rounded-3xl border-2 border-primary/10">
-                <div className="text-lg font-black mb-4">This Month Summary</div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {dashboardTotals.map((t) => (
-                    <div key={t.currency} className="p-4 rounded-2xl bg-muted/30 border border-primary/5">
-                      <div className="flex items-center justify-between">
-                        <Badge variant="secondary" className="rounded-xl">{t.currency}</Badge>
-                        {t.monthOverMonthExpensePct !== null && (
-                          <span className={`text-xs font-bold ${t.monthOverMonthExpenseDiff > 0 ? "text-destructive" : "text-emerald-600"}`}>
-                            {t.monthOverMonthExpenseDiff > 0 ? "+" : ""}{t.monthOverMonthExpensePct.toFixed(1)}%
-                          </span>
-                        )}
-                      </div>
-                      <div className="mt-3 text-sm text-muted-foreground">Income</div>
-                      <div className="text-xl font-black">{formatMoney(t.income, t.currency)}</div>
-                      <div className="mt-3 text-sm text-muted-foreground">Expense</div>
-                      <div className="text-xl font-black">{formatMoney(t.expense, t.currency)}</div>
-                      <div className="mt-3 text-sm text-muted-foreground">Balance</div>
-                      <div className="text-xl font-black">{formatMoney(t.balance, t.currency)}</div>
-                    </div>
-                  ))}
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+              <Card className="rounded-[1.75rem] border border-white/10 bg-white/5 p-5 text-white backdrop-blur-xl">
+                <div className="mb-4 flex items-center justify-between">
+                  <div className="rounded-2xl border border-white/10 bg-emerald-400/10 p-3"><WalletCards className="h-5 w-5 text-emerald-200" /></div>
+                  <Badge className="rounded-full border border-white/10 bg-white/10 text-slate-200">All currencies</Badge>
                 </div>
+                <div className="text-3xl font-black text-white">{totalBalance.toLocaleString()}</div>
+                <div className="mt-2 text-sm font-semibold text-slate-200">Total balance snapshot</div>
+                <div className="mt-1 text-xs text-slate-500">Combined balance across current tracked currencies.</div>
+                <div className="mt-3 text-xs text-slate-500">{dashboardTotals.length} currency bucket(s) tracked</div>
               </Card>
 
-              <Card className="p-6 rounded-3xl border-2 border-primary/10">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="text-lg font-black">Spending Trend (6 months)</div>
-                  <Badge variant="outline" className="rounded-xl">EXPENSE</Badge>
+              <Card className="rounded-[1.75rem] border border-white/10 bg-white/5 p-5 text-white backdrop-blur-xl">
+                <div className="mb-4 flex items-center justify-between">
+                  <div className="rounded-2xl border border-white/10 bg-cyan-400/10 p-3"><ArrowUpRight className="h-5 w-5 text-cyan-200" /></div>
+                  <Badge className="rounded-full border border-cyan-300/15 bg-cyan-400/10 text-cyan-100">Income</Badge>
                 </div>
-                <ChartContainer
-                  className="w-full"
-                  config={{
-                    expense: { label: "Expense", color: "hsl(var(--primary))" },
-                  }}
-                >
-                  <ResponsiveContainer width="100%" height={260}>
-                    <LineChart data={chartLineData}>
-                      <XAxis dataKey="month" tickLine={false} axisLine={false} />
-                      <YAxis tickLine={false} axisLine={false} />
-                      <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
-                      <Line type="monotone" dataKey="expense" stroke="var(--color-expense)" strokeWidth={3} dot={false} />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </ChartContainer>
+                <div className="text-3xl font-black text-white">{totalIncome.toLocaleString()}</div>
+                <div className="mt-2 text-sm font-semibold text-slate-200">Income this month</div>
+                <div className="mt-1 text-xs text-slate-500">Money coming in across all tracked accounts.</div>
+              </Card>
+
+              <Card className="rounded-[1.75rem] border border-white/10 bg-white/5 p-5 text-white backdrop-blur-xl">
+                <div className="mb-4 flex items-center justify-between">
+                  <div className="rounded-2xl border border-white/10 bg-rose-400/10 p-3"><ArrowDownRight className="h-5 w-5 text-rose-200" /></div>
+                  <Badge className="rounded-full border border-rose-300/15 bg-rose-400/10 text-rose-100">Expense</Badge>
+                </div>
+                <div className="text-3xl font-black text-white">{totalExpense.toLocaleString()}</div>
+                <div className="mt-2 text-sm font-semibold text-slate-200">Expense this month</div>
+                <div className="mt-1 text-xs text-slate-500">How much went out during the current month.</div>
+              </Card>
+
+              <Card className="rounded-[1.75rem] border border-white/10 bg-white/5 p-5 text-white backdrop-blur-xl">
+                <div className="mb-4 flex items-center justify-between">
+                  <div className="rounded-2xl border border-white/10 bg-amber-400/10 p-3"><PiggyBank className="h-5 w-5 text-amber-200" /></div>
+                  <Badge className="rounded-full border border-amber-300/15 bg-amber-400/10 text-amber-100">Attention</Badge>
+                </div>
+                <div className="text-3xl font-black text-white">{budgetAlertCount}</div>
+                <div className="mt-2 text-sm font-semibold text-slate-200">Budget alerts</div>
+                <div className="mt-1 text-xs text-slate-500">Categories at or above 80% of their limit.</div>
               </Card>
             </div>
 
-            <div className="lg:col-span-4 space-y-6">
-              <Card className="p-6 rounded-3xl border-2 border-primary/10">
-                <div className="text-lg font-black mb-4">AI Insight (Simple)</div>
-                {insights ? (
-                  <div className="space-y-3">
-                    {Object.entries(insights.topSpendingByCurrency).map(([currency, top]) => (
-                      <div key={currency} className="p-4 rounded-2xl bg-muted/30 border border-primary/5">
-                        <div className="flex items-center justify-between">
-                          <Badge variant="secondary" className="rounded-xl">{currency}</Badge>
-                          <span className="text-xs font-bold text-muted-foreground">{month}</span>
-                        </div>
-                        <div className="mt-3 text-sm text-muted-foreground">Most spending category</div>
-                        <div className="text-base font-black">{top.category}</div>
-                        <div className="text-sm font-bold text-primary">{formatMoney(top.amount, currency)}</div>
-                      </div>
-                    ))}
-                    <div className="text-xs text-muted-foreground">
-                      Insight dihitung dari total expense per kategori di bulan ini dibanding bulan sebelumnya.
+            <div className="grid grid-cols-1 gap-6 2xl:grid-cols-[1.5fr_0.9fr]">
+              <div className="space-y-6">
+                <Card className="rounded-[2rem] border border-white/10 bg-white/5 p-6 text-white backdrop-blur-xl">
+                  <div className="mb-5 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                    <div>
+                      <div className="text-lg font-black">Cashflow overview</div>
+                      <div className="text-sm text-slate-400">Track the momentum of your expenses over the last 6 months.</div>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <Button className="rounded-2xl border border-cyan-300/20 bg-cyan-400/10 font-semibold text-cyan-100 hover:bg-cyan-400/15" onClick={openNewTransaction}>
+                        <Plus className="mr-2" size={18} />
+                        Add transaction
+                      </Button>
+                      <Button variant="outline" className="rounded-2xl border border-white/10 bg-[#07111f]/80 text-slate-100 hover:border-cyan-300/20 hover:bg-white/10" onClick={() => setTransferDialogOpen(true)}>
+                        <ArrowLeftRight className="mr-2" size={18} />
+                        Transfer
+                      </Button>
+                      <Button variant="outline" className="rounded-2xl border border-white/10 bg-[#07111f]/80 text-slate-100 hover:border-cyan-300/20 hover:bg-white/10" onClick={() => setGoalDialogOpen(true)}>
+                        <Plus className="mr-2" size={18} />
+                        New goal
+                      </Button>
                     </div>
                   </div>
-                ) : (
-                  <div className="text-sm text-muted-foreground">Loading insight...</div>
-                )}
-              </Card>
+                  <ChartContainer className="w-full" config={{ expense: { label: "Expense", color: "hsl(var(--primary))" } }}>
+                    <ResponsiveContainer width="100%" height={300}>
+                      <LineChart data={chartLineData}>
+                        <XAxis dataKey="month" tickLine={false} axisLine={false} stroke="rgba(148,163,184,.45)" />
+                        <YAxis tickLine={false} axisLine={false} stroke="rgba(148,163,184,.45)" />
+                        <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
+                        <Line type="monotone" dataKey="expense" stroke="var(--color-expense)" strokeWidth={3} dot={false} />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </ChartContainer>
+                </Card>
 
-              <Card className="p-6 rounded-3xl border-2 border-primary/10">
-                <div className="text-lg font-black mb-4">Budget Warnings</div>
-                <div className="space-y-3">
-                  {(insights?.budgetUsage || []).filter((b) => b.isOver).length === 0 ? (
-                    <div className="text-sm text-muted-foreground">No budget exceeded.</div>
-                  ) : (
-                    (insights?.budgetUsage || [])
-                      .filter((b) => b.isOver)
-                      .slice(0, 6)
-                      .map((b) => (
-                        <div key={b.id} className="p-3 rounded-2xl border border-destructive/20 bg-destructive/10">
-                          <div className="flex items-center justify-between">
-                            <div className="font-black text-sm">{b.category.name}</div>
-                            <AlertTriangle size={16} className="text-destructive" />
+                <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+                  <Card className="rounded-[2rem] border border-white/10 bg-white/5 p-6 text-white backdrop-blur-xl">
+                    <div className="mb-4 flex items-center justify-between">
+                      <div>
+                        <div className="text-lg font-black">Account overview</div>
+                        <div className="text-sm text-slate-400">Your available account setup for spending and transfers.</div>
+                      </div>
+                      <Landmark className="h-5 w-5 text-cyan-200" />
+                    </div>
+                    <div className="space-y-3">
+                      {accounts.length === 0 ? (
+                        <div className="rounded-2xl border border-dashed border-white/10 bg-[#07111f]/50 p-4 text-sm text-slate-400">No accounts yet. Add your first account to start tracking balance.</div>
+                      ) : (
+                        accounts.map((account) => (
+                          <div key={account.id} className="flex items-center justify-between rounded-2xl border border-white/10 bg-[#07111f]/70 px-4 py-3">
+                            <div>
+                              <div className="font-semibold text-white">{account.name}</div>
+                              <div className="text-xs text-slate-500">{account.type} • {account.currency}</div>
+                            </div>
+                            <div className="text-sm font-bold text-slate-200">{account.initialBalance}</div>
                           </div>
-                          <div className="text-xs text-destructive font-bold mt-1">
-                            {formatMoney(b.spent, b.currency)} / {formatMoney(b.limit, b.currency)}
+                        ))
+                      )}
+                    </div>
+                  </Card>
+
+                  <Card className="rounded-[2rem] border border-white/10 bg-white/5 p-6 text-white backdrop-blur-xl">
+                    <div className="mb-4 flex items-center justify-between">
+                      <div>
+                        <div className="text-lg font-black">Budget health</div>
+                        <div className="text-sm text-slate-400">See which categories are safe, close, or over budget.</div>
+                      </div>
+                      <AlertTriangle className="h-5 w-5 text-amber-200" />
+                    </div>
+                    <div className="space-y-3">
+                      {(insights?.budgetUsage || []).length === 0 ? (
+                        <div className="rounded-2xl border border-dashed border-white/10 bg-[#07111f]/50 p-4 text-sm text-slate-400">No budgets set for this month.</div>
+                      ) : (
+                        (insights?.budgetUsage || []).slice(0, 5).map((b) => (
+                          <div key={b.id} className={`rounded-2xl border p-4 ${b.isOver ? "border-red-400/20 bg-red-500/10" : b.progress >= 80 ? "border-amber-400/20 bg-amber-500/10" : "border-white/10 bg-[#07111f]/70"}`}>
+                            <div className="mb-2 flex items-center justify-between">
+                              <div className="font-semibold text-white">{b.category.name}</div>
+                              <Badge className="rounded-full border border-white/10 bg-white/10 text-slate-200">{Math.round(b.progress)}%</Badge>
+                            </div>
+                            <div className="mb-3 text-xs text-slate-400">{formatMoney(b.spent, b.currency)} / {formatMoney(b.limit, b.currency)}</div>
+                            <div className="h-2 w-full overflow-hidden rounded-full bg-white/10">
+                              <div className={`${b.isOver ? "bg-red-400" : b.progress >= 80 ? "bg-amber-300" : "bg-cyan-300"} h-2`} style={{ width: `${Math.min(b.progress, 100)}%` }} />
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </Card>
+                </div>
+
+                <Card className="rounded-[2rem] border border-white/10 bg-white/5 p-6 text-white backdrop-blur-xl">
+                  <div className="mb-4 flex items-center justify-between">
+                    <div>
+                      <div className="text-lg font-black">Recent transactions</div>
+                      <div className="text-sm text-slate-400">A quick scan of the latest money movement this month.</div>
+                    </div>
+                    <Button variant="outline" className="rounded-2xl border border-white/10 bg-[#07111f]/80 text-slate-100 hover:border-cyan-300/20 hover:bg-white/10" onClick={() => setActive("transactions")}>
+                      View all
+                    </Button>
+                  </div>
+                  <div className="space-y-3">
+                    {recentTransactions.length === 0 ? (
+                      <div className="rounded-2xl border border-dashed border-white/10 bg-[#07111f]/50 p-4 text-sm text-slate-400">No transactions yet for this month.</div>
+                    ) : (
+                      recentTransactions.map((tx) => (
+                        <div key={tx.id} className="flex items-center justify-between rounded-2xl border border-white/10 bg-[#07111f]/70 px-4 py-3">
+                          <div>
+                            <div className="font-semibold text-white">{tx.category?.name || tx.note || tx.type}</div>
+                            <div className="text-xs text-slate-500">{tx.account.name} • {format(new Date(tx.date), "dd MMM yyyy")}</div>
+                          </div>
+                          <div className={`text-sm font-bold ${tx.type === "EXPENSE" ? "text-rose-300" : "text-emerald-300"}`}>
+                            {tx.type === "EXPENSE" ? "-" : "+"}{formatMoney(toNumber(tx.amount), tx.currency)}
                           </div>
                         </div>
                       ))
+                    )}
+                  </div>
+                </Card>
+              </div>
+
+              <div className="space-y-6">
+                <Card className="rounded-[2rem] border border-white/10 bg-white/5 p-6 text-white backdrop-blur-xl">
+                  <div className="mb-4 flex items-center justify-between">
+                    <div>
+                      <div className="text-lg font-black">Monthly insight</div>
+                      <div className="text-sm text-slate-400">Simple read on where your money is going.</div>
+                    </div>
+                    <Badge className="rounded-full border border-white/10 bg-white/10 text-slate-200">{month}</Badge>
+                  </div>
+                  {insights ? (
+                    <div className="space-y-3">
+                      {Object.entries(insights.topSpendingByCurrency).map(([currency, top]) => (
+                        <div key={currency} className="rounded-2xl border border-white/10 bg-[#07111f]/70 p-4">
+                          <div className="mb-1 text-xs uppercase tracking-[0.18em] text-slate-500">{currency}</div>
+                          <div className="text-base font-black text-white">{top.category}</div>
+                          <div className="mt-1 text-sm font-semibold text-cyan-200">{formatMoney(top.amount, currency)}</div>
+                          <div className="mt-2 text-xs text-slate-500">Highest spending category for this month.</div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-sm text-slate-400">Loading insight...</div>
                   )}
-                </div>
-              </Card>
+                </Card>
+
+                <Card className="rounded-[2rem] border border-white/10 bg-white/5 p-6 text-white backdrop-blur-xl">
+                  <div className="mb-4 flex items-center justify-between">
+                    <div>
+                      <div className="text-lg font-black">Category distribution</div>
+                      <div className="text-sm text-slate-400">See what dominates your expenses.</div>
+                    </div>
+                  </div>
+                  <ChartContainer className="w-full" config={{ value: { label: "Expense", color: "hsl(var(--primary))" } }}>
+                    <ResponsiveContainer width="100%" height={260}>
+                      <PieChart>
+                        <Tooltip content={<ChartTooltipContent />} />
+                        <Pie data={chartPieData} dataKey="value" nameKey="name" fill="var(--color-value)" />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </ChartContainer>
+                </Card>
+
+                <Card className="rounded-[2rem] border border-white/10 bg-white/5 p-6 text-white backdrop-blur-xl">
+                  <div className="mb-4 flex items-center justify-between">
+                    <div>
+                      <div className="text-lg font-black">Goals snapshot</div>
+                      <div className="text-sm text-slate-400">Keep savings targets visible while managing cashflow.</div>
+                    </div>
+                    <Button variant="outline" className="rounded-2xl border border-white/10 bg-[#07111f]/80 text-slate-100 hover:border-cyan-300/20 hover:bg-white/10" onClick={() => setActive("goals")}>
+                      Open goals
+                    </Button>
+                  </div>
+                  <div className="space-y-3">
+                    {goals.length === 0 ? (
+                      <div className="rounded-2xl border border-dashed border-white/10 bg-[#07111f]/50 p-4 text-sm text-slate-400">No goals yet. Create one to track saving progress.</div>
+                    ) : (
+                      goals.slice(0, 3).map((g) => {
+                        const current = toNumber(g.currentAmount);
+                        const target = toNumber(g.targetAmount);
+                        const progress = target === 0 ? 0 : (current / target) * 100;
+                        return (
+                          <div key={g.id} className="rounded-2xl border border-white/10 bg-[#07111f]/70 p-4">
+                            <div className="mb-2 flex items-center justify-between">
+                              <div className="font-semibold text-white">{g.name}</div>
+                              <Badge className="rounded-full border border-white/10 bg-white/10 text-slate-200">{Math.round(progress)}%</Badge>
+                            </div>
+                            <div className="mb-3 text-xs text-slate-500">{formatMoney(current, g.currency)} / {formatMoney(target, g.currency)}</div>
+                            <div className="h-2 w-full overflow-hidden rounded-full bg-white/10">
+                              <div className="h-2 bg-gradient-to-r from-cyan-300 to-emerald-300" style={{ width: `${Math.min(progress, 100)}%` }} />
+                            </div>
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
+                </Card>
+              </div>
             </div>
           </div>
         )}
@@ -952,8 +1122,8 @@ function asAccountType(value: string): "CASH" | "BANK" | "EWALLET" {
         )}
 
         {active === "analytics" && (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            <Card className="p-6 rounded-3xl border-2 border-primary/10 lg:col-span-6">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+            <Card className="rounded-[2rem] border border-white/10 bg-white/5 p-6 text-white backdrop-blur-xl lg:col-span-6">
               <div className="text-lg font-black mb-4">Pie (Top Categories)</div>
               <ChartContainer
                 className="w-full"
@@ -1038,7 +1208,6 @@ function asAccountType(value: string): "CASH" | "BANK" | "EWALLET" {
         )}
       </div>
 
-      <MoneyTrackerNavbar active={active} onChange={setActive} />
 
       <Dialog open={txDialogOpen} onOpenChange={setTxDialogOpen}>
         <DialogContent className="max-w-lg rounded-3xl">

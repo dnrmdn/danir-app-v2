@@ -13,15 +13,19 @@ export function RewardsSystem() {
   const [points] = useState(850)
 
   return (
-    <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
-      <h3 className="text-xl font-semibold text-card-foreground mb-2">Rewards</h3>
-      <p className="text-sm text-muted-foreground mb-6">Earn points and redeem rewards for completing tasks.</p>
-
-      <div className="bg-gradient-to-r from-primary/10 to-secondary/10 rounded-lg p-4 mb-6">
-        <div className="text-center">
-          <p className="text-sm text-muted-foreground">Current Points</p>
-          <p className="text-3xl font-bold text-primary">{points}</p>
+    <div className="rounded-[1.75rem] border border-white/10 bg-white/5 p-6 shadow-xl shadow-cyan-950/10 backdrop-blur-sm">
+      <div className="mb-6">
+        <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-violet-400/20 bg-violet-400/10 px-3 py-1 text-xs font-semibold text-violet-200">
+          <Trophy className="h-3.5 w-3.5" />
+          Motivation system
         </div>
+        <h3 className="text-xl font-semibold text-white mb-2">Rewards</h3>
+        <p className="text-sm text-slate-300">Turn progress into momentum with redeemable rewards and points.</p>
+      </div>
+
+      <div className="mb-6 rounded-2xl border border-white/10 bg-gradient-to-r from-violet-400/10 to-cyan-400/10 p-5 text-center">
+        <p className="text-sm text-slate-300">Current Points</p>
+        <p className="text-3xl font-bold text-white">{points}</p>
       </div>
 
       <div className="space-y-3">
@@ -30,20 +34,20 @@ export function RewardsSystem() {
           return (
             <div
               key={reward.id}
-              className="flex items-center gap-3 p-3 rounded-lg border border-border hover:bg-muted transition-colors"
+              className="flex items-center gap-3 rounded-2xl border border-white/10 bg-slate-950/50 p-4 transition hover:border-violet-400/20 hover:bg-white/5"
             >
-              <div className="p-2 bg-accent/10 rounded-lg">
-                <Icon className="text-accent" size={20} />
+              <div className="rounded-xl bg-violet-400/10 p-2.5">
+                <Icon className="text-violet-300" size={18} />
               </div>
               <div className="flex-1">
-                <p className="font-medium text-card-foreground">{reward.name}</p>
-                <p className="text-sm text-muted-foreground">{reward.points} pts</p>
+                <p className="font-medium text-white">{reward.name}</p>
+                <p className="text-sm text-slate-400">{reward.points} pts</p>
               </div>
               <button
-                className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors ${
+                className={`rounded-xl px-3 py-1.5 text-sm font-medium transition ${
                   points >= reward.points
-                    ? "bg-accent text-accent-foreground hover:bg-accent/90"
-                    : "bg-muted text-muted-foreground cursor-not-allowed"
+                    ? "bg-white text-slate-950 hover:bg-slate-100"
+                    : "bg-white/5 text-slate-500 cursor-not-allowed"
                 }`}
                 disabled={points < reward.points}
               >

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import FloatButton from "@/components/floatButton";
 import AddTaskForm from "./addTaskForm";
 import { Plus } from "lucide-react";
 
@@ -10,22 +9,16 @@ export default function AddButtonTask() {
 
   return (
     <>
-      {/* Floating Button */}
-      <FloatButton
-        floating={true}
-        shadow={true}
-        bgColor="bg-blue-500"
-        size="w-14 h-14"
-        icon={<Plus color="white" size={30} />}
-        position="bottom-8 right-8"
+      <button
+        type="button"
+        className="flex h-12 items-center gap-2 rounded-2xl border border-cyan-300/20 bg-cyan-400/10 px-4 text-cyan-100 transition hover:bg-cyan-400/15"
         onClick={() => setOpen(true)}
-      />
+      >
+        <Plus size={18} />
+        <span className="font-semibold">Add task</span>
+      </button>
 
-      {/* Modal */}
-      <AddTaskForm
-        isOpen={open}
-        onClose={() => setOpen(false)}
-      />
+      <AddTaskForm isOpen={open} onClose={() => setOpen(false)} />
     </>
   );
 }

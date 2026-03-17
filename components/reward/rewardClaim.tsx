@@ -7,14 +7,18 @@ interface CelebrationScreenProps {
 
 export default function RewardClaim({ onClaim, celebrating }: CelebrationScreenProps) {
   return (
-    <div className={`text-center transition-all duration-500 ${celebrating ? "scale-110" : "scale-100"}`}>
+    <div className={`text-center transition-all duration-500 ${celebrating ? "scale-105" : "scale-100"}`}>
       <div className="space-y-4">
         <Button
           onClick={onClaim}
           disabled={celebrating}
-          className={`px-8 py-6 text-lg font-bold rounded-full transition-all ${celebrating ? "bg-yellow-300 text-birthday-purple scale-105" : "bg-linear-to-r from-birthday-yellow to-birthday-orange hover:shadow-2xl"}`}
+          className={`rounded-full px-8 py-6 text-lg font-bold transition-all ${
+            celebrating
+              ? "border border-emerald-300/20 bg-emerald-400/15 text-emerald-100"
+              : "border border-violet-300/20 bg-violet-400/15 text-violet-50 hover:bg-violet-400/20"
+          }`}
         >
-          {celebrating ? "🎊 Celebrating! 🎊" : "Claim Your Reward🥳"}
+          {celebrating ? "🎊 Celebrating! 🎊" : "Claim reward"}
         </Button>
       </div>
     </div>

@@ -1,136 +1,159 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { ArrowRight, CalendarDays, CheckCircle2, CreditCard, ImageIcon, Link2, Sparkles, Trophy, UtensilsCrossed } from "lucide-react";
 import { useUserSession } from "@/hooks/useUserSession";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Link2, Save } from "lucide-react";
-import { SaveLinkDialog } from "@/components/dashboard/save-link-dialog";
+
+const featurePills = [
+  { icon: CalendarDays, label: "Calendar" },
+  { icon: CheckCircle2, label: "Tasks" },
+  { icon: CreditCard, label: "Money" },
+  { icon: Link2, label: "Saved Links" },
+  { icon: Trophy, label: "Rewards" },
+  { icon: UtensilsCrossed, label: "Meal Plan" },
+  { icon: ImageIcon, label: "Photos" },
+];
 
 export function HeroSection() {
-  const [url, setUrl] = useState("");
-  const [showDialog, setShowDialog] = useState(false);
-
   const { session } = useUserSession();
-  const router = useRouter();
-
-  const handleInitialSave = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!url) return;
-
-    if (!session) {
-      router.push("/login");
-      return;
-    }
-
-    setShowDialog(true);
-  };
 
   return (
-    <section className="relative w-full min-h-screen overflow-hidden flex items-center justify-center py-20">
-      <SaveLinkDialog 
-        open={showDialog} 
-        onOpenChange={setShowDialog} 
-        initialUrl={url} 
-        onSuccess={() => setUrl("")} 
-      />
+    <section className="relative overflow-hidden border-b border-white/10 bg-[#07111f] text-white">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(56,189,248,0.18),transparent_30%),radial-gradient(circle_at_top_right,rgba(16,185,129,0.15),transparent_25%),linear-gradient(to_bottom,rgba(255,255,255,0.04),transparent)]" />
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.045)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.045)_1px,transparent_1px)] bg-[size:44px_44px] opacity-20" />
 
-      <div className="absolute inset-0 bg-gradient-to-br from-primary via-background to-secondary/20"></div>
-
-      {/* Decorative gradient orbs */}
-      <div className="absolute top-0 right-0 w-96 h-96 bg-primary/20 rounded-full blur-3xl -mr-32 -mt-32"></div>
-      <div className="absolute bottom-0 left-0 w-96 h-96 bg-secondary/20 rounded-full blur-3xl -ml-32 -mb-32"></div>
-
-      {/* Grid pattern overlay */}
-      <div className="absolute inset-0 bg-[linear-gradient(rgba(0,0,0,.05)_1px,transparent_1px),linear-gradient(90deg,rgba(0,0,0,.05)_1px,transparent_1px)] bg-[size:40px_40px] opacity-50"></div>
-
-      {/* Main content */}
-      <div className="relative z-10 w-full max-w-6xl px-4 sm:px-6 lg:px-8 text-center">
-        {/* Accent badge */}
-        <div className="inline-block mb-8 px-4 py-2 bg-primary/10 border border-primary/20 rounded-full">
-          <span className="text-sm font-semibold text-primary">Welcome to SnapKeep</span>
-        </div>
-
-        {/* Main heading - massive and bold */}
-        <h1 className="text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-black text-foreground mb-6 leading-tight text-balance">
-          Save Your{" "}
-          <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">Links</span>
-        </h1>
-
-        {/* Subheading */}
-        <p className="text-lg sm:text-xl lg:text-2xl text-muted-foreground mb-12 max-w-3xl mx-auto text-balance leading-relaxed">
-          The easiest way to organize and search your saved videos from Instagram, TikTok, and YouTube.
-        </p>
-
-        {/* Input Form Section */}
-        <div className="max-w-2xl mx-auto mb-16">
-          <form onSubmit={handleInitialSave} className="relative flex items-center group">
-            <div className="absolute left-4 text-muted-foreground group-focus-within:text-primary transition-colors">
-              <Link2 size={24} />
+      <div className="relative mx-auto flex min-h-screen w-full max-w-7xl flex-col justify-center px-4 py-20 sm:px-6 lg:px-8">
+        <div className="grid items-center gap-14 lg:grid-cols-[1.05fr_0.95fr]">
+          <div>
+            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-cyan-400/20 bg-cyan-400/10 px-4 py-2 text-sm font-medium text-cyan-200 backdrop-blur-md">
+              <Sparkles className="h-4 w-4" />
+              Danir App • Personal productivity super app
             </div>
-            <Input
-              type="url"
-              placeholder="Paste your video link here (Instagram, TikTok, YouTube...)"
-              className="h-16 pl-14 pr-32 rounded-2xl border-2 border-primary/20 bg-background/50 backdrop-blur-md text-lg focus-visible:ring-primary focus-visible:border-primary transition-all shadow-xl"
-              value={url}
-              onChange={(e) => setUrl(e.target.value)}
-              required
-            />
-            <Button
-              type="submit"
-              className="absolute right-2 h-12 px-6 rounded-xl font-bold text-lg bg-gradient-to-r from-primary to-secondary hover:scale-105 transition-transform shadow-lg"
-            >
-              <Save className="mr-2" size={20} />
-              Save
-            </Button>
-          </form>
-        </div>
 
-        {/* CTA buttons - bold and prominent */}
-        <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
-          {!session && (
-            <Link href={"/login"}>
-              <button className="px-10 py-4 bg-gradient-to-r from-primary to-secondary text-primary-foreground rounded-xl font-bold text-lg hover:shadow-2xl hover:shadow-primary/40 transition-all duration-300 hover:scale-105">
-                Start Organizing Now
-              </button>
-            </Link>
-          )}
-          <Link href={"/saved-links"}>
-            <button className="px-10 py-4 border-2 border-primary text-foreground rounded-xl font-bold text-lg hover:bg-primary/10 transition-colors duration-300 backdrop-blur-sm">
-              View Saved Links
-            </button>
-          </Link>
-        </div>
+            <h1 className="max-w-4xl text-5xl font-black leading-[0.95] tracking-tight text-white sm:text-6xl lg:text-7xl xl:text-[5.4rem]">
+              Organize your
+              <span className="block bg-gradient-to-r from-cyan-300 via-white to-emerald-300 bg-clip-text text-transparent">
+                entire life in one dashboard.
+              </span>
+            </h1>
 
-        {/* Feature highlights */}
-        <div className="mt-20 grid grid-cols-2 md:grid-cols-4 gap-6">
-          {[
-            { icon: "🔗", label: "Saved Links", href: "/saved-links" },
-            { icon: "📅", label: "Calendar", href: "/calendar" },
-            { icon: "✅", label: "Tasks", href: "/task" },
-            { icon: "🏆", label: "Rewards", href: "/reward" },
-          ].map((feature, i) => (
-            <Link
-              key={i}
-              href={feature.href}
-              className="p-4 rounded-xl bg-card/40 backdrop-blur-sm border border-primary/10 hover:border-primary/40 hover:bg-card/60 transition-all group"
-            >
-              <div className="text-3xl mb-2 group-hover:scale-110 transition-transform">{feature.icon}</div>
-              <p className="text-sm font-bold text-foreground group-hover:text-primary transition-colors">{feature.label}</p>
-            </Link>
-          ))}
-        </div>
-      </div>
+            <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-300 sm:text-xl">
+              Calendar, tasks, rewards, meals, money, photos, and saved links — all connected in one clean workspace
+              built for your daily flow.
+            </p>
 
-      {/* Scroll indicator */}
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 animate-bounce">
-        <svg className="w-6 h-6 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-        </svg>
+            <div className="mt-10 flex flex-col gap-4 sm:flex-row sm:items-center">
+              <Link
+                href={session ? "/calendar" : "/login"}
+                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-white px-7 py-4 text-base font-bold text-slate-950 transition hover:scale-[1.02] hover:bg-cyan-50"
+              >
+                {session ? "Open Dashboard" : "Get Started"}
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+
+              <Link
+                href="/saved-links"
+                className="inline-flex items-center justify-center rounded-2xl border border-white/15 bg-white/5 px-7 py-4 text-base font-semibold text-white backdrop-blur-md transition hover:border-cyan-300/40 hover:bg-white/10"
+              >
+                Explore Features
+              </Link>
+            </div>
+
+            <div className="mt-10 flex flex-wrap gap-3">
+              {featurePills.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <div
+                    key={item.label}
+                    className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-slate-200 backdrop-blur-md"
+                  >
+                    <Icon className="h-4 w-4 text-cyan-300" />
+                    {item.label}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="relative">
+            <div className="absolute -inset-6 rounded-[2rem] bg-gradient-to-r from-cyan-400/20 via-transparent to-emerald-400/20 blur-3xl" />
+
+            <div className="relative rounded-[2rem] border border-white/10 bg-white/8 p-4 shadow-2xl shadow-cyan-950/40 backdrop-blur-xl">
+              <div className="mb-4 flex items-center justify-between rounded-2xl border border-white/10 bg-slate-950/60 px-4 py-3">
+                <div>
+                  <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Today overview</p>
+                  <h3 className="mt-1 text-lg font-semibold text-white">Danir App Workspace</h3>
+                </div>
+                <div className="rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1 text-xs font-semibold text-emerald-300">
+                  Live sync
+                </div>
+              </div>
+
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="rounded-2xl border border-white/10 bg-slate-950/60 p-4">
+                  <div className="mb-3 flex items-center justify-between">
+                    <p className="text-sm font-medium text-slate-300">Daily focus</p>
+                    <span className="text-xs text-cyan-300">4 tasks</span>
+                  </div>
+                  <div className="space-y-3">
+                    {[
+                      "Publish dashboard redesign",
+                      "Review finance entries",
+                      "Plan dinner this week",
+                    ].map((task, index) => (
+                      <div key={task} className="flex items-center gap-3 rounded-xl bg-white/5 px-3 py-2">
+                        <div className={`h-2.5 w-2.5 rounded-full ${index === 0 ? "bg-cyan-300" : "bg-emerald-300"}`} />
+                        <span className="text-sm text-slate-200">{task}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="rounded-2xl border border-white/10 bg-slate-950/60 p-4">
+                  <div className="mb-3 flex items-center justify-between">
+                    <p className="text-sm font-medium text-slate-300">Money snapshot</p>
+                    <span className="text-xs text-emerald-300">+12.4%</span>
+                  </div>
+                  <div className="mb-4 text-3xl font-bold text-white">Rp 12.8M</div>
+                  <div className="space-y-3">
+                    {[72, 48, 89, 63, 94, 70].map((height, index) => (
+                      <div key={index} className="flex items-center gap-3">
+                        <div className="h-2 w-2 rounded-full bg-cyan-300/80" />
+                        <div className="h-2 flex-1 rounded-full bg-white/10">
+                          <div
+                            className="h-2 rounded-full bg-gradient-to-r from-cyan-400 to-emerald-400"
+                            style={{ width: `${height}%` }}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="rounded-2xl border border-white/10 bg-slate-950/60 p-4 md:col-span-2">
+                  <div className="mb-4 flex items-center justify-between">
+                    <p className="text-sm font-medium text-slate-300">Modules</p>
+                    <span className="text-xs text-slate-400">Everything in one place</span>
+                  </div>
+                  <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                    {[
+                      ["Calendar", "Events & weekly plans"],
+                      ["Saved Links", "Curated content hub"],
+                      ["Meal Planner", "Family meal schedule"],
+                      ["Rewards", "Motivation system"],
+                    ].map(([title, subtitle]) => (
+                      <div key={title} className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                        <p className="text-sm font-semibold text-white">{title}</p>
+                        <p className="mt-1 text-xs leading-5 text-slate-400">{subtitle}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
   );
 }
-

@@ -4,31 +4,48 @@ import { X } from "lucide-react";
 import ModalOverlay from "../task/addTask/modalOverlayUI";
 import GlassCard from "../task/addTask/glassCardUI";
 
-export default function AddFormCard({ isOpen, onClose, title, onSubmit, children }: { isOpen: boolean; onClose: () => void; title: string; onSubmit: () => void; children: React.ReactNode }) {
+export default function AddFormCard({
+  isOpen,
+  onClose,
+  title,
+  onSubmit,
+  children,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  title: string;
+  onSubmit: () => void;
+  children: React.ReactNode;
+}) {
   return (
     <ModalOverlay isOpen={isOpen} onClose={onClose}>
-      <GlassCard className="h-full rounded-l-4xl flex flex-col">
-        {/* Header */}
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-4xl pl-4 font-semibold">{title}</h2>
+      <GlassCard className="flex h-full rounded-l-[2rem] border-l border-white/10 bg-[#08111f]/95 text-white backdrop-blur-xl">
+        <div className="flex h-full flex-col px-6 py-6 sm:px-8">
+          <div className="mb-6 flex items-center justify-between">
+            <div>
+              <div className="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-200">Create</div>
+              <h2 className="mt-1 text-3xl font-black text-white">{title}</h2>
+            </div>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onClose();
+              }}
+              className="rounded-full border border-white/10 bg-white/5 p-2 text-slate-300 transition hover:bg-white/10 hover:text-white"
+            >
+              <X size={20} />
+            </button>
+          </div>
+
+          <div className="flex flex-1 flex-col gap-4 overflow-y-auto pr-1">{children}</div>
+
           <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onClose();
-            }}
-            className="p-1 rounded-full hover:bg-black/50 transition"
+            onClick={onSubmit}
+            className="mt-6 rounded-2xl border border-cyan-300/20 bg-cyan-400/10 p-3 font-semibold text-cyan-100 transition hover:bg-cyan-400/15"
           >
-            <X size={22} className="text-black hover:text-white transition" />
+            Submit
           </button>
         </div>
-
-        {/* Form */}
-        <div className="flex flex-col gap-4">{children}</div>
-
-        {/* Submit */}
-        <button onClick={onSubmit} className="bg-blue-500 text-white mt-6 rounded-xl p-3 hover:bg-blue-600 transition">
-          Submit
-        </button>
       </GlassCard>
     </ModalOverlay>
   );

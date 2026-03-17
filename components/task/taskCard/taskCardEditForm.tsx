@@ -30,47 +30,74 @@ export default function TaskCardEditForm({ task, setOpen, setIsEditing }: Props)
   };
 
   return (
-    <div className="space-y-4 mb-6">
-      {/* Label */}
+    <div className="mb-6 space-y-4">
       <div>
-        <label className="text-gray-600 text-sm">Label</label>
-        <input type="text" value={data.label} onChange={(e) => setData({ ...data, label: e.target.value })} className="w-full border rounded-xl px-3 py-2" />
+        <label className="mb-1.5 block text-sm font-medium text-slate-300">Label</label>
+        <input
+          type="text"
+          value={data.label}
+          onChange={(e) => setData({ ...data, label: e.target.value })}
+          className="w-full rounded-2xl border border-white/10 bg-[#07111f]/80 px-4 py-3 text-white outline-none placeholder:text-slate-500"
+        />
       </div>
 
-      {/* Date */}
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <div>
+          <label className="mb-1.5 block text-sm font-medium text-slate-300">Date</label>
+          <input
+            type="date"
+            value={data.date}
+            onChange={(e) => setData({ ...data, date: e.target.value })}
+            className="w-full rounded-2xl border border-white/10 bg-[#07111f]/80 px-4 py-3 text-white outline-none"
+          />
+        </div>
+
+        <div>
+          <label className="mb-1.5 block text-sm font-medium text-slate-300">Time</label>
+          <input
+            type="time"
+            value={data.time}
+            onChange={(e) => setData({ ...data, time: e.target.value })}
+            className="w-full rounded-2xl border border-white/10 bg-[#07111f]/80 px-4 py-3 text-white outline-none"
+          />
+        </div>
+      </div>
+
       <div>
-        <label className="text-gray-600 text-sm">Date</label>
-        <input type="date" value={data.date} onChange={(e) => setData({ ...data, date: e.target.value })} className="w-full border rounded-xl px-3 py-2" />
+        <label className="mb-1.5 block text-sm font-medium text-slate-300">Reward points</label>
+        <input
+          type="number"
+          value={data.reward}
+          onChange={(e) => setData({ ...data, reward: e.target.value })}
+          className="w-full rounded-2xl border border-white/10 bg-[#07111f]/80 px-4 py-3 text-white outline-none"
+        />
       </div>
 
-      {/* Time */}
-      <div>
-        <label className="text-gray-600 text-sm">Time</label>
-        <input type="time" value={data.time} onChange={(e) => setData({ ...data, time: e.target.value })} className="w-full border rounded-xl px-3 py-2" />
-      </div>
+      <label className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-slate-200">
+        <input
+          type="checkbox"
+          checked={data.completed}
+          onChange={(e) => setData({ ...data, completed: e.target.checked })}
+          className="h-4 w-4 rounded border-white/10 bg-[#07111f]"
+        />
+        Mark task as completed
+      </label>
 
-      {/* Reward */}
-      <div>
-        <label className="text-gray-600 text-sm">Reward</label>
-        <input type="number" value={data.reward} onChange={(e) => setData({ ...data, reward: e.target.value })} className="w-full border rounded-xl px-3 py-2" />
-      </div>
-
-      {/* Completed */}
-      <div className="flex items-center gap-3">
-        <input type="checkbox" checked={data.completed} onChange={(e) => setData({ ...data, completed: e.target.checked })} />
-        <label className="text-gray-700 text-sm">Completed</label>
-      </div>
-
-      <div className="flex justify-end gap-3 mt-6">
-        <button onClick={() => setIsEditing(false)} className="px-4 py-2 bg-gray-200 rounded-xl">
+      <div className="mt-6 flex justify-end gap-3">
+        <button
+          onClick={() => setIsEditing(false)}
+          className="rounded-2xl border border-white/10 bg-white/5 px-4 py-2.5 text-slate-200 transition hover:bg-white/10"
+        >
           Cancel
         </button>
 
-        <button onClick={save} className="px-4 py-2 bg-blue-600 text-white rounded-xl">
-          Save
+        <button
+          onClick={save}
+          className="rounded-2xl border border-cyan-300/20 bg-cyan-400/10 px-4 py-2.5 font-semibold text-cyan-100 transition hover:bg-cyan-400/15"
+        >
+          Save changes
         </button>
       </div>
     </div>
   );
 }
-

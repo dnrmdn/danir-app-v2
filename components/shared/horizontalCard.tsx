@@ -22,25 +22,25 @@ export default function HorizontalCards({ children, autoFetch = true }: Horizont
   if (!members || members.length === 0) return <div className="p-4">No member provided</div>;
 
   return (
-    <div className="relative">
-      <div ref={containerRef} tabIndex={0} className="overflow-x-auto pb-2 scroll-smooth hide-scrollbar snap-x snap-mandatory" style={{ scrollBehavior: "smooth" }}>
-        <div className="flex gap-6 px-2 py-4 flex-nowrap">
+    <div className="relative w-full">
+      <div
+        ref={containerRef}
+        tabIndex={0}
+        className="w-full overflow-x-auto pb-2 scroll-smooth hide-scrollbar snap-x snap-mandatory"
+        style={{ scrollBehavior: "smooth" }}
+      >
+        <div className="flex w-max min-w-full flex-nowrap gap-6 py-4 pr-0 items-stretch">
           {members.map((member: Member) => (
             <Card
               key={member.id}
-              className={`flex flex-col rounded-3xl ${member.bgColor ?? ""} transition-all duration-300 snap-start`}
+              className={`flex min-h-[720px] shrink-0 flex-col rounded-[2rem] border border-white/10 ${member.bgColor ?? ""} snap-start transition-all duration-300`}
               style={{
-                height: "89vh",
-                flex: "0 0 auto",
-                width: "calc(100% / 1.1)",
-                maxWidth: "400px",
+                width: "clamp(280px, calc((100% - 72px) / 4), 360px)",
               }}
             >
               {children(member)}
             </Card>
           ))}
-
-          <div className="shrink-0 w-4 sm:w-10"></div>
         </div>
       </div>
     </div>

@@ -1,20 +1,42 @@
 "use client";
 
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Navbar from "@/components/navbar/navbar";
-import { AppSidebar } from "@/components/sidebar/app-sidebar";
-import { SidebarProvider } from "@/components/ui/sidebar";
+import { useSession } from "@/lib/auth-client";
 
 export default function LayoutClient({ children }: { children: React.ReactNode }) {
+  const router = useRouter();
+  const { data: session, isPending } = useSession();
+
+  useEffect(() => {
+    if (!isPending && !session) {
+      router.replace("/login");
+    }
+  }, [isPending, session, router]);
+
+  if (isPending) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[#020817] text-white">
+        <p className="text-sm text-slate-300">Checking your session...</p>
+      </div>
+    );
+  }
+
+  if (!session) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[#020817] text-white">
+        <p className="text-sm text-slate-300">Redirecting to login...</p>
+      </div>
+    );
+  }
+
   return (
-    <SidebarProvider>
-      <AppSidebar />
-      <main className="w-full y-20">
-        {/* Navbar sticky di atas */}
-        <div className="sticky top-0 z-50 rounded-b-full shadow-sm">
-          <Navbar />
-        </div>
-        <div className="px-1">{children}</div>
+    <div className="min-h-screen w-full bg-[#020817] text-white">
+      <Navbar />
+      <main className="mx-auto w-full max-w-[1600px] px-4 pb-10 pt-6 sm:px-6 lg:px-10 xl:px-12">
+        {children}
       </main>
-    </SidebarProvider>
+    </div>
   );
 }

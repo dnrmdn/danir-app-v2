@@ -1,7 +1,7 @@
 "use client";
 
 import { CalendarRange } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -10,23 +10,21 @@ import { Calendar } from "@/components/ui/calendar";
 export default function AddDateInput({ onChange }: { onChange?: (d: Date | undefined) => void }) {
   const [date, setDate] = useState<Date | undefined>(new Date());
 
-  useEffect(() => {
-    onChange?.(new Date());
-  }, [onChange]);
-
   return (
-    <div className="bg-gray-100 rounded-lg">
-      <div className="flex max-w-full items-center px-4 gap-2">
-        <CalendarRange size={30} />
-        <div className="flex-1 pt-2">
-          <p className="text-sm px-2 text-gray-400">Date</p>
+    <div className="rounded-2xl border border-white/10 bg-[#07111f]/80">
+      <div className="flex max-w-full items-center gap-3 px-4 py-3">
+        <CalendarRange size={22} className="text-slate-400" />
+        <div className="flex-1">
+          <p className="mb-1 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Date</p>
 
           <Popover>
             <PopoverTrigger asChild>
-              <button className={cn("w-full h-10 mb-1 px-2 rounded-md text-xl text-left", !date && "text-gray-400")}>{date ? format(date, "EEEE, dd MMM yyyy") : "Select date"}</button>
+              <button className={cn("w-full text-left text-base text-white", !date && "text-slate-500")}>
+                {date ? format(date, "EEEE, dd MMM yyyy") : "Select date"}
+              </button>
             </PopoverTrigger>
 
-            <PopoverContent className="p-0 w-auto bg-white border shadow-lg rounded-xl">
+            <PopoverContent className="w-auto rounded-xl border bg-white p-0 shadow-lg">
               <Calendar
                 mode="single"
                 selected={date}

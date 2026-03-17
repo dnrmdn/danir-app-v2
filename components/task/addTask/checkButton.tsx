@@ -8,20 +8,18 @@ type TodoCheckboxProps = {
 };
 
 export default function CheckButton({ member, checked, onToggle }: TodoCheckboxProps) {
-  
   return (
-    <label className="relative w-10 h-10 cursor-pointer">
-      {/* Checkbox invisible tapi tetap accessible */}
+    <label className="relative flex h-10 w-10 cursor-pointer items-center justify-center">
       <input type="checkbox" checked={checked} onChange={onToggle} className="sr-only" />
-
-      {/* Tampilan custom */}
       <div
-        className={`w-6 h-6 rounded-full flex items-center justify-center border transition-all duration-200
-    ${checked ? `${member.iconColor} border-transparent` : "bg-white border-gray-300 hover:border-gray-400"}`}
+        className={`flex h-8 w-8 items-center justify-center rounded-full border transition-all duration-200 ${
+          checked
+            ? `${member.iconColor} border-transparent shadow-sm`
+            : "border-slate-300 bg-white/80 hover:border-slate-400"
+        }`}
       >
         {checked && <Check size={16} color="white" strokeWidth={3} />}
       </div>
     </label>
   );
 }
-

@@ -28,64 +28,63 @@ export default function RewardCardDialog({ reward, member, setOpen, isEditing, s
 
   const { deleteReward } = useRewardStore();
 
-  if (!reward) return null;
-  if (!member) return null;
+  if (!reward || !member) return null;
 
   return (
-    <DialogContent className="rounded-4xl w-[450px] p-6">
+    <DialogContent className="w-[480px] rounded-[2rem] border border-white/10 bg-[#08111f]/95 p-6 text-white backdrop-blur-xl">
       <DialogHeader>
-        <DialogTitle className="text-3xl font-semibold mb-4 line-clamp-2">{isEditing ? "Edit Reward" : reward.name}</DialogTitle>
+        <DialogTitle className="mb-1 line-clamp-2 text-3xl font-black text-white">
+          {isEditing ? "Edit reward" : reward.name}
+        </DialogTitle>
+        {!isEditing && <p className="text-sm text-slate-400">Reward details, required stars, and claim status for this member.</p>}
       </DialogHeader>
 
       {isEditing ? (
         <RewardEditForm reward={reward} setOpen={setOpen} setIsEditing={setIsEditing} />
       ) : (
         <>
-          {/* IMAGE */}
-          <div className="w-full flex justify-center mb-6">
-            <div className="w-40 h-40 rounded-3xl overflow-hidden shadow bg-white">
-              <Image src={reward.image} alt={reward.name} width={160} height={160} className="w-full h-full object-cover" />
+          <div className="mb-6 flex justify-center">
+            <div className="h-40 w-40 overflow-hidden rounded-[1.75rem] border border-white/10 bg-white shadow-sm">
+              <Image src={reward.image} alt={reward.name} width={160} height={160} className="h-full w-full object-cover" />
             </div>
           </div>
 
-          {/* MIN STARS */}
-          <div
-            className={`
-              flex items-center justify-center gap-2 
-              px-3 py-2 rounded-3xl w-fit mx-auto mb-6
-              ${member.bgColor ?? "bg-gray-100"}
-            `}
-          >
+          <div className={`mx-auto mb-6 flex w-fit items-center justify-center gap-2 rounded-full px-4 py-2 ${member.bgColor ?? "bg-gray-100"}`}>
             <Star size={18} fill="#eab308" color="#eab308" />
-            <span className="text-sm font-medium">{reward.minStars} Min stars</span>
+            <span className="text-sm font-semibold text-slate-700">{reward.minStars} minimum stars</span>
           </div>
 
-          {/* ACTION BUTTONS */}
-          <div className="w-full flex justify-center mb-6">
-            <div className="w-3/4 flex gap-4">
-              <button className="flex-1 h-14 rounded-4xl bg-gray-100 hover:bg-gray-200 cursor-pointer flex flex-col items-center justify-center" onClick={() => setIsEditing(true)}>
-                <Pencil size={18} />
-                <span className="text-sm mt-1">Edit</span>
-              </button>
+          <div className="mb-6 grid grid-cols-2 gap-3">
+            <button
+              className="flex h-14 items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/5 text-slate-100 transition hover:bg-white/10"
+              onClick={() => setIsEditing(true)}
+            >
+              <Pencil size={18} />
+              Edit
+            </button>
 
-              <button
-                className="flex-1 h-14 rounded-4xl bg-gray-100 text-red-500 hover:bg-gray-200 cursor-pointer flex flex-col items-center justify-center"
-                onClick={async () => {
-                  await deleteReward(reward.id);
-                  setOpen(false);
-                }}
-              >
-                <Trash2 size={18} />
-                <span className="text-sm mt-1">Delete</span>
-              </button>
-            </div>
+            <button
+              className="flex h-14 items-center justify-center gap-2 rounded-2xl border border-red-400/15 bg-red-500/10 text-red-200 transition hover:bg-red-500/15"
+              onClick={async () => {
+                await deleteReward(reward.id);
+                setOpen(false);
+              }}
+            >
+              <Trash2 size={18} />
+              Delete
+            </button>
           </div>
 
-          {/* CLAIM */}
           {celebrating && <Confetti />}
 
+          {!eligible && (
+            <div className="mb-4 rounded-2xl border border-amber-400/20 bg-amber-500/10 px-4 py-3 text-sm text-amber-100">
+              Need {remaining} more star{remaining === 1 ? "" : "s"} before this reward can be claimed.
+            </div>
+          )}
+
           <RewardClaim
-            celebrating={false}
+            celebrating={celebrating}
             onClaim={() => {
               if (!eligible) return alert(`Butuh ${remaining} stars lagi!`);
               handleClaim();
@@ -96,4 +95,3 @@ export default function RewardCardDialog({ reward, member, setOpen, isEditing, s
     </DialogContent>
   );
 }
-

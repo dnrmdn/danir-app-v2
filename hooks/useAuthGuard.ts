@@ -10,13 +10,13 @@ export function useAuthGuard() {
 
   useEffect(() => {
     if (!isPending && !session) {
-      router.push("/")
+      router.replace("/login")
     }
   }, [session, isPending, router])
 
   const handleSignOut = async () => {
     await signOut()
-    router.push("/")
+    router.replace("/login")
   }
 
   return { session, isPending, handleSignOut }

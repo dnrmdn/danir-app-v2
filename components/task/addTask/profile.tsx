@@ -1,130 +1,92 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import FloatButton from "@/components/floatButton";
 import { Plus, Users } from "lucide-react";
 import AddProfile from "./addProfile";
 import { useMemberStore } from "@/lib/store/member-store";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 
-// Assuming 'Member' type is defined elsewhere, like in the member-store
 interface Member {
   id: number;
   name?: string;
-  iconColor: string; // Assuming this is a class string like "bg-red-500"
+  iconColor: string;
 }
 
-// Update the type of the 'members' array from the store hook for clarity/safety
 interface MemberStoreState {
-    members: Member[];
-    isLoading: boolean;
-    // other store properties...
+  members: Member[];
+  isLoading: boolean;
 }
 
-export default function Profile({
-  onSelect,
-}: {
-  onSelect?: (ids: number[]) => void;
-}) {
-  const { members, isLoading } = useMemberStore() as MemberStoreState; // Cast for type safety
+export default function Profile({ onSelect }: { onSelect?: (ids: number[]) => void }) {
+  const { members, isLoading } = useMemberStore() as MemberStoreState;
   const [selectedMembers, setSelectedMembers] = useState<number[]>([]);
   const [openAdd, setOpenAdd] = useState(false);
+  const onSelectRef = useRef(onSelect);
 
-  // 🔹 update parent setiap selectedMembers berubah
   useEffect(() => {
-    onSelect?.(selectedMembers);
-  }, [selectedMembers, onSelect]);
+    onSelectRef.current = onSelect;
+  }, [onSelect]);
 
-  if (isLoading) return <div className="p-4">Loading members...</div>;
+  useEffect(() => {
+    onSelectRef.current?.(selectedMembers);
+  }, [selectedMembers]);
+
+  if (isLoading) return <div className="rounded-2xl border border-white/10 bg-[#07111f]/80 p-4 text-sm text-slate-400">Loading members...</div>;
   const hasMembers = members && members.length > 0;
 
   const toggleSelect = (id: number) => {
-    setSelectedMembers((prev) =>
-      prev.includes(id) ? prev.filter((n) => n !== id) : [...prev, id]
-    );
+    setSelectedMembers((prev) => (prev.includes(id) ? prev.filter((n) => n !== id) : [...prev, id]));
   };
 
   return (
-    <div className="bg-gray-100 rounded-lg py-3 px-4">
-      <div className="flex items-center gap-3 mb-4">
-        <Users size={28} className="text-gray-600" />
-        <p className="text-gray-700 text-xl font-medium">Profile</p>
+    <div className="rounded-2xl border border-white/10 bg-[#07111f]/80 px-4 py-4">
+      <div className="mb-4 flex items-center gap-3">
+        <Users size={22} className="text-slate-400" />
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Members</p>
+          <p className="text-base font-semibold text-white">Assign this task</p>
+        </div>
       </div>
 
       <div className="flex flex-wrap gap-3">
         {hasMembers ? (
-          // TooltipProvider should wrap the entire area where tooltips are used
-          // or be placed outside in a higher-level component, but placing it here
-          // for the list is acceptable if it's not elsewhere.
-          <TooltipProvider>
-            {members.map((member) => {
-              const isSelected = selectedMembers.includes(member.id);
-              const firstName = member.name?.split(" ")[0] ?? "";
-              const displayFirstName =
-                firstName.length > 5 ? firstName.slice(0, 5) + "…" : firstName;
+          members.map((member) => {
+            const isSelected = selectedMembers.includes(member.id);
+            const firstName = member.name?.split(" ")[0] ?? "";
+            const displayFirstName = firstName.length > 6 ? firstName.slice(0, 6) + "…" : firstName;
 
-              return (
-                // 🔑 ISSUE FIXED: Each member now has its own Tooltip wrapper
-                <Tooltip key={member.id}>
-                  <TooltipTrigger asChild>
-                    <div
-                      className={`flex flex-col items-center text-center gap-2 transition-all duration-300 cursor-pointer ${
-                        isSelected
-                          ? "scale-105"
-                          : "opacity-40 hover:opacity-100"
-                      }`}
-                      onClick={() => toggleSelect(member.id)}
-                    >
-                      <div
-                        className={`relative w-10 h-10 rounded-full flex items-center justify-center 
-                        ${member.iconColor} transition-all duration-300
-                        ${
-                          isSelected
-                            ? "border-2 border-white shadow-[0_0_10px_rgba(255,255,255,0.7)]"
-                            : ""
-                        }`}
-                      >
-                        <p className="font-bold text-white text-md">
-                          {member.name?.[0] ?? "?"}
-                        </p>
-                      </div>
-                      <p
-                        className={`text-sm font-bold transition-all ${
-                          isSelected ? "text-gray-900" : "text-gray-500"
-                        }`}
-                      >
-                        {displayFirstName}
-                      </p>
-                    </div>
-                  </TooltipTrigger>
-                  {/* 🔑 ISSUE FIXED: TooltipContent is now inside the loop and correctly accesses member data */}
-                  <TooltipContent side="bottom">
-                    <p>{member.name ?? "No Name"}</p>
-                  </TooltipContent>
-                </Tooltip>
-              );
-            })}
-          </TooltipProvider>
+            return (
+              <button
+                key={member.id}
+                type="button"
+                title={member.name ?? "No Name"}
+                className={`flex flex-col items-center gap-2 rounded-2xl border px-3 py-3 transition-all ${
+                  isSelected
+                    ? "border-cyan-300/20 bg-cyan-400/10 text-white"
+                    : "border-white/10 bg-white/5 text-slate-300 hover:bg-white/10"
+                }`}
+                onClick={() => toggleSelect(member.id)}
+              >
+                <div className={`flex h-10 w-10 items-center justify-center rounded-full ${member.iconColor}`}>
+                  <p className="text-sm font-bold text-white">{member.name?.[0] ?? "?"}</p>
+                </div>
+                <p className="text-xs font-semibold">{displayFirstName}</p>
+              </button>
+            );
+          })
         ) : (
-          <p className="text-gray-500 italic px-4">No members found.</p> // Added text here
+          <p className="px-2 text-sm italic text-slate-500">No members found.</p>
         )}
 
-        {/* --- ADD BUTTON SELALU ADA --- */}
         <div className="flex flex-col items-center gap-2">
           <FloatButton
             floating={false}
-            bgColor="bg-green-500"
+            bgColor="bg-cyan-500"
             shadow={false}
             size="w-10 h-10"
             icon={<Plus color="white" size={20} />}
             onClick={() => setOpenAdd(true)}
-            // Removed 'position="fixed"' from FloatButton as it's inside the flex-wrap
           />
-          <p className="text-sm font-bold text-gray-800">Add</p>
+          <p className="text-xs font-semibold text-slate-400">Add</p>
         </div>
       </div>
 

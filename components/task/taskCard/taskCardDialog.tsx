@@ -1,5 +1,5 @@
 import { DialogContent, DialogHeader, DialogTitle } from "@/components/animate-ui/components/radix/dialog";
-import { Pencil, Trash2 } from "lucide-react";
+import { CheckCircle2, Pencil, Trash2 } from "lucide-react";
 import { useTaskStore } from "@/lib/store/task-store";
 import TaskCardEditForm from "./taskCardEditForm";
 import { Member, Task } from "@/types/domain";
@@ -17,33 +17,37 @@ export default function TaskCardDialog({ task, member, setOpen, isEditing, setIs
   const { deleteTask, toggleTask } = useTaskStore();
 
   return (
-    <DialogContent className="rounded-4xl w-[450px] p-6">
+    <DialogContent className="w-[480px] rounded-[2rem] border border-white/10 bg-[#08111f]/95 p-6 text-white backdrop-blur-xl">
       <DialogHeader>
-        <DialogTitle className="text-4xl font-semibold mb-4 line-clamp-2">{isEditing ? "Edit Task" : task.label}</DialogTitle>
+        <DialogTitle className="mb-1 line-clamp-2 text-3xl font-black text-white">
+          {isEditing ? "Edit task" : task.label}
+        </DialogTitle>
+        {!isEditing && <p className="text-sm text-slate-400">Update details, mark progress, or remove this task from the board.</p>}
       </DialogHeader>
 
       {isEditing ? (
         <TaskCardEditForm task={task} setOpen={setOpen} setIsEditing={setIsEditing} />
       ) : (
         <>
-          <div className="w-full flex justify-center mb-6">
-            <div className="w-1/2 flex gap-4">
-              <button className="flex-1 h-14 rounded-4xl bg-gray-100 hover:bg-gray-200 cursor-pointer" onClick={() => setIsEditing(true)}>
-                <Pencil size={18} className="mx-auto" />
-                Edit
-              </button>
+          <div className="mb-6 grid grid-cols-2 gap-3">
+            <button
+              className="flex h-14 items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/5 text-slate-100 transition hover:bg-white/10"
+              onClick={() => setIsEditing(true)}
+            >
+              <Pencil size={18} />
+              Edit
+            </button>
 
-              <button
-                className="flex-1 h-14 rounded-4xl bg-gray-100 text-red-500 hover:bg-gray-200 cursor-pointer"
-                onClick={async () => {
-                  await deleteTask(task.id);
-                  setOpen(false);
-                }}
-              >
-                <Trash2 size={18} className="mx-auto" />
-                Delete
-              </button>
-            </div>
+            <button
+              className="flex h-14 items-center justify-center gap-2 rounded-2xl border border-red-400/15 bg-red-500/10 text-red-200 transition hover:bg-red-500/15"
+              onClick={async () => {
+                await deleteTask(task.id);
+                setOpen(false);
+              }}
+            >
+              <Trash2 size={18} />
+              Delete
+            </button>
           </div>
 
           <TaskCardInfo task={task} member={member} />
@@ -53,13 +57,13 @@ export default function TaskCardDialog({ task, member, setOpen, isEditing, setIs
               await toggleTask(task.id);
               setOpen(false);
             }}
-            className="w-full py-3 bg-blue-600 text-white rounded-2xl text-lg"
+            className="mt-6 flex w-full items-center justify-center gap-2 rounded-2xl border border-cyan-300/20 bg-cyan-400/10 py-3 text-lg font-semibold text-cyan-100 transition hover:bg-cyan-400/15"
           >
-            {task.completed ? "Mark as Incomplete" : "Mark as Complete"}
+            <CheckCircle2 size={18} />
+            {task.completed ? "Mark as incomplete" : "Mark as complete"}
           </button>
         </>
       )}
     </DialogContent>
   );
 }
-

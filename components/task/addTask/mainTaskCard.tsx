@@ -20,11 +20,17 @@ export default function MainTaskCard() {
         <>
           <HeaderTask member={member} />
 
-          <div className="px-4 overflow-y-auto h-full rounded-[40px] space-y-4 no-scrollbar">
+          <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-4 no-scrollbar">
             {(() => {
               const memberTasks = tasks.filter((t) => t.memberId === member.id);
 
-              return memberTasks.length > 0 ? memberTasks.map((task) => <TaskCard key={task.id} task={task} member={member} />) : <p className="text-center text-gray-400 py-10">Belum ada task untuk member ini</p>;
+              return memberTasks.length > 0 ? (
+                memberTasks.map((task) => <TaskCard key={task.id} task={task} member={member} />)
+              ) : (
+                <div className="flex min-h-[220px] items-center justify-center rounded-[1.75rem] border border-dashed border-white/10 bg-white/5 text-center text-sm text-slate-500">
+                  Belum ada task untuk member ini
+                </div>
+              );
             })()}
           </div>
         </>

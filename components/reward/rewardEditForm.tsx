@@ -45,51 +45,58 @@ export default function RewardEditForm({ reward, setOpen, setIsEditing }: Props)
   };
 
   return (
-    <div className="space-y-4 mb-6">
-      {/* Name */}
+    <div className="mb-6 space-y-4">
       <div>
-        <label className="text-gray-600 text-sm">Reward Name</label>
-        <input type="text" value={data.name} onChange={(e) => setData({ ...data, name: e.target.value })} className="w-full border rounded-xl px-3 py-2" />
+        <label className="mb-1.5 block text-sm font-medium text-slate-300">Reward name</label>
+        <input
+          type="text"
+          value={data.name}
+          onChange={(e) => setData({ ...data, name: e.target.value })}
+          className="w-full rounded-2xl border border-white/10 bg-[#07111f]/80 px-4 py-3 text-white outline-none"
+        />
       </div>
 
-      {/* Image Upload */}
       <div className="space-y-2">
-        <label className="text-gray-600 text-sm">Reward Image</label>
-
-        {/* PREVIEW */}
+        <label className="block text-sm font-medium text-slate-300">Reward image</label>
         {preview && (
-          <div className="relative w-28 h-28 rounded-xl overflow-hidden border">
+          <div className="relative h-28 w-28 overflow-hidden rounded-2xl border border-white/10">
             <Image src={preview} alt="Preview" fill unoptimized className="object-cover" />
           </div>
         )}
 
-        {/* BUTTON UPLOAD */}
         <div>
-          <input id="fileInput" type="file" accept="image/*" onChange={handleSelectFile} className="hidden" />
-
-          <label htmlFor="fileInput" className="inline-flex w-full h-full items-center gap-2 px-4 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 cursor-pointer border text-sm">
-            <span>📁 Select Image...</span>
+          <input id="fileInputEditReward" type="file" accept="image/*" onChange={handleSelectFile} className="hidden" />
+          <label htmlFor="fileInputEditReward" className="inline-flex cursor-pointer items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-slate-200 transition hover:bg-white/10">
+            Select image
           </label>
         </div>
       </div>
 
-      {/* Minimum Stars */}
       <div>
-        <label className="text-gray-600 text-sm">Minimum Stars</label>
-        <input type="number" value={data.minStars} onChange={(e) => setData({ ...data, minStars: e.target.value })} className="w-full border rounded-xl px-3 py-2" />
+        <label className="mb-1.5 block text-sm font-medium text-slate-300">Minimum stars</label>
+        <input
+          type="number"
+          value={data.minStars}
+          onChange={(e) => setData({ ...data, minStars: e.target.value })}
+          className="w-full rounded-2xl border border-white/10 bg-[#07111f]/80 px-4 py-3 text-white outline-none"
+        />
       </div>
 
-      {/* ACTIONS */}
-      <div className="flex justify-end gap-3 mt-6">
-        <button onClick={() => setIsEditing(false)} className="px-4 py-2 bg-gray-200 rounded-xl">
+      <div className="mt-6 flex justify-end gap-3">
+        <button
+          onClick={() => setIsEditing(false)}
+          className="rounded-2xl border border-white/10 bg-white/5 px-4 py-2.5 text-slate-200 transition hover:bg-white/10"
+        >
           Cancel
         </button>
 
-        <button onClick={save} className="px-4 py-2 bg-blue-600 text-white rounded-xl">
-          Save
+        <button
+          onClick={save}
+          className="rounded-2xl border border-violet-300/20 bg-violet-400/15 px-4 py-2.5 font-semibold text-violet-50 transition hover:bg-violet-400/20"
+        >
+          Save changes
         </button>
       </div>
     </div>
   );
 }
-

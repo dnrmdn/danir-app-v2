@@ -10,14 +10,28 @@ interface InputWithIconProps {
   inputClassName?: string;
 }
 
-export default function AddMemberName({ icon, label, placeholder = "Enter text...", value, onChange, className = "", inputClassName = "" }: InputWithIconProps) {
+export default function AddMemberName({
+  icon,
+  label,
+  placeholder = "Enter text...",
+  value,
+  onChange,
+  className = "",
+  inputClassName = "",
+}: InputWithIconProps) {
   return (
-    <div className={`bg-gray-100 rounded-lg ${className}`}>
-      <div className="flex items-center px-4 gap-2">
-        {icon && <div className="text-gray-600">{icon}</div>}
-        <div className="flex-1 pt-2">
-          {label && <p className="text-sm px-2 text-gray-400">{label}</p>}
-          <input type="text" placeholder={placeholder} value={value} onChange={onChange} className={`w-full h-10 mb-1 px-2 rounded-md text-xl bg-transparent focus:outline-none ${inputClassName}`} />
+    <div className={`rounded-2xl border border-white/10 bg-[#07111f]/80 ${className}`}>
+      <div className="flex items-center gap-3 px-4 py-3">
+        {icon && <div className="text-slate-400">{icon}</div>}
+        <div className="flex-1">
+          {label && <p className="mb-1 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">{label}</p>}
+          <input
+            type="text"
+            placeholder={placeholder}
+            value={value}
+            onChange={onChange}
+            className={`h-9 w-full bg-transparent text-lg text-white placeholder:text-slate-500 focus:outline-none ${inputClassName}`}
+          />
         </div>
       </div>
     </div>
