@@ -78,7 +78,5 @@ export type CreateRewardPayload = {
   name: string;
   image: string | null;
   minStars: number;
-
-  memberId: number; // FIXED ✔ number
-  userId: string;   // FIXED ✔ string (from session.userId)
+  memberId: number;
 };

@@ -66,18 +66,15 @@ export default function Page() {
 
           <div className="mb-6 grid grid-cols-3 gap-3">
             {[
-              [CreditCard, "Money"],
-              [Trophy, "Rewards"],
-              [Link2, "Saved Links"],
-            ].map(([Icon, label]) => {
-              const LucideIcon = Icon as typeof CreditCard;
-              return (
-                <div key={label} className="rounded-2xl border border-white/10 bg-white/5 p-4 text-center backdrop-blur-sm">
-                  <LucideIcon className="mx-auto mb-2 h-5 w-5 text-cyan-200" />
-                  <p className="text-xs font-medium text-slate-300">{label}</p>
-                </div>
-              );
-            })}
+              { key: "money", icon: CreditCard, label: "Money" },
+              { key: "rewards", icon: Trophy, label: "Rewards" },
+              { key: "saved-links", icon: Link2, label: "Saved Links" },
+            ].map(({ key, icon: LucideIcon, label }) => (
+              <div key={key} className="rounded-2xl border border-white/10 bg-white/5 p-4 text-center backdrop-blur-sm">
+                <LucideIcon className="mx-auto mb-2 h-5 w-5 text-cyan-200" />
+                <p className="text-xs font-medium text-slate-300">{label}</p>
+              </div>
+            ))}
           </div>
 
           <LoginForm />

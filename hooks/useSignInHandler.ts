@@ -4,6 +4,12 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { signIn } from "@/lib/auth-client"
 
+type SubmitOptions = {
+    captchaToken?: string
+}
+
+const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY
+
 export function useSignInHandler() {
     const router = useRouter()
     const [email, setEmail] = useState("")
@@ -12,31 +18,49 @@ export function useSignInHandler() {
     const [success, setSuccess] = useState(false);
     const [error, setError] = useState<string | null>(null)
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent, options?: SubmitOptions) => {
         e.preventDefault()
         setError(null)
+
+        if (TURNSTILE_SITE_KEY && !options?.captchaToken) {
+            setError("Selesaikan verifikasi keamanan dulu ya.")
+            return
+        }
+
         setLoading(true)
 
         try {
-            const result = await signIn.email({ email, password })
+            const result = await signIn.email({
+                email,
+                password,
+                fetchOptions: {
+                    headers: options?.captchaToken
+                        ? {
+                            "x-captcha-response": options.captchaToken,
+                        }
+                        : undefined,
+                },
+            })
 
-            // Kalau ada error dari API auth
             if (result?.error) {
+                const rawMessage = result.error.message?.toLowerCase() ?? ""
                 const message =
-                    result.error.message?.toLowerCase().includes("not found") ||
-                        result.error.message?.toLowerCase().includes("invalid")
+                    rawMessage.includes("not found") || rawMessage.includes("invalid")
                         ? "Email atau password salah. Silakan coba lagi."
-                        : "Terjadi kesalahan saat login."
+                        : rawMessage.includes("too many") || rawMessage.includes("429")
+                            ? "Terlalu banyak percobaan login. Coba lagi beberapa menit lagi."
+                            : rawMessage.includes("captcha") || rawMessage.includes("verification")
+                                ? "Verifikasi keamanan gagal. Coba ulang lagi."
+                                : "Terjadi kesalahan saat login."
 
                 setError(message)
                 return
-            } else {
-                setSuccess(true);
-                setTimeout(() => {
-                    router.push("/calendar");
-                }, 1000);
             }
 
+            setSuccess(true)
+            setTimeout(() => {
+                router.push("/calendar")
+            }, 1000)
         } catch (err) {
             console.error(err)
             setError("Something went wrong. Please try again.")
@@ -56,4 +80,3 @@ export function useSignInHandler() {
         handleSubmit,
     }
 }
-

@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { usePathname } from "next/navigation";
-import { Calendar1, CheckCircle, ForkKnifeIcon, Image, Link2, Sparkles, Stars, Wallet } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import { Calendar1, CheckCircle, ChevronDown, ForkKnifeIcon, Image as ImageIcon, Link2, LogOut, Settings2, Sparkles, Stars, UserCircle2, Wallet } from "lucide-react";
 import { useUserSession } from "@/hooks/useUserSession";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 const navItems = [
   { label: "Calendar", href: "/calendar", icon: Calendar1 },
@@ -12,7 +13,7 @@ const navItems = [
   { label: "Reward", href: "/reward", icon: Stars },
   { label: "Meal", href: "/meal", icon: ForkKnifeIcon },
   { label: "Money", href: "/money", icon: Wallet },
-  { label: "Photos", href: "/photo", icon: Image },
+  { label: "Photos", href: "/photo", icon: ImageIcon },
   { label: "Links", href: "/saved-links", icon: Link2 },
 ];
 
@@ -29,7 +30,8 @@ const pageMeta: Record<string, { title: string; subtitle: string }> = {
 
 export default function Navbar() {
   const pathname = usePathname();
-  const { user, session } = useUserSession();
+  const router = useRouter();
+  const { user, session, handleSignOut } = useUserSession();
   const [loginState, setLoginState] = useState<"first-ever" | "first-this-session" | "returning" | null>(null);
 
   useEffect(() => {
@@ -60,19 +62,52 @@ export default function Navbar() {
     [pathname]
   );
 
-  const greeting = loginState === "first-ever" ? `Welcome, ${user?.name ?? "there"}` : `Hey, ${user?.name ?? "there"}`;
-
   if (!session || !user) return null;
+
+  const greeting = loginState === "first-ever" ? `Welcome, ${user.name}` : `Hey, ${user.name}`;
 
   return (
     <header className="relative px-4 pt-6 sm:px-6 lg:px-8">
-      <div className="mb-6 flex flex-col items-center text-center">
-        <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-cyan-400/20 bg-cyan-400/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-cyan-200 backdrop-blur-xl">
-          <Sparkles className="h-3.5 w-3.5" />
-          {greeting}
+      <div className="mb-6 flex flex-col items-center gap-4 text-center">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button className="group inline-flex items-center gap-2 rounded-full border border-cyan-400/20 bg-cyan-400/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-cyan-200 backdrop-blur-xl transition hover:border-cyan-300/30 hover:bg-cyan-400/15">
+              <Sparkles className="h-3.5 w-3.5" />
+              {greeting}
+              <ChevronDown className="h-3.5 w-3.5 transition group-data-[state=open]:rotate-180" />
+            </button>
+          </DropdownMenuTrigger>
+
+          <DropdownMenuContent align="center" sideOffset={10} className="min-w-64 rounded-3xl border border-white/10 bg-[#0b1525]/95 p-2 text-white shadow-2xl shadow-cyan-950/30 backdrop-blur-xl">
+            <DropdownMenuLabel className="p-0 font-normal">
+              <div className="rounded-2xl bg-white/[0.04] px-3 py-3 text-left">
+                <div className="truncate text-sm font-semibold text-white">{user.name}</div>
+                <div className="truncate text-xs text-slate-400">{user.email}</div>
+              </div>
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator className="my-2 bg-white/10" />
+            <DropdownMenuGroup>
+              <DropdownMenuItem onClick={() => router.push("/profile")} className="rounded-2xl text-slate-200 focus:bg-white/10 focus:text-white">
+                <UserCircle2 className="mr-2 h-4 w-4" />
+                Profile
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => router.push("/settings")} className="rounded-2xl text-slate-200 focus:bg-white/10 focus:text-white">
+                <Settings2 className="mr-2 h-4 w-4" />
+                Settings
+              </DropdownMenuItem>
+            </DropdownMenuGroup>
+            <DropdownMenuSeparator className="my-2 bg-white/10" />
+            <DropdownMenuItem onClick={handleSignOut} className="rounded-2xl text-red-300 focus:bg-red-500/10 focus:text-red-200">
+              <LogOut className="mr-2 h-4 w-4" />
+              Log out
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+        <div className="flex-1">
+          <h1 className="text-3xl font-black tracking-tight text-white sm:text-4xl">{currentPage.title}</h1>
+          <p className="mt-2 max-w-2xl mx-auto text-sm text-slate-400 sm:text-base">{currentPage.subtitle}</p>
         </div>
-        <h1 className="text-3xl font-black tracking-tight text-white sm:text-4xl">{currentPage.title}</h1>
-        <p className="mt-2 max-w-2xl text-sm text-slate-400 sm:text-base">{currentPage.subtitle}</p>
       </div>
 
       <div className="mx-auto flex w-full justify-center">
@@ -85,7 +120,7 @@ export default function Navbar() {
               <Link
                 key={item.href}
                 href={item.href}
-                className={`inline-flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-medium transition-all ${
+                className={`inline-flex items-center gap-1.5 rounded-full px-3 py-2 text-xs font-medium transition-all sm:gap-2 sm:px-4 sm:py-2.5 sm:text-sm ${
                   isActive
                     ? "bg-gradient-to-r from-cyan-400/20 to-emerald-400/15 text-white shadow-lg shadow-cyan-950/20 ring-1 ring-cyan-300/20"
                     : "text-slate-300 hover:bg-white/8 hover:text-white"

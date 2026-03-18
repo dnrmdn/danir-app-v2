@@ -41,18 +41,15 @@ export default function SignupPage() {
 
             <div className="mt-8 grid gap-4 sm:grid-cols-3">
               {[
-                [CalendarDays, "Calendar"],
-                [CreditCard, "Money"],
-                [UtensilsCrossed, "Meals"],
-              ].map(([Icon, label]) => {
-                const LucideIcon = Icon as typeof CalendarDays;
-                return (
-                  <div key={label} className="rounded-2xl border border-white/10 bg-slate-950/50 p-4 text-center">
-                    <LucideIcon className="mx-auto mb-2 h-5 w-5 text-cyan-200" />
-                    <p className="text-sm font-medium text-slate-300">{label}</p>
-                  </div>
-                );
-              })}
+                { key: "calendar", icon: CalendarDays, label: "Calendar" },
+                { key: "money", icon: CreditCard, label: "Money" },
+                { key: "meals", icon: UtensilsCrossed, label: "Meals" },
+              ].map(({ key, icon: LucideIcon, label }) => (
+                <div key={key} className="rounded-2xl border border-white/10 bg-slate-950/50 p-4 text-center">
+                  <LucideIcon className="mx-auto mb-2 h-5 w-5 text-cyan-200" />
+                  <p className="text-sm font-medium text-slate-300">{label}</p>
+                </div>
+              ))}
             </div>
           </div>
         </section>

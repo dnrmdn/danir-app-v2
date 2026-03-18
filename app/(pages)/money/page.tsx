@@ -2,60 +2,17 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { format } from "date-fns";
-import {
-  AlertTriangle,
-  ArrowDownRight,
-  ArrowLeftRight,
-  ArrowUpRight,
-  Download,
-  FileUp,
-  Landmark,
-  Pencil,
-  PiggyBank,
-  Plus,
-  RefreshCcw,
-  Trash2,
-  WalletCards,
-} from "lucide-react";
+import { AlertTriangle, ArrowDownRight, ArrowLeftRight, ArrowUpRight, Download, FileUp, Landmark, Pencil, PiggyBank, Plus, RefreshCcw, Save, Trash2, WalletCards } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import {
-  Line,
-  LineChart,
-  Pie,
-  PieChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
+import { Line, LineChart, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { useUserSession } from "@/hooks/useUserSession";
 
 type MoneyNavId = "dashboard" | "transactions" | "categories" | "budgets" | "accounts" | "analytics" | "goals";
@@ -164,17 +121,17 @@ function formatMoney(amount: number, currency: string) {
   }
 }
 
-export default function MoneyPage() {
 function asIncomeExpense(value: string): "INCOME" | "EXPENSE" {
-  return value === "INCOME" ? "INCOME" : "EXPENSE"
+  return value === "INCOME" ? "INCOME" : "EXPENSE";
 }
 
 function asAccountType(value: string): "CASH" | "BANK" | "EWALLET" {
-  if (value === "BANK") return "BANK"
-  if (value === "EWALLET") return "EWALLET"
-  return "CASH"
+  if (value === "BANK") return "BANK";
+  if (value === "EWALLET") return "EWALLET";
+  return "CASH";
 }
 
+export default function MoneyPage() {
   const { session } = useUserSession();
   const [active, setActive] = useState<MoneyNavId>("dashboard");
   const [month, setMonth] = useState<string>(() => monthString());
@@ -211,7 +168,10 @@ function asAccountType(value: string): "CASH" | "BANK" | "EWALLET" {
   });
 
   const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
-  const [categoryForm, setCategoryForm] = useState({ name: "", kind: "EXPENSE" as "INCOME" | "EXPENSE" });
+  const [categoryForm, setCategoryForm] = useState({
+    name: "",
+    kind: "EXPENSE" as "INCOME" | "EXPENSE",
+  });
 
   const [accountDialogOpen, setAccountDialogOpen] = useState(false);
   const [accountForm, setAccountForm] = useState({
@@ -274,9 +234,7 @@ function asAccountType(value: string): "CASH" | "BANK" | "EWALLET" {
       const end = monthStartEnd.end.toISOString();
 
       const [tx, b, ins] = await Promise.all([
-        fetch(`/api/finance/transactions?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`).then((r) =>
-          r.json()
-        ),
+        fetch(`/api/finance/transactions?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`).then((r) => r.json()),
         fetch(`/api/finance/budgets?month=${encodeURIComponent(month)}`).then((r) => r.json()),
         fetch(`/api/finance/insights?month=${encodeURIComponent(month)}`).then((r) => r.json()),
       ]);
@@ -409,7 +367,13 @@ function asAccountType(value: string): "CASH" | "BANK" | "EWALLET" {
         return;
       }
       setTransferDialogOpen(false);
-      setTransferForm({ fromAccountId: "", toAccountId: "", amount: "", date: format(new Date(), "yyyy-MM-dd"), note: "" });
+      setTransferForm({
+        fromAccountId: "",
+        toAccountId: "",
+        amount: "",
+        date: format(new Date(), "yyyy-MM-dd"),
+        note: "",
+      });
       await reloadMonthData();
     } catch {
       setError("Gagal transfer");
@@ -457,7 +421,12 @@ function asAccountType(value: string): "CASH" | "BANK" | "EWALLET" {
         return;
       }
       setAccountDialogOpen(false);
-      setAccountForm({ name: "", type: "CASH", currency: "IDR", initialBalance: "0" });
+      setAccountForm({
+        name: "",
+        type: "CASH",
+        currency: "IDR",
+        initialBalance: "0",
+      });
       await reloadCore();
     } catch {
       setError("Gagal membuat akun");
@@ -473,7 +442,12 @@ function asAccountType(value: string): "CASH" | "BANK" | "EWALLET" {
       const res = await fetch("/api/finance/budgets", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ month, categoryId: Number(budgetForm.categoryId), currency: budgetForm.currency, limit: Number(budgetForm.limit) }),
+        body: JSON.stringify({
+          month,
+          categoryId: Number(budgetForm.categoryId),
+          currency: budgetForm.currency,
+          limit: Number(budgetForm.limit),
+        }),
       });
       const json = await res.json();
       if (!json.success) {
@@ -512,7 +486,13 @@ function asAccountType(value: string): "CASH" | "BANK" | "EWALLET" {
         return;
       }
       setGoalDialogOpen(false);
-      setGoalForm({ name: "", currency: "IDR", targetAmount: "", currentAmount: "0", targetDate: "" });
+      setGoalForm({
+        name: "",
+        currency: "IDR",
+        targetAmount: "",
+        currentAmount: "0",
+        targetDate: "",
+      });
       await reloadCore();
     } catch {
       setError("Gagal membuat goal");
@@ -595,164 +575,160 @@ function asAccountType(value: string): "CASH" | "BANK" | "EWALLET" {
     return insights.totalsByCurrency;
   }, [insights]);
 
-  const totalIncome = useMemo(
-    () => dashboardTotals.reduce((sum, item) => sum + item.income, 0),
-    [dashboardTotals]
-  );
+  function formatCompactNumber(value: number) {
+    if (Math.abs(value) >= 1_000_000_000) return (value / 1_000_000_000).toFixed(1) + "B";
+    if (Math.abs(value) >= 1_000_000) return (value / 1_000_000).toFixed(1) + "M";
+    if (Math.abs(value) >= 1_000) return (value / 1_000).toFixed(1) + "K";
+    return value.toString();
+  }
 
-  const totalExpense = useMemo(
-    () => dashboardTotals.reduce((sum, item) => sum + item.expense, 0),
-    [dashboardTotals]
-  );
+  const totalIncome = useMemo(() => dashboardTotals.reduce((sum, item) => sum + item.income, 0), [dashboardTotals]);
 
-  const totalBalance = useMemo(
-    () => dashboardTotals.reduce((sum, item) => sum + item.balance, 0),
-    [dashboardTotals]
-  );
+  const totalExpense = useMemo(() => dashboardTotals.reduce((sum, item) => sum + item.expense, 0), [dashboardTotals]);
 
-  const budgetAlertCount = useMemo(
-    () => (insights?.budgetUsage || []).filter((item) => item.progress >= 80).length,
-    [insights]
-  );
+  const totalBalance = useMemo(() => dashboardTotals.reduce((sum, item) => sum + item.balance, 0), [dashboardTotals]);
+
+  const budgetAlertCount = useMemo(() => (insights?.budgetUsage || []).filter((item) => item.progress >= 80).length, [insights]);
 
   const recentTransactions = useMemo(() => transactions.slice(0, 6), [transactions]);
 
   if (!session) {
     return (
-      <div className="max-w-4xl mx-auto px-4 py-16">
-        <Card className="p-8 rounded-3xl border-2 border-primary/10">
-          <div className="text-3xl font-black mb-2">Money Tracker</div>
-          <div className="text-muted-foreground">Login dulu untuk pakai fitur money tracker.</div>
+      <div className="mx-auto max-w-4xl px-4 py-12 sm:py-16">
+        <Card className="rounded-[1.25rem] border border-primary/10 p-5 sm:rounded-3xl sm:p-8">
+          <div className="mb-2 text-2xl font-black sm:text-3xl">Money Tracker</div>
+          <div className="text-sm text-muted-foreground sm:text-base">Login dulu untuk pakai fitur money tracker.</div>
         </Card>
       </div>
     );
   }
 
   return (
-    <div className="min-h-[calc(100vh-6rem)] pb-28">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10">
-        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-8">
+    <div className="min-h-[calc(100vh-6rem)] pb-20 sm:pb-28">
+      <div className="mx-auto max-w-7xl px-2 py-4 sm:px-4 sm:py-8 lg:px-6">
+        <div className="mb-5 flex flex-col gap-4 sm:mb-8 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <div className="text-sm font-black text-primary uppercase tracking-widest">Money Tracker</div>
-            <h1 className="text-5xl font-black tracking-tight">Finance</h1>
-            <p className="text-muted-foreground mt-2">
-              Transaksi, budget, goals, multi account, export/import, dan insight bulanan.
-            </p>
+            <div className="text-[10px] font-black uppercase tracking-[0.2em] text-primary sm:text-sm">Money Tracker</div>
+            <h1 className="text-2xl font-black tracking-tight sm:text-4xl lg:text-5xl">Finance</h1>
+            <p className="mt-1 text-xs text-muted-foreground sm:mt-2 sm:text-sm">Transaksi, budget, goals, multi account, export/import, dan insight bulanan.</p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
             <div className="flex items-center gap-2">
-              <Label className="text-xs font-black text-muted-foreground uppercase tracking-widest">Month</Label>
-              <Input
-                type="month"
-                value={month}
-                onChange={(e) => setMonth(e.target.value)}
-                className="h-10 w-[160px] rounded-2xl"
-              />
+              <Label className="text-[10px] font-black uppercase tracking-[0.14em] text-muted-foreground sm:text-xs sm:tracking-widest">Month</Label>
+              <Input type="month" value={month} onChange={(e) => setMonth(e.target.value)} className="h-9 w-[136px] rounded-xl text-xs sm:h-10 sm:w-[160px] sm:rounded-2xl sm:text-sm" />
             </div>
-            <Button variant="outline" className="rounded-2xl border border-white/10 bg-[#07111f]/80 text-slate-100 hover:border-cyan-300/20 hover:bg-white/10 hover:text-white" onClick={() => reloadMonthData()} disabled={loading}>
-              <RefreshCcw className="mr-2" size={18} />
+
+            <Button
+              variant="outline"
+              className="h-9 rounded-xl border border-white/10 bg-[#07111f]/80 px-3 text-xs text-slate-100 hover:border-cyan-300/20 hover:bg-white/10 hover:text-white sm:h-10 sm:rounded-2xl sm:px-4 sm:text-sm"
+              onClick={() => reloadMonthData()}
+              disabled={loading}
+            >
+              <RefreshCcw className="mr-1.5 h-4 w-4 sm:mr-2" />
               Refresh
             </Button>
-            <Button variant="outline" className="rounded-2xl border border-white/10 bg-[#07111f]/80 text-slate-100 hover:border-cyan-300/20 hover:bg-white/10 hover:text-white" asChild>
+
+            <Button
+              variant="outline"
+              className="h-9 rounded-xl border border-white/10 bg-[#07111f]/80 px-3 text-xs text-slate-100 hover:border-cyan-300/20 hover:bg-white/10 hover:text-white sm:h-10 sm:rounded-2xl sm:px-4 sm:text-sm"
+              asChild
+            >
               <a href={exportUrl}>
-                <Download className="mr-2" size={18} />
+                <Download className="mr-1.5 h-4 w-4 sm:mr-2" />
                 Export CSV
               </a>
             </Button>
-            <Button variant="outline" className="rounded-2xl border border-white/10 bg-[#07111f]/80 text-slate-100 hover:border-cyan-300/20 hover:bg-white/10 hover:text-white" onClick={handleImportClick} disabled={loading}>
-              <FileUp className="mr-2" size={18} />
+
+            <Button
+              variant="outline"
+              className="h-9 rounded-xl border border-white/10 bg-[#07111f]/80 px-3 text-xs text-slate-100 hover:border-cyan-300/20 hover:bg-white/10 hover:text-white sm:h-10 sm:rounded-2xl sm:px-4 sm:text-sm"
+              onClick={handleImportClick}
+              disabled={loading}
+            >
+              <FileUp className="mr-1.5 h-4 w-4 sm:mr-2" />
               Import CSV
             </Button>
-            <input
-              ref={importInputRef}
-              type="file"
-              accept=".csv,text/csv"
-              className="hidden"
-              onChange={(e) => handleImportFile(e.target.files?.[0] || null)}
-            />
+
+            <input ref={importInputRef} type="file" accept=".csv,text/csv" className="hidden" onChange={(e) => handleImportFile(e.target.files?.[0] || null)} />
           </div>
         </div>
 
-        {error && (
-          <div className="mb-6 bg-destructive/10 text-destructive font-bold p-4 rounded-2xl border border-destructive/20">
-            {error}
-          </div>
-        )}
+        {error && <div className="mb-4 rounded-xl border border-destructive/20 bg-destructive/10 p-3 text-sm font-bold text-destructive sm:mb-6 sm:rounded-2xl sm:p-4">{error}</div>}
 
         {active === "dashboard" && (
-          <div className="space-y-6">
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-              <Card className="rounded-[1.75rem] border border-white/10 bg-white/5 p-5 text-white backdrop-blur-xl">
-                <div className="mb-4 flex items-center justify-between">
-                  <div className="rounded-2xl border border-white/10 bg-emerald-400/10 p-3"><WalletCards className="h-5 w-5 text-emerald-200" /></div>
-                  <Badge className="rounded-full border border-white/10 bg-white/10 text-slate-200">All currencies</Badge>
-                </div>
-                <div className="text-3xl font-black text-white">{totalBalance.toLocaleString()}</div>
-                <div className="mt-2 text-sm font-semibold text-slate-200">Total balance snapshot</div>
-                <div className="mt-1 text-xs text-slate-500">Combined balance across current tracked currencies.</div>
-                <div className="mt-3 text-xs text-slate-500">{dashboardTotals.length} currency bucket(s) tracked</div>
-              </Card>
+          <div className="space-y-4 sm:space-y-6">
+            <div className="grid grid-cols-4 items-start gap-2 sm:gap-3">
+              <SummaryFinanceCard title="Balance" value={formatCompactNumber(totalBalance)} badge="All" icon={<WalletCards className="h-3.5 w-3.5 text-emerald-200 sm:h-5 sm:w-5" />} iconTone="bg-emerald-400/10" />
 
-              <Card className="rounded-[1.75rem] border border-white/10 bg-white/5 p-5 text-white backdrop-blur-xl">
-                <div className="mb-4 flex items-center justify-between">
-                  <div className="rounded-2xl border border-white/10 bg-cyan-400/10 p-3"><ArrowUpRight className="h-5 w-5 text-cyan-200" /></div>
-                  <Badge className="rounded-full border border-cyan-300/15 bg-cyan-400/10 text-cyan-100">Income</Badge>
-                </div>
-                <div className="text-3xl font-black text-white">{totalIncome.toLocaleString()}</div>
-                <div className="mt-2 text-sm font-semibold text-slate-200">Income this month</div>
-                <div className="mt-1 text-xs text-slate-500">Money coming in across all tracked accounts.</div>
-              </Card>
+              <SummaryFinanceCard
+                title="Income"
+                value={formatCompactNumber(totalIncome)}
+                badge="In"
+                icon={<ArrowUpRight className="h-3.5 w-3.5 text-cyan-200 sm:h-5 sm:w-5" />}
+                iconTone="bg-cyan-400/10"
+                badgeTone="border-cyan-300/15 bg-cyan-400/10 text-cyan-100"
+              />
 
-              <Card className="rounded-[1.75rem] border border-white/10 bg-white/5 p-5 text-white backdrop-blur-xl">
-                <div className="mb-4 flex items-center justify-between">
-                  <div className="rounded-2xl border border-white/10 bg-rose-400/10 p-3"><ArrowDownRight className="h-5 w-5 text-rose-200" /></div>
-                  <Badge className="rounded-full border border-rose-300/15 bg-rose-400/10 text-rose-100">Expense</Badge>
-                </div>
-                <div className="text-3xl font-black text-white">{totalExpense.toLocaleString()}</div>
-                <div className="mt-2 text-sm font-semibold text-slate-200">Expense this month</div>
-                <div className="mt-1 text-xs text-slate-500">How much went out during the current month.</div>
-              </Card>
+              <SummaryFinanceCard
+                title="Expense"
+                value={formatCompactNumber(totalExpense)}
+                badge="Out"
+                icon={<ArrowDownRight className="h-3.5 w-3.5 text-rose-200 sm:h-5 sm:w-5" />}
+                iconTone="bg-rose-400/10"
+                badgeTone="border-rose-300/15 bg-rose-400/10 text-rose-100"
+              />
 
-              <Card className="rounded-[1.75rem] border border-white/10 bg-white/5 p-5 text-white backdrop-blur-xl">
-                <div className="mb-4 flex items-center justify-between">
-                  <div className="rounded-2xl border border-white/10 bg-amber-400/10 p-3"><PiggyBank className="h-5 w-5 text-amber-200" /></div>
-                  <Badge className="rounded-full border border-amber-300/15 bg-amber-400/10 text-amber-100">Attention</Badge>
-                </div>
-                <div className="text-3xl font-black text-white">{budgetAlertCount}</div>
-                <div className="mt-2 text-sm font-semibold text-slate-200">Budget alerts</div>
-                <div className="mt-1 text-xs text-slate-500">Categories at or above 80% of their limit.</div>
-              </Card>
+              <SummaryFinanceCard
+                title="Alerts"
+                value={String(budgetAlertCount)}
+                badge="Warn"
+                icon={<PiggyBank className="h-3.5 w-3.5 text-amber-200 sm:h-5 sm:w-5" />}
+                iconTone="bg-amber-400/10"
+                badgeTone="border-amber-300/15 bg-amber-400/10 text-amber-100"
+              />
             </div>
 
-            <div className="grid grid-cols-1 gap-6 2xl:grid-cols-[1.5fr_0.9fr]">
-              <div className="space-y-6">
-                <Card className="rounded-[2rem] border border-white/10 bg-white/5 p-6 text-white backdrop-blur-xl">
-                  <div className="mb-5 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div className="grid grid-cols-1 gap-4 sm:gap-6 2xl:grid-cols-[1.5fr_0.9fr]">
+              <div className="space-y-4 sm:space-y-6">
+                <Card className="rounded-[1.25rem] border border-white/10 bg-white/5 p-3 text-white backdrop-blur-xl sm:rounded-[2rem] sm:p-6">
+                  <div className="mb-4 flex flex-col gap-3 sm:mb-5 lg:flex-row lg:items-center lg:justify-between">
                     <div>
-                      <div className="text-lg font-black">Cashflow overview</div>
-                      <div className="text-sm text-slate-400">Track the momentum of your expenses over the last 6 months.</div>
+                      <div className="text-base font-black sm:text-lg">Cashflow overview</div>
+                      <div className="text-xs text-slate-400 sm:text-sm">Track the momentum of your expenses over the last 6 months.</div>
                     </div>
+
                     <div className="flex flex-wrap gap-2">
-                      <Button className="rounded-2xl border border-cyan-300/20 bg-cyan-400/10 font-semibold text-cyan-100 hover:bg-cyan-400/15" onClick={openNewTransaction}>
-                        <Plus className="mr-2" size={18} />
+                      <Button className="h-9 rounded-xl border border-cyan-300/20 bg-cyan-400/10 px-3 text-xs font-semibold text-cyan-100 hover:bg-cyan-400/15 sm:h-10 sm:rounded-2xl sm:px-4 sm:text-sm" onClick={openNewTransaction}>
+                        <Plus className="mr-1.5 h-4 w-4 sm:mr-2" />
                         Add transaction
                       </Button>
-                      <Button variant="outline" className="rounded-2xl border border-white/10 bg-[#07111f]/80 text-slate-100 hover:border-cyan-300/20 hover:bg-white/10" onClick={() => setTransferDialogOpen(true)}>
-                        <ArrowLeftRight className="mr-2" size={18} />
+
+                      <Button
+                        variant="outline"
+                        className="h-9 rounded-xl border border-white/10 bg-[#07111f]/80 px-3 text-xs text-slate-100 hover:border-cyan-300/20 hover:bg-white/10 sm:h-10 sm:rounded-2xl sm:px-4 sm:text-sm"
+                        onClick={() => setTransferDialogOpen(true)}
+                      >
+                        <ArrowLeftRight className="mr-1.5 h-4 w-4 sm:mr-2" />
                         Transfer
                       </Button>
-                      <Button variant="outline" className="rounded-2xl border border-white/10 bg-[#07111f]/80 text-slate-100 hover:border-cyan-300/20 hover:bg-white/10" onClick={() => setGoalDialogOpen(true)}>
-                        <Plus className="mr-2" size={18} />
+
+                      <Button
+                        variant="outline"
+                        className="h-9 rounded-xl border border-white/10 bg-[#07111f]/80 px-3 text-xs text-slate-100 hover:border-cyan-300/20 hover:bg-white/10 sm:h-10 sm:rounded-2xl sm:px-4 sm:text-sm"
+                        onClick={() => setGoalDialogOpen(true)}
+                      >
+                        <Plus className="mr-1.5 h-4 w-4 sm:mr-2" />
                         New goal
                       </Button>
                     </div>
                   </div>
+
                   <ChartContainer className="w-full" config={{ expense: { label: "Expense", color: "hsl(var(--primary))" } }}>
-                    <ResponsiveContainer width="100%" height={300}>
+                    <ResponsiveContainer width="100%" height={220}>
                       <LineChart data={chartLineData}>
-                        <XAxis dataKey="month" tickLine={false} axisLine={false} stroke="rgba(148,163,184,.45)" />
-                        <YAxis tickLine={false} axisLine={false} stroke="rgba(148,163,184,.45)" />
+                        <XAxis dataKey="month" tickLine={false} axisLine={false} stroke="rgba(148,163,184,.45)" tick={{ fontSize: 11 }} />
+                        <YAxis tickLine={false} axisLine={false} stroke="rgba(148,163,184,.45)" tick={{ fontSize: 11 }} />
                         <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
                         <Line type="monotone" dataKey="expense" stroke="var(--color-expense)" strokeWidth={3} dot={false} />
                       </LineChart>
@@ -760,53 +736,62 @@ function asAccountType(value: string): "CASH" | "BANK" | "EWALLET" {
                   </ChartContainer>
                 </Card>
 
-                <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
-                  <Card className="rounded-[2rem] border border-white/10 bg-white/5 p-6 text-white backdrop-blur-xl">
-                    <div className="mb-4 flex items-center justify-between">
+                <div className="grid grid-cols-1 gap-4 sm:gap-6 xl:grid-cols-2">
+                  <Card className="rounded-[1.25rem] border border-white/10 bg-white/5 p-3 text-white backdrop-blur-xl sm:rounded-[2rem] sm:p-6">
+                    <div className="mb-3 flex items-center justify-between sm:mb-4">
                       <div>
-                        <div className="text-lg font-black">Account overview</div>
-                        <div className="text-sm text-slate-400">Your available account setup for spending and transfers.</div>
+                        <div className="text-base font-black sm:text-lg">Account overview</div>
+                        <div className="text-xs text-slate-400 sm:text-sm">Your available account setup for spending and transfers.</div>
                       </div>
-                      <Landmark className="h-5 w-5 text-cyan-200" />
+                      <Landmark className="h-4 w-4 text-cyan-200 sm:h-5 sm:w-5" />
                     </div>
-                    <div className="space-y-3">
+
+                    <div className="space-y-2.5 sm:space-y-3">
                       {accounts.length === 0 ? (
-                        <div className="rounded-2xl border border-dashed border-white/10 bg-[#07111f]/50 p-4 text-sm text-slate-400">No accounts yet. Add your first account to start tracking balance.</div>
+                        <div className="rounded-xl border border-dashed border-white/10 bg-[#07111f]/50 p-3 text-xs text-slate-400 sm:rounded-2xl sm:p-4 sm:text-sm">No accounts yet. Add your first account to start tracking balance.</div>
                       ) : (
                         accounts.map((account) => (
-                          <div key={account.id} className="flex items-center justify-between rounded-2xl border border-white/10 bg-[#07111f]/70 px-4 py-3">
-                            <div>
-                              <div className="font-semibold text-white">{account.name}</div>
-                              <div className="text-xs text-slate-500">{account.type} • {account.currency}</div>
+                          <div key={account.id} className="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-[#07111f]/70 px-3 py-2.5 sm:rounded-2xl sm:px-4 sm:py-3">
+                            <div className="min-w-0">
+                              <div className="truncate text-sm font-semibold text-white">{account.name}</div>
+                              <div className="text-[10px] text-slate-500 sm:text-xs">
+                                {account.type} • {account.currency}
+                              </div>
                             </div>
-                            <div className="text-sm font-bold text-slate-200">{account.initialBalance}</div>
+                            <div className="shrink-0 text-xs font-bold text-slate-200 sm:text-sm">{account.initialBalance}</div>
                           </div>
                         ))
                       )}
                     </div>
                   </Card>
 
-                  <Card className="rounded-[2rem] border border-white/10 bg-white/5 p-6 text-white backdrop-blur-xl">
-                    <div className="mb-4 flex items-center justify-between">
+                  <Card className="rounded-[1.25rem] border border-white/10 bg-white/5 p-3 text-white backdrop-blur-xl sm:rounded-[2rem] sm:p-6">
+                    <div className="mb-3 flex items-center justify-between sm:mb-4">
                       <div>
-                        <div className="text-lg font-black">Budget health</div>
-                        <div className="text-sm text-slate-400">See which categories are safe, close, or over budget.</div>
+                        <div className="text-base font-black sm:text-lg">Budget health</div>
+                        <div className="text-xs text-slate-400 sm:text-sm">See which categories are safe, close, or over budget.</div>
                       </div>
-                      <AlertTriangle className="h-5 w-5 text-amber-200" />
+                      <AlertTriangle className="h-4 w-4 text-amber-200 sm:h-5 sm:w-5" />
                     </div>
-                    <div className="space-y-3">
+
+                    <div className="space-y-2.5 sm:space-y-3">
                       {(insights?.budgetUsage || []).length === 0 ? (
-                        <div className="rounded-2xl border border-dashed border-white/10 bg-[#07111f]/50 p-4 text-sm text-slate-400">No budgets set for this month.</div>
+                        <div className="rounded-xl border border-dashed border-white/10 bg-[#07111f]/50 p-3 text-xs text-slate-400 sm:rounded-2xl sm:p-4 sm:text-sm">No budgets set for this month.</div>
                       ) : (
                         (insights?.budgetUsage || []).slice(0, 5).map((b) => (
-                          <div key={b.id} className={`rounded-2xl border p-4 ${b.isOver ? "border-red-400/20 bg-red-500/10" : b.progress >= 80 ? "border-amber-400/20 bg-amber-500/10" : "border-white/10 bg-[#07111f]/70"}`}>
-                            <div className="mb-2 flex items-center justify-between">
-                              <div className="font-semibold text-white">{b.category.name}</div>
-                              <Badge className="rounded-full border border-white/10 bg-white/10 text-slate-200">{Math.round(b.progress)}%</Badge>
+                          <div
+                            key={b.id}
+                            className={`rounded-xl border p-3 sm:rounded-2xl sm:p-4 ${b.isOver ? "border-red-400/20 bg-red-500/10" : b.progress >= 80 ? "border-amber-400/20 bg-amber-500/10" : "border-white/10 bg-[#07111f]/70"}`}
+                          >
+                            <div className="mb-2 flex items-center justify-between gap-2">
+                              <div className="truncate text-sm font-semibold text-white">{b.category.name}</div>
+                              <Badge className="rounded-full border border-white/10 bg-white/10 text-[10px] text-slate-200 sm:text-xs">{Math.round(b.progress)}%</Badge>
                             </div>
-                            <div className="mb-3 text-xs text-slate-400">{formatMoney(b.spent, b.currency)} / {formatMoney(b.limit, b.currency)}</div>
+                            <div className="mb-2.5 text-[10px] text-slate-400 sm:mb-3 sm:text-xs">
+                              {formatMoney(b.spent, b.currency)} / {formatMoney(b.limit, b.currency)}
+                            </div>
                             <div className="h-2 w-full overflow-hidden rounded-full bg-white/10">
-                              <div className={`${b.isOver ? "bg-red-400" : b.progress >= 80 ? "bg-amber-300" : "bg-cyan-300"} h-2`} style={{ width: `${Math.min(b.progress, 100)}%` }} />
+                              <div className={`h-2 ${b.isOver ? "bg-red-400" : b.progress >= 80 ? "bg-amber-300" : "bg-cyan-300"}`} style={{ width: `${Math.min(b.progress, 100)}%` }} />
                             </div>
                           </div>
                         ))
@@ -815,28 +800,36 @@ function asAccountType(value: string): "CASH" | "BANK" | "EWALLET" {
                   </Card>
                 </div>
 
-                <Card className="rounded-[2rem] border border-white/10 bg-white/5 p-6 text-white backdrop-blur-xl">
-                  <div className="mb-4 flex items-center justify-between">
+                <Card className="rounded-[1.25rem] border border-white/10 bg-white/5 p-3 text-white backdrop-blur-xl sm:rounded-[2rem] sm:p-6">
+                  <div className="mb-3 flex items-center justify-between gap-3 sm:mb-4">
                     <div>
-                      <div className="text-lg font-black">Recent transactions</div>
-                      <div className="text-sm text-slate-400">A quick scan of the latest money movement this month.</div>
+                      <div className="text-base font-black sm:text-lg">Recent transactions</div>
+                      <div className="text-xs text-slate-400 sm:text-sm">A quick scan of the latest money movement this month.</div>
                     </div>
-                    <Button variant="outline" className="rounded-2xl border border-white/10 bg-[#07111f]/80 text-slate-100 hover:border-cyan-300/20 hover:bg-white/10" onClick={() => setActive("transactions")}>
+                    <Button
+                      variant="outline"
+                      className="h-9 rounded-xl border border-white/10 bg-[#07111f]/80 px-3 text-xs text-slate-100 hover:border-cyan-300/20 hover:bg-white/10 sm:h-10 sm:rounded-2xl sm:px-4 sm:text-sm"
+                      onClick={() => setActive("transactions")}
+                    >
                       View all
                     </Button>
                   </div>
-                  <div className="space-y-3">
+
+                  <div className="space-y-2.5 sm:space-y-3">
                     {recentTransactions.length === 0 ? (
-                      <div className="rounded-2xl border border-dashed border-white/10 bg-[#07111f]/50 p-4 text-sm text-slate-400">No transactions yet for this month.</div>
+                      <div className="rounded-xl border border-dashed border-white/10 bg-[#07111f]/50 p-3 text-xs text-slate-400 sm:rounded-2xl sm:p-4 sm:text-sm">No transactions yet for this month.</div>
                     ) : (
                       recentTransactions.map((tx) => (
-                        <div key={tx.id} className="flex items-center justify-between rounded-2xl border border-white/10 bg-[#07111f]/70 px-4 py-3">
-                          <div>
-                            <div className="font-semibold text-white">{tx.category?.name || tx.note || tx.type}</div>
-                            <div className="text-xs text-slate-500">{tx.account.name} • {format(new Date(tx.date), "dd MMM yyyy")}</div>
+                        <div key={tx.id} className="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-[#07111f]/70 px-3 py-2.5 sm:rounded-2xl sm:px-4 sm:py-3">
+                          <div className="min-w-0">
+                            <div className="truncate text-sm font-semibold text-white">{tx.category?.name || tx.note || tx.type}</div>
+                            <div className="text-[10px] text-slate-500 sm:text-xs">
+                              {tx.account.name} • {format(new Date(tx.date), "dd MMM yyyy")}
+                            </div>
                           </div>
-                          <div className={`text-sm font-bold ${tx.type === "EXPENSE" ? "text-rose-300" : "text-emerald-300"}`}>
-                            {tx.type === "EXPENSE" ? "-" : "+"}{formatMoney(toNumber(tx.amount), tx.currency)}
+                          <div className={`shrink-0 text-xs font-bold sm:text-sm ${tx.type === "EXPENSE" ? "text-rose-300" : "text-emerald-300"}`}>
+                            {tx.type === "EXPENSE" ? "-" : "+"}
+                            {formatMoney(toNumber(tx.amount), tx.currency)}
                           </div>
                         </div>
                       ))
@@ -845,40 +838,42 @@ function asAccountType(value: string): "CASH" | "BANK" | "EWALLET" {
                 </Card>
               </div>
 
-              <div className="space-y-6">
-                <Card className="rounded-[2rem] border border-white/10 bg-white/5 p-6 text-white backdrop-blur-xl">
-                  <div className="mb-4 flex items-center justify-between">
+              <div className="space-y-4 sm:space-y-6">
+                <Card className="rounded-[1.25rem] border border-white/10 bg-white/5 p-3 text-white backdrop-blur-xl sm:rounded-[2rem] sm:p-6">
+                  <div className="mb-3 flex items-center justify-between sm:mb-4">
                     <div>
-                      <div className="text-lg font-black">Monthly insight</div>
-                      <div className="text-sm text-slate-400">Simple read on where your money is going.</div>
+                      <div className="text-base font-black sm:text-lg">Monthly insight</div>
+                      <div className="text-xs text-slate-400 sm:text-sm">Simple read on where your money is going.</div>
                     </div>
-                    <Badge className="rounded-full border border-white/10 bg-white/10 text-slate-200">{month}</Badge>
+                    <Badge className="rounded-full border border-white/10 bg-white/10 text-[10px] text-slate-200 sm:text-xs">{month}</Badge>
                   </div>
+
                   {insights ? (
-                    <div className="space-y-3">
+                    <div className="space-y-2.5 sm:space-y-3">
                       {Object.entries(insights.topSpendingByCurrency).map(([currency, top]) => (
-                        <div key={currency} className="rounded-2xl border border-white/10 bg-[#07111f]/70 p-4">
-                          <div className="mb-1 text-xs uppercase tracking-[0.18em] text-slate-500">{currency}</div>
-                          <div className="text-base font-black text-white">{top.category}</div>
+                        <div key={currency} className="rounded-xl border border-white/10 bg-[#07111f]/70 p-3 sm:rounded-2xl sm:p-4">
+                          <div className="mb-1 text-[9px] uppercase tracking-[0.18em] text-slate-500 sm:text-xs">{currency}</div>
+                          <div className="text-sm font-black text-white sm:text-base">{top.category}</div>
                           <div className="mt-1 text-sm font-semibold text-cyan-200">{formatMoney(top.amount, currency)}</div>
-                          <div className="mt-2 text-xs text-slate-500">Highest spending category for this month.</div>
+                          <div className="mt-2 text-[10px] text-slate-500 sm:text-xs">Highest spending category for this month.</div>
                         </div>
                       ))}
                     </div>
                   ) : (
-                    <div className="text-sm text-slate-400">Loading insight...</div>
+                    <div className="text-xs text-slate-400 sm:text-sm">Loading insight...</div>
                   )}
                 </Card>
 
-                <Card className="rounded-[2rem] border border-white/10 bg-white/5 p-6 text-white backdrop-blur-xl">
-                  <div className="mb-4 flex items-center justify-between">
+                <Card className="rounded-[1.25rem] border border-white/10 bg-white/5 p-3 text-white backdrop-blur-xl sm:rounded-[2rem] sm:p-6">
+                  <div className="mb-3 flex items-center justify-between sm:mb-4">
                     <div>
-                      <div className="text-lg font-black">Category distribution</div>
-                      <div className="text-sm text-slate-400">See what dominates your expenses.</div>
+                      <div className="text-base font-black sm:text-lg">Category distribution</div>
+                      <div className="text-xs text-slate-400 sm:text-sm">See what dominates your expenses.</div>
                     </div>
                   </div>
+
                   <ChartContainer className="w-full" config={{ value: { label: "Expense", color: "hsl(var(--primary))" } }}>
-                    <ResponsiveContainer width="100%" height={260}>
+                    <ResponsiveContainer width="100%" height={220}>
                       <PieChart>
                         <Tooltip content={<ChartTooltipContent />} />
                         <Pie data={chartPieData} dataKey="value" nameKey="name" fill="var(--color-value)" />
@@ -887,31 +882,38 @@ function asAccountType(value: string): "CASH" | "BANK" | "EWALLET" {
                   </ChartContainer>
                 </Card>
 
-                <Card className="rounded-[2rem] border border-white/10 bg-white/5 p-6 text-white backdrop-blur-xl">
-                  <div className="mb-4 flex items-center justify-between">
+                <Card className="rounded-[1.25rem] border border-white/10 bg-white/5 p-3 text-white backdrop-blur-xl sm:rounded-[2rem] sm:p-6">
+                  <div className="mb-3 flex items-center justify-between gap-3 sm:mb-4">
                     <div>
-                      <div className="text-lg font-black">Goals snapshot</div>
-                      <div className="text-sm text-slate-400">Keep savings targets visible while managing cashflow.</div>
+                      <div className="text-base font-black sm:text-lg">Goals snapshot</div>
+                      <div className="text-xs text-slate-400 sm:text-sm">Keep savings targets visible while managing cashflow.</div>
                     </div>
-                    <Button variant="outline" className="rounded-2xl border border-white/10 bg-[#07111f]/80 text-slate-100 hover:border-cyan-300/20 hover:bg-white/10" onClick={() => setActive("goals")}>
+                    <Button
+                      variant="outline"
+                      className="h-9 rounded-xl border border-white/10 bg-[#07111f]/80 px-3 text-xs text-slate-100 hover:border-cyan-300/20 hover:bg-white/10 sm:h-10 sm:rounded-2xl sm:px-4 sm:text-sm"
+                      onClick={() => setActive("goals")}
+                    >
                       Open goals
                     </Button>
                   </div>
-                  <div className="space-y-3">
+
+                  <div className="space-y-2.5 sm:space-y-3">
                     {goals.length === 0 ? (
-                      <div className="rounded-2xl border border-dashed border-white/10 bg-[#07111f]/50 p-4 text-sm text-slate-400">No goals yet. Create one to track saving progress.</div>
+                      <div className="rounded-xl border border-dashed border-white/10 bg-[#07111f]/50 p-3 text-xs text-slate-400 sm:rounded-2xl sm:p-4 sm:text-sm">No goals yet. Create one to track saving progress.</div>
                     ) : (
                       goals.slice(0, 3).map((g) => {
                         const current = toNumber(g.currentAmount);
                         const target = toNumber(g.targetAmount);
                         const progress = target === 0 ? 0 : (current / target) * 100;
                         return (
-                          <div key={g.id} className="rounded-2xl border border-white/10 bg-[#07111f]/70 p-4">
-                            <div className="mb-2 flex items-center justify-between">
-                              <div className="font-semibold text-white">{g.name}</div>
-                              <Badge className="rounded-full border border-white/10 bg-white/10 text-slate-200">{Math.round(progress)}%</Badge>
+                          <div key={g.id} className="rounded-xl border border-white/10 bg-[#07111f]/70 p-3 sm:rounded-2xl sm:p-4">
+                            <div className="mb-2 flex items-center justify-between gap-2">
+                              <div className="truncate text-sm font-semibold text-white">{g.name}</div>
+                              <Badge className="rounded-full border border-white/10 bg-white/10 text-[10px] text-slate-200 sm:text-xs">{Math.round(progress)}%</Badge>
                             </div>
-                            <div className="mb-3 text-xs text-slate-500">{formatMoney(current, g.currency)} / {formatMoney(target, g.currency)}</div>
+                            <div className="mb-2.5 text-[10px] text-slate-500 sm:mb-3 sm:text-xs">
+                              {formatMoney(current, g.currency)} / {formatMoney(target, g.currency)}
+                            </div>
                             <div className="h-2 w-full overflow-hidden rounded-full bg-white/10">
                               <div className="h-2 bg-gradient-to-r from-cyan-300 to-emerald-300" style={{ width: `${Math.min(progress, 100)}%` }} />
                             </div>
@@ -927,109 +929,108 @@ function asAccountType(value: string): "CASH" | "BANK" | "EWALLET" {
         )}
 
         {active === "transactions" && (
-          <Card className="p-6 rounded-3xl border-2 border-primary/10">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-6">
+          <Card className="rounded-[1.25rem] border-2 border-primary/10 p-3 sm:rounded-3xl sm:p-6">
+            <div className="mb-4 flex flex-col gap-3 sm:mb-6 md:flex-row md:items-center md:justify-between">
               <div>
-                <div className="text-lg font-black">Transactions</div>
-                <div className="text-sm text-muted-foreground">Tambah pemasukan, pengeluaran, atau transfer antar akun.</div>
+                <div className="text-base font-black sm:text-lg">Transactions</div>
+                <div className="text-xs text-muted-foreground sm:text-sm">Tambah pemasukan, pengeluaran, atau transfer antar akun.</div>
               </div>
               <div className="flex items-center gap-2">
-                <Button className="rounded-2xl font-bold" onClick={openNewTransaction}>
-                  <Plus className="mr-2" size={18} />
+                <Button className="h-9 rounded-xl px-3 text-xs font-bold sm:h-10 sm:rounded-2xl sm:px-4 sm:text-sm" onClick={openNewTransaction}>
+                  <Plus className="mr-1.5 h-4 w-4 sm:mr-2" />
                   Add Transaction
                 </Button>
-                <Button variant="outline" className="rounded-2xl" onClick={() => setTransferDialogOpen(true)}>
-                  <ArrowLeftRight className="mr-2" size={18} />
+                <Button variant="outline" className="h-9 rounded-xl px-3 text-xs sm:h-10 sm:rounded-2xl sm:px-4 sm:text-sm" onClick={() => setTransferDialogOpen(true)}>
+                  <ArrowLeftRight className="mr-1.5 h-4 w-4 sm:mr-2" />
                   Transfer
                 </Button>
               </div>
             </div>
 
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead>Account</TableHead>
-                  <TableHead>Category</TableHead>
-                  <TableHead>Tags</TableHead>
-                  <TableHead>Amount</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {transactions.length === 0 ? (
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
                   <TableRow>
-                    <TableCell colSpan={7} className="text-muted-foreground">
-                      Belum ada transaksi di bulan ini.
-                    </TableCell>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Type</TableHead>
+                    <TableHead>Account</TableHead>
+                    <TableHead>Category</TableHead>
+                    <TableHead>Tags</TableHead>
+                    <TableHead>Amount</TableHead>
+                    <TableHead>Actions</TableHead>
                   </TableRow>
-                ) : (
-                  transactions.map((tx) => (
-                    <TableRow key={tx.id}>
-                      <TableCell>{format(new Date(tx.date), "yyyy-MM-dd")}</TableCell>
-                      <TableCell>
-                        <Badge variant={tx.type === "EXPENSE" ? "secondary" : "outline"} className="rounded-xl">
-                          {tx.type}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>{tx.account.name}</TableCell>
-                      <TableCell>{tx.category?.name || "-"}</TableCell>
-                      <TableCell className="max-w-[220px] truncate">
-                        {tx.tags.length ? tx.tags.map((t) => t.name).join(", ") : "-"}
-                      </TableCell>
-                      <TableCell className="font-mono font-bold">
-                        {formatMoney(toNumber(tx.amount), tx.currency)}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          {tx.type !== "TRANSFER" && (
-                            <Button variant="outline" size="icon" className="rounded-xl" onClick={() => openEditTransaction(tx)}>
-                              <Pencil size={16} />
-                            </Button>
-                          )}
-                          <Button variant="outline" size="icon" className="rounded-xl" onClick={() => deleteTransaction(tx.id)}>
-                            <Trash2 size={16} />
-                          </Button>
-                        </div>
+                </TableHeader>
+                <TableBody>
+                  {transactions.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={7} className="text-xs text-muted-foreground sm:text-sm">
+                        Belum ada transaksi di bulan ini.
                       </TableCell>
                     </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
+                  ) : (
+                    transactions.map((tx) => (
+                      <TableRow key={tx.id}>
+                        <TableCell className="text-xs sm:text-sm">{format(new Date(tx.date), "yyyy-MM-dd")}</TableCell>
+                        <TableCell>
+                          <Badge variant={tx.type === "EXPENSE" ? "secondary" : "outline"} className="rounded-xl text-[10px] sm:text-xs">
+                            {tx.type}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-xs sm:text-sm">{tx.account.name}</TableCell>
+                        <TableCell className="text-xs sm:text-sm">{tx.category?.name || "-"}</TableCell>
+                        <TableCell className="max-w-[220px] truncate text-xs sm:text-sm">{tx.tags.length ? tx.tags.map((t) => t.name).join(", ") : "-"}</TableCell>
+                        <TableCell className="font-mono text-xs font-bold sm:text-sm">{formatMoney(toNumber(tx.amount), tx.currency)}</TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            {tx.type !== "TRANSFER" && (
+                              <Button variant="outline" size="icon" className="h-8 w-8 rounded-xl sm:h-9 sm:w-9" onClick={() => openEditTransaction(tx)}>
+                                <Pencil size={14} />
+                              </Button>
+                            )}
+                            <Button variant="outline" size="icon" className="h-8 w-8 rounded-xl sm:h-9 sm:w-9" onClick={() => deleteTransaction(tx.id)}>
+                              <Trash2 size={14} />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </div>
           </Card>
         )}
 
         {active === "categories" && (
-          <Card className="p-6 rounded-3xl border-2 border-primary/10">
-            <div className="flex items-center justify-between mb-6">
+          <Card className="rounded-[1.25rem] border-2 border-primary/10 p-3 sm:rounded-3xl sm:p-6">
+            <div className="mb-4 flex items-center justify-between sm:mb-6">
               <div>
-                <div className="text-lg font-black">Categories</div>
-                <div className="text-sm text-muted-foreground">Kategori default + bisa tambah sendiri.</div>
+                <div className="text-base font-black sm:text-lg">Categories</div>
+                <div className="text-xs text-muted-foreground sm:text-sm">Kategori default + bisa tambah sendiri.</div>
               </div>
-              <Button className="rounded-2xl font-bold" onClick={() => setCategoryDialogOpen(true)}>
-                <Plus className="mr-2" size={18} />
+              <Button className="h-9 rounded-xl px-3 text-xs font-bold sm:h-10 sm:rounded-2xl sm:px-4 sm:text-sm" onClick={() => setCategoryDialogOpen(true)}>
+                <Plus className="mr-1.5 h-4 w-4 sm:mr-2" />
                 New Category
               </Button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="p-4 rounded-2xl bg-muted/20 border border-primary/5">
-                <div className="font-black mb-3">Expense</div>
+            <div className="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-2">
+              <div className="rounded-xl border border-primary/5 bg-muted/20 p-3 sm:rounded-2xl sm:p-4">
+                <div className="mb-3 text-sm font-black sm:text-base">Expense</div>
                 <div className="flex flex-wrap gap-2">
                   {expenseCategories.map((c) => (
-                    <Badge key={c.id} variant="secondary" className="rounded-xl">
+                    <Badge key={c.id} variant="secondary" className="rounded-xl text-[10px] sm:text-xs">
                       {c.name}
                     </Badge>
                   ))}
                 </div>
               </div>
-              <div className="p-4 rounded-2xl bg-muted/20 border border-primary/5">
-                <div className="font-black mb-3">Income</div>
+
+              <div className="rounded-xl border border-primary/5 bg-muted/20 p-3 sm:rounded-2xl sm:p-4">
+                <div className="mb-3 text-sm font-black sm:text-base">Income</div>
                 <div className="flex flex-wrap gap-2">
                   {incomeCategories.map((c) => (
-                    <Badge key={c.id} variant="outline" className="rounded-xl">
+                    <Badge key={c.id} variant="outline" className="rounded-xl text-[10px] sm:text-xs">
                       {c.name}
                     </Badge>
                   ))}
@@ -1040,21 +1041,21 @@ function asAccountType(value: string): "CASH" | "BANK" | "EWALLET" {
         )}
 
         {active === "budgets" && (
-          <Card className="p-6 rounded-3xl border-2 border-primary/10">
-            <div className="flex items-center justify-between mb-6">
+          <Card className="rounded-[1.25rem] border-2 border-primary/10 p-3 sm:rounded-3xl sm:p-6">
+            <div className="mb-4 flex items-center justify-between sm:mb-6">
               <div>
-                <div className="text-lg font-black">Budgets</div>
-                <div className="text-sm text-muted-foreground">Set limit budget bulanan per kategori.</div>
+                <div className="text-base font-black sm:text-lg">Budgets</div>
+                <div className="text-xs text-muted-foreground sm:text-sm">Set limit budget bulanan per kategori.</div>
               </div>
-              <Button className="rounded-2xl font-bold" onClick={() => setBudgetDialogOpen(true)}>
-                <Plus className="mr-2" size={18} />
+              <Button className="h-9 rounded-xl px-3 text-xs font-bold sm:h-10 sm:rounded-2xl sm:px-4 sm:text-sm" onClick={() => setBudgetDialogOpen(true)}>
+                <Plus className="mr-1.5 h-4 w-4 sm:mr-2" />
                 Set Budget
               </Button>
             </div>
 
             <div className="space-y-3">
               {budgets.length === 0 ? (
-                <div className="text-muted-foreground">Belum ada budget untuk bulan ini.</div>
+                <div className="text-xs text-muted-foreground sm:text-sm">Belum ada budget untuk bulan ini.</div>
               ) : (
                 budgets.map((b) => {
                   const spent = toNumber(b.spent);
@@ -1062,21 +1063,20 @@ function asAccountType(value: string): "CASH" | "BANK" | "EWALLET" {
                   const progress = limit === 0 ? 0 : (spent / limit) * 100;
                   const isOver = spent > limit;
                   return (
-                    <div key={b.id} className={`p-4 rounded-2xl border ${isOver ? "border-destructive/20 bg-destructive/10" : "border-primary/5 bg-muted/20"}`}>
-                      <div className="flex items-center justify-between">
-                        <div className="font-black">{b.category.name}</div>
-                        <Badge variant="secondary" className="rounded-xl">{b.currency}</Badge>
+                    <div key={b.id} className={`rounded-xl border p-3 sm:rounded-2xl sm:p-4 ${isOver ? "border-destructive/20 bg-destructive/10" : "border-primary/5 bg-muted/20"}`}>
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="text-sm font-black sm:text-base">{b.category.name}</div>
+                        <Badge variant="secondary" className="rounded-xl text-[10px] sm:text-xs">
+                          {b.currency}
+                        </Badge>
                       </div>
-                      <div className="mt-2 text-sm text-muted-foreground">
+                      <div className="mt-2 text-xs text-muted-foreground sm:text-sm">
                         {formatMoney(spent, b.currency)} / {formatMoney(limit, b.currency)} • {progress.toFixed(0)}%
                       </div>
-                      <div className="mt-3 w-full bg-muted rounded-full h-2 overflow-hidden">
-                        <div
-                          className={`${isOver ? "bg-destructive" : "bg-primary"} h-2`}
-                          style={{ width: `${Math.min(progress, 100)}%` }}
-                        />
+                      <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-muted">
+                        <div className={`${isOver ? "bg-destructive" : "bg-primary"} h-2`} style={{ width: `${Math.min(progress, 100)}%` }} />
                       </div>
-                      {isOver && <div className="mt-2 text-xs font-bold text-destructive">Budget exceeded</div>}
+                      {isOver && <div className="mt-2 text-[10px] font-bold text-destructive sm:text-xs">Budget exceeded</div>}
                     </div>
                   );
                 })
@@ -1086,52 +1086,54 @@ function asAccountType(value: string): "CASH" | "BANK" | "EWALLET" {
         )}
 
         {active === "accounts" && (
-          <Card className="p-6 rounded-3xl border-2 border-primary/10">
-            <div className="flex items-center justify-between mb-6">
+          <Card className="rounded-[1.25rem] border-2 border-primary/10 p-3 sm:rounded-3xl sm:p-6">
+            <div className="mb-4 flex items-center justify-between sm:mb-6">
               <div>
-                <div className="text-lg font-black">Accounts</div>
-                <div className="text-sm text-muted-foreground">Cash, Bank, E-wallet. Transfer antar akun tersedia.</div>
+                <div className="text-base font-black sm:text-lg">Accounts</div>
+                <div className="text-xs text-muted-foreground sm:text-sm">Cash, Bank, E-wallet. Transfer antar akun tersedia.</div>
               </div>
-              <Button className="rounded-2xl font-bold" onClick={() => setAccountDialogOpen(true)}>
-                <Plus className="mr-2" size={18} />
+              <Button className="h-9 rounded-xl px-3 text-xs font-bold sm:h-10 sm:rounded-2xl sm:px-4 sm:text-sm" onClick={() => setAccountDialogOpen(true)}>
+                <Plus className="mr-1.5 h-4 w-4 sm:mr-2" />
                 New Account
               </Button>
             </div>
 
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead>Currency</TableHead>
-                  <TableHead>Initial</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {accounts.map((a) => (
-                  <TableRow key={a.id}>
-                    <TableCell className="font-bold">{a.name}</TableCell>
-                    <TableCell>{a.type}</TableCell>
-                    <TableCell>{a.currency}</TableCell>
-                    <TableCell className="font-mono">{a.initialBalance}</TableCell>
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Type</TableHead>
+                    <TableHead>Currency</TableHead>
+                    <TableHead>Initial</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {accounts.map((a) => (
+                    <TableRow key={a.id}>
+                      <TableCell className="text-xs font-bold sm:text-sm">{a.name}</TableCell>
+                      <TableCell className="text-xs sm:text-sm">{a.type}</TableCell>
+                      <TableCell className="text-xs sm:text-sm">{a.currency}</TableCell>
+                      <TableCell className="font-mono text-xs sm:text-sm">{a.initialBalance}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           </Card>
         )}
 
         {active === "analytics" && (
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
-            <Card className="rounded-[2rem] border border-white/10 bg-white/5 p-6 text-white backdrop-blur-xl lg:col-span-6">
-              <div className="text-lg font-black mb-4">Pie (Top Categories)</div>
+          <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-12">
+            <Card className="rounded-[1.25rem] border border-white/10 bg-white/5 p-3 text-white backdrop-blur-xl lg:col-span-6 sm:rounded-[2rem] sm:p-6">
+              <div className="mb-4 text-base font-black sm:text-lg">Pie (Top Categories)</div>
               <ChartContainer
                 className="w-full"
                 config={{
                   value: { label: "Expense", color: "hsl(var(--primary))" },
                 }}
               >
-                <ResponsiveContainer width="100%" height={280}>
+                <ResponsiveContainer width="100%" height={220}>
                   <PieChart>
                     <Tooltip content={<ChartTooltipContent />} />
                     <Pie data={chartPieData} dataKey="value" nameKey="name" fill="var(--color-value)" />
@@ -1140,18 +1142,18 @@ function asAccountType(value: string): "CASH" | "BANK" | "EWALLET" {
               </ChartContainer>
             </Card>
 
-            <Card className="p-6 rounded-3xl border-2 border-primary/10 lg:col-span-6">
-              <div className="text-lg font-black mb-4">Line (Monthly Expense)</div>
+            <Card className="rounded-[1.25rem] border-2 border-primary/10 p-3 lg:col-span-6 sm:rounded-3xl sm:p-6">
+              <div className="mb-4 text-base font-black sm:text-lg">Line (Monthly Expense)</div>
               <ChartContainer
                 className="w-full"
                 config={{
                   expense: { label: "Expense", color: "hsl(var(--primary))" },
                 }}
               >
-                <ResponsiveContainer width="100%" height={280}>
+                <ResponsiveContainer width="100%" height={220}>
                   <LineChart data={chartLineData}>
-                    <XAxis dataKey="month" tickLine={false} axisLine={false} />
-                    <YAxis tickLine={false} axisLine={false} />
+                    <XAxis dataKey="month" tickLine={false} axisLine={false} tick={{ fontSize: 11 }} />
+                    <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 11 }} />
                     <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
                     <Line type="monotone" dataKey="expense" stroke="var(--color-expense)" strokeWidth={3} dot={false} />
                   </LineChart>
@@ -1162,65 +1164,199 @@ function asAccountType(value: string): "CASH" | "BANK" | "EWALLET" {
         )}
 
         {active === "goals" && (
-          <Card className="p-6 rounded-3xl border-2 border-primary/10">
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <div className="text-lg font-black">Goals</div>
-                <div className="text-sm text-muted-foreground">Target tabungan dan progress pencapaian.</div>
+          <div className="space-y-4 sm:space-y-6">
+            <Card className="rounded-[1.25rem] border border-white/10 bg-white/5 p-3 text-white backdrop-blur-xl sm:rounded-[2rem] sm:p-6">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                  <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-cyan-300/15 bg-cyan-400/10 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.14em] text-cyan-100 sm:px-3 sm:text-[11px] sm:tracking-[0.2em]">
+                    <PiggyBank className="h-3.5 w-3.5" />
+                    Savings goals
+                  </div>
+                  <h2 className="text-xl font-black tracking-tight text-white sm:text-3xl">Goals</h2>
+                  <p className="mt-1 text-xs text-slate-400 sm:mt-2 sm:text-sm">Target tabungan, progress, dan deadline sekarang tampil lebih clean dan premium.</p>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2">
+                  <Badge className="rounded-full border border-white/10 bg-white/10 px-2.5 py-1 text-[10px] text-slate-200 sm:px-3 sm:text-xs">
+                    {goals.length} active goals
+                  </Badge>
+                  <Button
+                    className="h-9 rounded-xl border border-cyan-300/20 bg-cyan-400/10 px-3 text-xs font-semibold text-cyan-100 hover:bg-cyan-400/15 sm:h-10 sm:rounded-2xl sm:px-4 sm:text-sm"
+                    onClick={() => setGoalDialogOpen(true)}
+                  >
+                    <Plus className="mr-1.5 h-4 w-4 sm:mr-2" />
+                    New Goal
+                  </Button>
+                </div>
               </div>
-              <Button className="rounded-2xl font-bold" onClick={() => setGoalDialogOpen(true)}>
-                <Plus className="mr-2" size={18} />
-                New Goal
-              </Button>
+            </Card>
+
+            <div className="grid grid-cols-2 gap-2 sm:gap-4 lg:grid-cols-4">
+              <SummaryFinanceCard title="Goals" value={String(goals.length)} badge="All" icon={<PiggyBank className="h-3.5 w-3.5 text-emerald-200 sm:h-5 sm:w-5" />} iconTone="bg-emerald-400/10" />
+              <SummaryFinanceCard
+                title="Target"
+                value={formatCompactNumber(goals.reduce((sum, goal) => sum + toNumber(goal.targetAmount), 0))}
+                badge="Aim"
+                icon={<Landmark className="h-3.5 w-3.5 text-cyan-200 sm:h-5 sm:w-5" />}
+                iconTone="bg-cyan-400/10"
+                badgeTone="border-cyan-300/15 bg-cyan-400/10 text-cyan-100"
+              />
+              <SummaryFinanceCard
+                title="Saved"
+                value={formatCompactNumber(goals.reduce((sum, goal) => sum + toNumber(goal.currentAmount), 0))}
+                badge="Now"
+                icon={<WalletCards className="h-3.5 w-3.5 text-violet-200 sm:h-5 sm:w-5" />}
+                iconTone="bg-violet-400/10"
+                badgeTone="border-violet-300/15 bg-violet-400/10 text-violet-100"
+              />
+              <SummaryFinanceCard
+                title="Avg progress"
+                value={`${goals.length ? Math.round(goals.reduce((sum, goal) => sum + (toNumber(goal.targetAmount) > 0 ? (toNumber(goal.currentAmount) / toNumber(goal.targetAmount)) * 100 : 0), 0) / goals.length) : 0}%`}
+                badge="Rate"
+                icon={<Save className="h-3.5 w-3.5 text-amber-200 sm:h-5 sm:w-5" />}
+                iconTone="bg-amber-400/10"
+                badgeTone="border-amber-300/15 bg-amber-400/10 text-amber-100"
+              />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {goals.length === 0 ? (
-                <div className="text-muted-foreground">Belum ada goals.</div>
-              ) : (
-                goals.map((g) => {
-                  const current = toNumber(g.currentAmount);
-                  const target = toNumber(g.targetAmount);
-                  const progress = target === 0 ? 0 : (current / target) * 100;
-                  return (
-                    <div key={g.id} className="p-5 rounded-3xl border border-primary/10 bg-muted/20">
-                      <div className="flex items-center justify-between">
-                        <div className="text-lg font-black">{g.name}</div>
-                        <Badge variant="secondary" className="rounded-xl">{g.currency}</Badge>
-                      </div>
-                      <div className="mt-2 text-sm text-muted-foreground">
-                        {formatMoney(current, g.currency)} / {formatMoney(target, g.currency)} • {progress.toFixed(0)}%
-                      </div>
-                      <div className="mt-3 w-full bg-muted rounded-full h-2 overflow-hidden">
-                        <div className="bg-primary h-2" style={{ width: `${Math.min(progress, 100)}%` }} />
-                      </div>
-                      {g.targetDate && (
-                        <div className="mt-3 text-xs text-muted-foreground">
-                          Target date: {format(new Date(g.targetDate), "yyyy-MM-dd")}
-                        </div>
-                      )}
+            <div className="grid grid-cols-1 gap-4 sm:gap-6 xl:grid-cols-[1.2fr_0.8fr]">
+              <Card className="rounded-[1.25rem] border border-white/10 bg-white/5 p-3 text-white backdrop-blur-xl sm:rounded-[2rem] sm:p-6">
+                <div className="mb-4 flex items-center justify-between gap-3 sm:mb-5">
+                  <div>
+                    <div className="text-base font-black sm:text-lg">Goal progress board</div>
+                    <div className="text-xs text-slate-400 sm:text-sm">Lihat target, progres, dan deadline dalam satu tempat yang lebih enak dipantau.</div>
+                  </div>
+                  <PiggyBank className="h-4 w-4 text-cyan-200 sm:h-5 sm:w-5" />
+                </div>
+
+                <div className="space-y-3 sm:space-y-4">
+                  {goals.length === 0 ? (
+                    <div className="rounded-xl border border-dashed border-white/10 bg-[#07111f]/50 p-4 text-xs text-slate-400 sm:rounded-2xl sm:p-5 sm:text-sm">
+                      Belum ada goals. Bikin target tabungan pertama biar section ini hidup 😆
                     </div>
-                  );
-                })
-              )}
+                  ) : (
+                    goals.map((g) => {
+                      const current = toNumber(g.currentAmount);
+                      const target = toNumber(g.targetAmount);
+                      const progress = target === 0 ? 0 : (current / target) * 100;
+                      const remaining = Math.max(target - current, 0);
+                      return (
+                        <div key={g.id} className="rounded-[1rem] border border-white/10 bg-[#07111f]/70 p-4 sm:rounded-[1.5rem] sm:p-5">
+                          <div className="mb-3 flex items-start justify-between gap-3">
+                            <div className="min-w-0">
+                              <div className="truncate text-sm font-black text-white sm:text-lg">{g.name}</div>
+                              <div className="mt-1 text-[10px] text-slate-500 sm:text-xs">{g.targetDate ? `Target date: ${format(new Date(g.targetDate), "dd MMM yyyy")}` : "No deadline set"}</div>
+                            </div>
+                            <Badge className="rounded-full border border-white/10 bg-white/10 text-[10px] text-slate-200 sm:text-xs">{g.currency}</Badge>
+                          </div>
+
+                          <div className="grid grid-cols-3 gap-2 sm:gap-3">
+                            <div className="rounded-xl border border-emerald-300/10 bg-emerald-400/10 p-2.5 sm:rounded-2xl sm:p-3">
+                              <div className="text-[9px] uppercase tracking-[0.12em] text-emerald-100/80 sm:text-[10px]">Saved</div>
+                              <div className="mt-1 text-xs font-black text-emerald-100 sm:text-sm">{formatMoney(current, g.currency)}</div>
+                            </div>
+                            <div className="rounded-xl border border-cyan-300/10 bg-cyan-400/10 p-2.5 sm:rounded-2xl sm:p-3">
+                              <div className="text-[9px] uppercase tracking-[0.12em] text-cyan-100/80 sm:text-[10px]">Target</div>
+                              <div className="mt-1 text-xs font-black text-cyan-100 sm:text-sm">{formatMoney(target, g.currency)}</div>
+                            </div>
+                            <div className="rounded-xl border border-amber-300/10 bg-amber-400/10 p-2.5 sm:rounded-2xl sm:p-3">
+                              <div className="text-[9px] uppercase tracking-[0.12em] text-amber-100/80 sm:text-[10px]">Left</div>
+                              <div className="mt-1 text-xs font-black text-amber-100 sm:text-sm">{formatMoney(remaining, g.currency)}</div>
+                            </div>
+                          </div>
+
+                          <div className="mt-4 flex items-center justify-between text-[10px] text-slate-400 sm:text-xs">
+                            <span>Progress</span>
+                            <span>{Math.min(progress, 100).toFixed(0)}%</span>
+                          </div>
+                          <div className="mt-2 h-2.5 w-full overflow-hidden rounded-full bg-white/10">
+                            <div className="h-2.5 rounded-full bg-gradient-to-r from-cyan-300 via-sky-300 to-emerald-300" style={{ width: `${Math.min(progress, 100)}%` }} />
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              </Card>
+
+              <div className="space-y-4 sm:space-y-6">
+                <Card className="rounded-[1.25rem] border border-white/10 bg-white/5 p-3 text-white backdrop-blur-xl sm:rounded-[2rem] sm:p-6">
+                  <div className="mb-3 flex items-center justify-between sm:mb-4">
+                    <div>
+                      <div className="text-base font-black sm:text-lg">Goal insights</div>
+                      <div className="text-xs text-slate-400 sm:text-sm">Snapshot cepat buat baca kesehatan target tabunganmu.</div>
+                    </div>
+                    <Save className="h-4 w-4 text-amber-200 sm:h-5 sm:w-5" />
+                  </div>
+
+                  <div className="space-y-3">
+                    {goals.length === 0 ? (
+                      <div className="rounded-xl border border-dashed border-white/10 bg-[#07111f]/50 p-3 text-xs text-slate-400 sm:rounded-2xl sm:p-4 sm:text-sm">No goal insights yet.</div>
+                    ) : (
+                      <>
+                        <div className="rounded-xl border border-white/10 bg-[#07111f]/70 p-3 sm:rounded-2xl sm:p-4">
+                          <div className="text-[10px] uppercase tracking-[0.18em] text-slate-500 sm:text-xs">Closest to finish</div>
+                          <div className="mt-2 text-sm font-black text-white sm:text-base">
+                            {goals
+                              .slice()
+                              .sort((a, b) => {
+                                const pa = toNumber(a.targetAmount) > 0 ? toNumber(a.currentAmount) / toNumber(a.targetAmount) : 0;
+                                const pb = toNumber(b.targetAmount) > 0 ? toNumber(b.currentAmount) / toNumber(b.targetAmount) : 0;
+                                return pb - pa;
+                              })[0]?.name || "—"}
+                          </div>
+                        </div>
+                        <div className="rounded-xl border border-white/10 bg-[#07111f]/70 p-3 sm:rounded-2xl sm:p-4">
+                          <div className="text-[10px] uppercase tracking-[0.18em] text-slate-500 sm:text-xs">Most remaining</div>
+                          <div className="mt-2 text-sm font-black text-white sm:text-base">
+                            {goals
+                              .slice()
+                              .sort((a, b) => (toNumber(b.targetAmount) - toNumber(b.currentAmount)) - (toNumber(a.targetAmount) - toNumber(a.currentAmount)))[0]?.name || "—"}
+                          </div>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </Card>
+
+                <Card className="rounded-[1.25rem] border border-white/10 bg-white/5 p-3 text-white backdrop-blur-xl sm:rounded-[2rem] sm:p-6">
+                  <div className="mb-3 flex items-center justify-between sm:mb-4">
+                    <div>
+                      <div className="text-base font-black sm:text-lg">Quick actions</div>
+                      <div className="text-xs text-slate-400 sm:text-sm">Tambah target baru atau lanjut atur strategi nabung.</div>
+                    </div>
+                    <Plus className="h-4 w-4 text-cyan-200 sm:h-5 sm:w-5" />
+                  </div>
+
+                  <div className="grid gap-2.5 sm:gap-3">
+                    <Button className="h-10 justify-start rounded-xl border border-cyan-300/20 bg-cyan-400/10 px-3 text-xs font-semibold text-cyan-100 hover:bg-cyan-400/15 sm:h-11 sm:rounded-2xl sm:px-4 sm:text-sm" onClick={() => setGoalDialogOpen(true)}>
+                      <Plus className="mr-2 h-4 w-4" />
+                      Create new goal
+                    </Button>
+                    <Button variant="outline" className="h-10 justify-start rounded-xl border border-white/10 bg-[#07111f]/80 px-3 text-xs text-slate-100 hover:border-cyan-300/20 hover:bg-white/10 sm:h-11 sm:rounded-2xl sm:px-4 sm:text-sm" onClick={() => setActive("dashboard")}>
+                      <WalletCards className="mr-2 h-4 w-4" />
+                      Back to dashboard
+                    </Button>
+                  </div>
+                </Card>
+              </div>
             </div>
-          </Card>
+          </div>
         )}
       </div>
 
-
       <Dialog open={txDialogOpen} onOpenChange={setTxDialogOpen}>
-        <DialogContent className="max-w-lg rounded-3xl">
+        <DialogContent className="max-w-lg rounded-[1.25rem] p-4 sm:rounded-3xl sm:p-6">
           <DialogHeader>
-            <DialogTitle className="font-black">{txEditing ? "Edit Transaction" : "Add Transaction"}</DialogTitle>
-            <DialogDescription>Income atau expense dengan kategori dan tags.</DialogDescription>
+            <DialogTitle className="font-black text-base sm:text-lg">{txEditing ? "Edit Transaction" : "Add Transaction"}</DialogTitle>
+            <DialogDescription className="text-xs sm:text-sm">Income atau expense dengan kategori dan tags.</DialogDescription>
           </DialogHeader>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
             <div className="space-y-2">
-              <Label className="font-bold">Type</Label>
+              <Label className="text-xs font-bold sm:text-sm">Type</Label>
               <Select value={txForm.type} onValueChange={(v) => setTxForm((p) => ({ ...p, type: asIncomeExpense(v), categoryId: "" }))}>
-                <SelectTrigger className="w-full">
+                <SelectTrigger className="w-full text-xs sm:text-sm">
                   <SelectValue placeholder="Select type" />
                 </SelectTrigger>
                 <SelectContent>
@@ -1231,9 +1367,9 @@ function asAccountType(value: string): "CASH" | "BANK" | "EWALLET" {
             </div>
 
             <div className="space-y-2">
-              <Label className="font-bold">Account</Label>
+              <Label className="text-xs font-bold sm:text-sm">Account</Label>
               <Select value={txForm.accountId} onValueChange={(v) => setTxForm((p) => ({ ...p, accountId: v }))}>
-                <SelectTrigger className="w-full">
+                <SelectTrigger className="w-full text-xs sm:text-sm">
                   <SelectValue placeholder="Select account" />
                 </SelectTrigger>
                 <SelectContent>
@@ -1247,9 +1383,9 @@ function asAccountType(value: string): "CASH" | "BANK" | "EWALLET" {
             </div>
 
             <div className="space-y-2">
-              <Label className="font-bold">Category</Label>
+              <Label className="text-xs font-bold sm:text-sm">Category</Label>
               <Select value={txForm.categoryId} onValueChange={(v) => setTxForm((p) => ({ ...p, categoryId: v }))}>
-                <SelectTrigger className="w-full">
+                <SelectTrigger className="w-full text-xs sm:text-sm">
                   <SelectValue placeholder="Optional" />
                 </SelectTrigger>
                 <SelectContent>
@@ -1263,34 +1399,30 @@ function asAccountType(value: string): "CASH" | "BANK" | "EWALLET" {
             </div>
 
             <div className="space-y-2">
-              <Label className="font-bold">Date</Label>
-              <Input type="date" value={txForm.date} onChange={(e) => setTxForm((p) => ({ ...p, date: e.target.value }))} />
+              <Label className="text-xs font-bold sm:text-sm">Date</Label>
+              <Input type="date" value={txForm.date} onChange={(e) => setTxForm((p) => ({ ...p, date: e.target.value }))} className="text-xs sm:text-sm" />
             </div>
 
             <div className="space-y-2">
-              <Label className="font-bold">Amount</Label>
-              <Input inputMode="decimal" value={txForm.amount} onChange={(e) => setTxForm((p) => ({ ...p, amount: e.target.value }))} placeholder="100000" />
+              <Label className="text-xs font-bold sm:text-sm">Amount</Label>
+              <Input inputMode="decimal" value={txForm.amount} onChange={(e) => setTxForm((p) => ({ ...p, amount: e.target.value }))} placeholder="100000" className="text-xs sm:text-sm" />
             </div>
 
             <div className="space-y-2">
-              <Label className="font-bold">Currency</Label>
-              <Input value={txForm.currency} onChange={(e) => setTxForm((p) => ({ ...p, currency: e.target.value.toUpperCase() }))} placeholder="IDR" />
+              <Label className="text-xs font-bold sm:text-sm">Currency</Label>
+              <Input value={txForm.currency} onChange={(e) => setTxForm((p) => ({ ...p, currency: e.target.value.toUpperCase() }))} placeholder="IDR" className="text-xs sm:text-sm" />
             </div>
 
-            <div className="space-y-2 md:col-span-2">
-              <Label className="font-bold">Tags</Label>
-              <Input
-                value={txForm.tags}
-                onChange={(e) => setTxForm((p) => ({ ...p, tags: e.target.value }))}
-                placeholder="contoh: groceries, family"
-              />
+            <div className="space-y-2 sm:col-span-2">
+              <Label className="text-xs font-bold sm:text-sm">Tags</Label>
+              <Input value={txForm.tags} onChange={(e) => setTxForm((p) => ({ ...p, tags: e.target.value }))} placeholder="contoh: groceries, family" className="text-xs sm:text-sm" />
               {tags.length > 0 && (
                 <div className="flex flex-wrap gap-2">
                   {tags.slice(0, 10).map((t) => (
                     <button
                       key={t.id}
                       type="button"
-                      className="text-xs px-2 py-1 rounded-xl border border-primary/10 hover:bg-primary/5"
+                      className="rounded-xl border border-primary/10 px-2 py-1 text-[10px] hover:bg-primary/5 sm:text-xs"
                       onClick={() => {
                         const current = txForm.tags
                           .split(",")
@@ -1307,17 +1439,17 @@ function asAccountType(value: string): "CASH" | "BANK" | "EWALLET" {
               )}
             </div>
 
-            <div className="space-y-2 md:col-span-2">
-              <Label className="font-bold">Note</Label>
-              <Input value={txForm.note} onChange={(e) => setTxForm((p) => ({ ...p, note: e.target.value }))} placeholder="Optional" />
+            <div className="space-y-2 sm:col-span-2">
+              <Label className="text-xs font-bold sm:text-sm">Note</Label>
+              <Input value={txForm.note} onChange={(e) => setTxForm((p) => ({ ...p, note: e.target.value }))} placeholder="Optional" className="text-xs sm:text-sm" />
             </div>
           </div>
 
           <DialogFooter className="gap-2">
-            <Button variant="outline" className="rounded-2xl" onClick={() => setTxDialogOpen(false)} disabled={loading}>
+            <Button variant="outline" className="h-9 rounded-xl px-3 text-xs sm:h-10 sm:rounded-2xl sm:px-4 sm:text-sm" onClick={() => setTxDialogOpen(false)} disabled={loading}>
               Cancel
             </Button>
-            <Button className="rounded-2xl font-bold" onClick={saveTransaction} disabled={loading}>
+            <Button className="h-9 rounded-xl px-3 text-xs font-bold sm:h-10 sm:rounded-2xl sm:px-4 sm:text-sm" onClick={saveTransaction} disabled={loading}>
               Save
             </Button>
           </DialogFooter>
@@ -1325,17 +1457,17 @@ function asAccountType(value: string): "CASH" | "BANK" | "EWALLET" {
       </Dialog>
 
       <Dialog open={transferDialogOpen} onOpenChange={setTransferDialogOpen}>
-        <DialogContent className="max-w-lg rounded-3xl">
+        <DialogContent className="max-w-lg rounded-[1.25rem] p-4 sm:rounded-3xl sm:p-6">
           <DialogHeader>
-            <DialogTitle className="font-black">Transfer</DialogTitle>
-            <DialogDescription>Pindahkan saldo antar akun (currency harus sama).</DialogDescription>
+            <DialogTitle className="font-black text-base sm:text-lg">Transfer</DialogTitle>
+            <DialogDescription className="text-xs sm:text-sm">Pindahkan saldo antar akun (currency harus sama).</DialogDescription>
           </DialogHeader>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
             <div className="space-y-2">
-              <Label className="font-bold">From</Label>
+              <Label className="text-xs font-bold sm:text-sm">From</Label>
               <Select value={transferForm.fromAccountId} onValueChange={(v) => setTransferForm((p) => ({ ...p, fromAccountId: v }))}>
-                <SelectTrigger className="w-full">
+                <SelectTrigger className="w-full text-xs sm:text-sm">
                   <SelectValue placeholder="Select account" />
                 </SelectTrigger>
                 <SelectContent>
@@ -1349,9 +1481,9 @@ function asAccountType(value: string): "CASH" | "BANK" | "EWALLET" {
             </div>
 
             <div className="space-y-2">
-              <Label className="font-bold">To</Label>
+              <Label className="text-xs font-bold sm:text-sm">To</Label>
               <Select value={transferForm.toAccountId} onValueChange={(v) => setTransferForm((p) => ({ ...p, toAccountId: v }))}>
-                <SelectTrigger className="w-full">
+                <SelectTrigger className="w-full text-xs sm:text-sm">
                   <SelectValue placeholder="Select account" />
                 </SelectTrigger>
                 <SelectContent>
@@ -1365,26 +1497,26 @@ function asAccountType(value: string): "CASH" | "BANK" | "EWALLET" {
             </div>
 
             <div className="space-y-2">
-              <Label className="font-bold">Amount</Label>
-              <Input inputMode="decimal" value={transferForm.amount} onChange={(e) => setTransferForm((p) => ({ ...p, amount: e.target.value }))} placeholder="50000" />
+              <Label className="text-xs font-bold sm:text-sm">Amount</Label>
+              <Input inputMode="decimal" value={transferForm.amount} onChange={(e) => setTransferForm((p) => ({ ...p, amount: e.target.value }))} placeholder="50000" className="text-xs sm:text-sm" />
             </div>
 
             <div className="space-y-2">
-              <Label className="font-bold">Date</Label>
-              <Input type="date" value={transferForm.date} onChange={(e) => setTransferForm((p) => ({ ...p, date: e.target.value }))} />
+              <Label className="text-xs font-bold sm:text-sm">Date</Label>
+              <Input type="date" value={transferForm.date} onChange={(e) => setTransferForm((p) => ({ ...p, date: e.target.value }))} className="text-xs sm:text-sm" />
             </div>
 
-            <div className="space-y-2 md:col-span-2">
-              <Label className="font-bold">Note</Label>
-              <Input value={transferForm.note} onChange={(e) => setTransferForm((p) => ({ ...p, note: e.target.value }))} placeholder="Optional" />
+            <div className="space-y-2 sm:col-span-2">
+              <Label className="text-xs font-bold sm:text-sm">Note</Label>
+              <Input value={transferForm.note} onChange={(e) => setTransferForm((p) => ({ ...p, note: e.target.value }))} placeholder="Optional" className="text-xs sm:text-sm" />
             </div>
           </div>
 
           <DialogFooter className="gap-2">
-            <Button variant="outline" className="rounded-2xl" onClick={() => setTransferDialogOpen(false)} disabled={loading}>
+            <Button variant="outline" className="h-9 rounded-xl px-3 text-xs sm:h-10 sm:rounded-2xl sm:px-4 sm:text-sm" onClick={() => setTransferDialogOpen(false)} disabled={loading}>
               Cancel
             </Button>
-            <Button className="rounded-2xl font-bold" onClick={saveTransfer} disabled={loading}>
+            <Button className="h-9 rounded-xl px-3 text-xs font-bold sm:h-10 sm:rounded-2xl sm:px-4 sm:text-sm" onClick={saveTransfer} disabled={loading}>
               Transfer
             </Button>
           </DialogFooter>
@@ -1392,17 +1524,17 @@ function asAccountType(value: string): "CASH" | "BANK" | "EWALLET" {
       </Dialog>
 
       <Dialog open={categoryDialogOpen} onOpenChange={setCategoryDialogOpen}>
-        <DialogContent className="max-w-md rounded-3xl">
+        <DialogContent className="max-w-md rounded-[1.25rem] p-4 sm:rounded-3xl sm:p-6">
           <DialogHeader>
-            <DialogTitle className="font-black">New Category</DialogTitle>
-            <DialogDescription>Buat kategori untuk income atau expense.</DialogDescription>
+            <DialogTitle className="font-black text-base sm:text-lg">New Category</DialogTitle>
+            <DialogDescription className="text-xs sm:text-sm">Buat kategori untuk income atau expense.</DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label className="font-bold">Kind</Label>
+              <Label className="text-xs font-bold sm:text-sm">Kind</Label>
               <Select value={categoryForm.kind} onValueChange={(v) => setCategoryForm((p) => ({ ...p, kind: asIncomeExpense(v) }))}>
-                <SelectTrigger className="w-full">
+                <SelectTrigger className="w-full text-xs sm:text-sm">
                   <SelectValue placeholder="Select kind" />
                 </SelectTrigger>
                 <SelectContent>
@@ -1412,16 +1544,16 @@ function asAccountType(value: string): "CASH" | "BANK" | "EWALLET" {
               </Select>
             </div>
             <div className="space-y-2">
-              <Label className="font-bold">Name</Label>
-              <Input value={categoryForm.name} onChange={(e) => setCategoryForm((p) => ({ ...p, name: e.target.value }))} />
+              <Label className="text-xs font-bold sm:text-sm">Name</Label>
+              <Input value={categoryForm.name} onChange={(e) => setCategoryForm((p) => ({ ...p, name: e.target.value }))} className="text-xs sm:text-sm" />
             </div>
           </div>
 
           <DialogFooter className="gap-2">
-            <Button variant="outline" className="rounded-2xl" onClick={() => setCategoryDialogOpen(false)} disabled={loading}>
+            <Button variant="outline" className="h-9 rounded-xl px-3 text-xs sm:h-10 sm:rounded-2xl sm:px-4 sm:text-sm" onClick={() => setCategoryDialogOpen(false)} disabled={loading}>
               Cancel
             </Button>
-            <Button className="rounded-2xl font-bold" onClick={createCategory} disabled={loading}>
+            <Button className="h-9 rounded-xl px-3 text-xs font-bold sm:h-10 sm:rounded-2xl sm:px-4 sm:text-sm" onClick={createCategory} disabled={loading}>
               Create
             </Button>
           </DialogFooter>
@@ -1429,21 +1561,21 @@ function asAccountType(value: string): "CASH" | "BANK" | "EWALLET" {
       </Dialog>
 
       <Dialog open={accountDialogOpen} onOpenChange={setAccountDialogOpen}>
-        <DialogContent className="max-w-md rounded-3xl">
+        <DialogContent className="max-w-md rounded-[1.25rem] p-4 sm:rounded-3xl sm:p-6">
           <DialogHeader>
-            <DialogTitle className="font-black">New Account</DialogTitle>
-            <DialogDescription>Buat akun baru untuk tracking cash/bank/e-wallet.</DialogDescription>
+            <DialogTitle className="font-black text-base sm:text-lg">New Account</DialogTitle>
+            <DialogDescription className="text-xs sm:text-sm">Buat akun baru untuk tracking cash/bank/e-wallet.</DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label className="font-bold">Name</Label>
-              <Input value={accountForm.name} onChange={(e) => setAccountForm((p) => ({ ...p, name: e.target.value }))} />
+              <Label className="text-xs font-bold sm:text-sm">Name</Label>
+              <Input value={accountForm.name} onChange={(e) => setAccountForm((p) => ({ ...p, name: e.target.value }))} className="text-xs sm:text-sm" />
             </div>
             <div className="space-y-2">
-              <Label className="font-bold">Type</Label>
+              <Label className="text-xs font-bold sm:text-sm">Type</Label>
               <Select value={accountForm.type} onValueChange={(v) => setAccountForm((p) => ({ ...p, type: asAccountType(v) }))}>
-                <SelectTrigger className="w-full">
+                <SelectTrigger className="w-full text-xs sm:text-sm">
                   <SelectValue placeholder="Select type" />
                 </SelectTrigger>
                 <SelectContent>
@@ -1455,21 +1587,21 @@ function asAccountType(value: string): "CASH" | "BANK" | "EWALLET" {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">
-                <Label className="font-bold">Currency</Label>
-                <Input value={accountForm.currency} onChange={(e) => setAccountForm((p) => ({ ...p, currency: e.target.value.toUpperCase() }))} />
+                <Label className="text-xs font-bold sm:text-sm">Currency</Label>
+                <Input value={accountForm.currency} onChange={(e) => setAccountForm((p) => ({ ...p, currency: e.target.value.toUpperCase() }))} className="text-xs sm:text-sm" />
               </div>
               <div className="space-y-2">
-                <Label className="font-bold">Initial</Label>
-                <Input value={accountForm.initialBalance} onChange={(e) => setAccountForm((p) => ({ ...p, initialBalance: e.target.value }))} />
+                <Label className="text-xs font-bold sm:text-sm">Initial</Label>
+                <Input value={accountForm.initialBalance} onChange={(e) => setAccountForm((p) => ({ ...p, initialBalance: e.target.value }))} className="text-xs sm:text-sm" />
               </div>
             </div>
           </div>
 
           <DialogFooter className="gap-2">
-            <Button variant="outline" className="rounded-2xl" onClick={() => setAccountDialogOpen(false)} disabled={loading}>
+            <Button variant="outline" className="h-9 rounded-xl px-3 text-xs sm:h-10 sm:rounded-2xl sm:px-4 sm:text-sm" onClick={() => setAccountDialogOpen(false)} disabled={loading}>
               Cancel
             </Button>
-            <Button className="rounded-2xl font-bold" onClick={createAccount} disabled={loading}>
+            <Button className="h-9 rounded-xl px-3 text-xs font-bold sm:h-10 sm:rounded-2xl sm:px-4 sm:text-sm" onClick={createAccount} disabled={loading}>
               Create
             </Button>
           </DialogFooter>
@@ -1477,17 +1609,17 @@ function asAccountType(value: string): "CASH" | "BANK" | "EWALLET" {
       </Dialog>
 
       <Dialog open={budgetDialogOpen} onOpenChange={setBudgetDialogOpen}>
-        <DialogContent className="max-w-md rounded-3xl">
+        <DialogContent className="max-w-md rounded-[1.25rem] p-4 sm:rounded-3xl sm:p-6">
           <DialogHeader>
-            <DialogTitle className="font-black">Set Budget</DialogTitle>
-            <DialogDescription>Budget per kategori expense untuk bulan {month}.</DialogDescription>
+            <DialogTitle className="font-black text-base sm:text-lg">Set Budget</DialogTitle>
+            <DialogDescription className="text-xs sm:text-sm">Budget per kategori expense untuk bulan {month}.</DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label className="font-bold">Category</Label>
+              <Label className="text-xs font-bold sm:text-sm">Category</Label>
               <Select value={budgetForm.categoryId} onValueChange={(v) => setBudgetForm((p) => ({ ...p, categoryId: v }))}>
-                <SelectTrigger className="w-full">
+                <SelectTrigger className="w-full text-xs sm:text-sm">
                   <SelectValue placeholder="Select category" />
                 </SelectTrigger>
                 <SelectContent>
@@ -1501,21 +1633,21 @@ function asAccountType(value: string): "CASH" | "BANK" | "EWALLET" {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">
-                <Label className="font-bold">Currency</Label>
-                <Input value={budgetForm.currency} onChange={(e) => setBudgetForm((p) => ({ ...p, currency: e.target.value.toUpperCase() }))} />
+                <Label className="text-xs font-bold sm:text-sm">Currency</Label>
+                <Input value={budgetForm.currency} onChange={(e) => setBudgetForm((p) => ({ ...p, currency: e.target.value.toUpperCase() }))} className="text-xs sm:text-sm" />
               </div>
               <div className="space-y-2">
-                <Label className="font-bold">Limit</Label>
-                <Input value={budgetForm.limit} onChange={(e) => setBudgetForm((p) => ({ ...p, limit: e.target.value }))} placeholder="300000" />
+                <Label className="text-xs font-bold sm:text-sm">Limit</Label>
+                <Input value={budgetForm.limit} onChange={(e) => setBudgetForm((p) => ({ ...p, limit: e.target.value }))} placeholder="300000" className="text-xs sm:text-sm" />
               </div>
             </div>
           </div>
 
           <DialogFooter className="gap-2">
-            <Button variant="outline" className="rounded-2xl" onClick={() => setBudgetDialogOpen(false)} disabled={loading}>
+            <Button variant="outline" className="h-9 rounded-xl px-3 text-xs sm:h-10 sm:rounded-2xl sm:px-4 sm:text-sm" onClick={() => setBudgetDialogOpen(false)} disabled={loading}>
               Cancel
             </Button>
-            <Button className="rounded-2xl font-bold" onClick={saveBudget} disabled={loading}>
+            <Button className="h-9 rounded-xl px-3 text-xs font-bold sm:h-10 sm:rounded-2xl sm:px-4 sm:text-sm" onClick={saveBudget} disabled={loading}>
               Save
             </Button>
           </DialogFooter>
@@ -1523,49 +1655,177 @@ function asAccountType(value: string): "CASH" | "BANK" | "EWALLET" {
       </Dialog>
 
       <Dialog open={goalDialogOpen} onOpenChange={setGoalDialogOpen}>
-        <DialogContent className="max-w-md rounded-3xl">
-          <DialogHeader>
-            <DialogTitle className="font-black">New Goal</DialogTitle>
-            <DialogDescription>Buat target tabungan dan track progress.</DialogDescription>
-          </DialogHeader>
+        <DialogContent className="max-w-2xl border border-white/10 bg-[#08111f]/95 p-0 text-white shadow-2xl shadow-cyan-950/30 backdrop-blur-xl sm:rounded-[2rem]">
+          <div className="overflow-hidden rounded-[1.5rem] sm:rounded-[2rem]">
+            <div className="border-b border-white/10 px-4 py-4 sm:px-6 sm:py-5">
+              <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-cyan-300/15 bg-cyan-400/10 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.14em] text-cyan-100 sm:px-3 sm:text-[11px] sm:tracking-[0.2em]">
+                <PiggyBank className="h-3.5 w-3.5" />
+                Create savings goal
+              </div>
+              <DialogHeader>
+                <DialogTitle className="text-left font-black text-lg sm:text-2xl">New Goal</DialogTitle>
+                <DialogDescription className="text-left text-xs text-slate-400 sm:text-sm">
+                  Bikin target tabungan baru dengan nominal, progress awal, dan deadline yang jelas.
+                </DialogDescription>
+              </DialogHeader>
+            </div>
 
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label className="font-bold">Name</Label>
-              <Input value={goalForm.name} onChange={(e) => setGoalForm((p) => ({ ...p, name: e.target.value }))} />
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-2">
-                <Label className="font-bold">Currency</Label>
-                <Input value={goalForm.currency} onChange={(e) => setGoalForm((p) => ({ ...p, currency: e.target.value.toUpperCase() }))} />
+            <div className="grid gap-0 lg:grid-cols-[0.95fr_1.05fr]">
+              <div className="border-b border-white/10 bg-white/[0.03] p-4 lg:border-b-0 lg:border-r lg:p-6">
+                <div className="rounded-[1.25rem] border border-cyan-300/10 bg-cyan-400/5 p-4 sm:rounded-[1.5rem] sm:p-5">
+                  <div className="mb-3 text-[10px] font-black uppercase tracking-[0.18em] text-cyan-100 sm:text-[11px]">Live preview</div>
+                  <div className="text-lg font-black text-white sm:text-2xl">{goalForm.name || "Dream Goal"}</div>
+                  <div className="mt-1 text-xs text-slate-400 sm:text-sm">{goalForm.targetDate ? `Target date ${format(new Date(goalForm.targetDate), "dd MMM yyyy")}` : "No deadline yet"}</div>
+
+                  <div className="mt-4 grid grid-cols-2 gap-2.5 sm:gap-3">
+                    <div className="rounded-xl border border-emerald-300/10 bg-emerald-400/10 p-3 sm:rounded-2xl">
+                      <div className="text-[9px] uppercase tracking-[0.14em] text-emerald-100/80 sm:text-[10px]">Saved</div>
+                      <div className="mt-1 text-xs font-black text-emerald-100 sm:text-sm">
+                        {formatMoney(toNumber(goalForm.currentAmount || 0), goalForm.currency || "IDR")}
+                      </div>
+                    </div>
+                    <div className="rounded-xl border border-cyan-300/10 bg-cyan-400/10 p-3 sm:rounded-2xl">
+                      <div className="text-[9px] uppercase tracking-[0.14em] text-cyan-100/80 sm:text-[10px]">Target</div>
+                      <div className="mt-1 text-xs font-black text-cyan-100 sm:text-sm">
+                        {formatMoney(toNumber(goalForm.targetAmount || 0), goalForm.currency || "IDR")}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 flex items-center justify-between text-[10px] text-slate-400 sm:text-xs">
+                    <span>Progress</span>
+                    <span>
+                      {Math.min(
+                        toNumber(goalForm.targetAmount || 0) > 0
+                          ? (toNumber(goalForm.currentAmount || 0) / toNumber(goalForm.targetAmount || 0)) * 100
+                          : 0,
+                        100
+                      ).toFixed(0)}%
+                    </span>
+                  </div>
+                  <div className="mt-2 h-2.5 w-full overflow-hidden rounded-full bg-white/10">
+                    <div
+                      className="h-2.5 rounded-full bg-gradient-to-r from-cyan-300 via-sky-300 to-emerald-300"
+                      style={{
+                        width: `${Math.min(
+                          toNumber(goalForm.targetAmount || 0) > 0
+                            ? (toNumber(goalForm.currentAmount || 0) / toNumber(goalForm.targetAmount || 0)) * 100
+                            : 0,
+                          100
+                        )}%`,
+                      }}
+                    />
+                  </div>
+                </div>
               </div>
-              <div className="space-y-2">
-                <Label className="font-bold">Target</Label>
-                <Input value={goalForm.targetAmount} onChange={(e) => setGoalForm((p) => ({ ...p, targetAmount: e.target.value }))} />
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-2">
-                <Label className="font-bold">Current</Label>
-                <Input value={goalForm.currentAmount} onChange={(e) => setGoalForm((p) => ({ ...p, currentAmount: e.target.value }))} />
-              </div>
-              <div className="space-y-2">
-                <Label className="font-bold">Target Date</Label>
-                <Input type="date" value={goalForm.targetDate} onChange={(e) => setGoalForm((p) => ({ ...p, targetDate: e.target.value }))} />
+
+              <div className="p-4 sm:p-6">
+                <div className="grid grid-cols-1 gap-3 sm:gap-4">
+                  <div className="space-y-2">
+                    <Label className="text-xs font-bold uppercase tracking-[0.12em] text-slate-300 sm:text-sm">Goal name</Label>
+                    <Input
+                      value={goalForm.name}
+                      onChange={(e) => setGoalForm((p) => ({ ...p, name: e.target.value }))}
+                      placeholder="MacBook fund, emergency fund, trip to Japan..."
+                      className="h-11 rounded-xl border-white/10 bg-[#07111f]/80 text-sm text-white placeholder:text-slate-500 sm:h-12 sm:rounded-2xl"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                    <div className="space-y-2">
+                      <Label className="text-xs font-bold uppercase tracking-[0.12em] text-slate-300 sm:text-sm">Currency</Label>
+                      <Input
+                        value={goalForm.currency}
+                        onChange={(e) => setGoalForm((p) => ({ ...p, currency: e.target.value.toUpperCase() }))}
+                        className="h-11 rounded-xl border-white/10 bg-[#07111f]/80 text-sm text-white sm:h-12 sm:rounded-2xl"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-xs font-bold uppercase tracking-[0.12em] text-slate-300 sm:text-sm">Target amount</Label>
+                      <Input
+                        value={goalForm.targetAmount}
+                        onChange={(e) => setGoalForm((p) => ({ ...p, targetAmount: e.target.value }))}
+                        placeholder="10000000"
+                        className="h-11 rounded-xl border-white/10 bg-[#07111f]/80 text-sm text-white sm:h-12 sm:rounded-2xl"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                    <div className="space-y-2">
+                      <Label className="text-xs font-bold uppercase tracking-[0.12em] text-slate-300 sm:text-sm">Current saved</Label>
+                      <Input
+                        value={goalForm.currentAmount}
+                        onChange={(e) => setGoalForm((p) => ({ ...p, currentAmount: e.target.value }))}
+                        placeholder="0"
+                        className="h-11 rounded-xl border-white/10 bg-[#07111f]/80 text-sm text-white sm:h-12 sm:rounded-2xl"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-xs font-bold uppercase tracking-[0.12em] text-slate-300 sm:text-sm">Target date</Label>
+                      <Input
+                        type="date"
+                        value={goalForm.targetDate}
+                        onChange={(e) => setGoalForm((p) => ({ ...p, targetDate: e.target.value }))}
+                        className="h-11 rounded-xl border-white/10 bg-[#07111f]/80 text-sm text-white sm:h-12 sm:rounded-2xl"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <DialogFooter className="mt-5 gap-2 sm:mt-6">
+                  <Button
+                    variant="outline"
+                    className="h-10 rounded-xl border border-white/10 bg-[#07111f]/80 px-4 text-xs text-slate-100 hover:border-cyan-300/20 hover:bg-white/10 sm:h-11 sm:rounded-2xl sm:px-5 sm:text-sm"
+                    onClick={() => setGoalDialogOpen(false)}
+                    disabled={loading}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    className="h-10 rounded-xl border border-cyan-300/20 bg-cyan-400/10 px-4 text-xs font-semibold text-cyan-100 hover:bg-cyan-400/15 sm:h-11 sm:rounded-2xl sm:px-5 sm:text-sm"
+                    onClick={createGoal}
+                    disabled={loading}
+                  >
+                    <Save className="mr-2 h-4 w-4" />
+                    Create goal
+                  </Button>
+                </DialogFooter>
               </div>
             </div>
           </div>
-
-          <DialogFooter className="gap-2">
-            <Button variant="outline" className="rounded-2xl" onClick={() => setGoalDialogOpen(false)} disabled={loading}>
-              Cancel
-            </Button>
-            <Button className="rounded-2xl font-bold" onClick={createGoal} disabled={loading}>
-              Create
-            </Button>
-          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
+  );
+}
+
+function SummaryFinanceCard({
+  title,
+  value,
+  icon,
+  badge,
+  badgeTone = "border border-white/10 bg-white/10 text-slate-200",
+  iconTone,
+}: {
+  title: string;
+  value: string;
+  icon: React.ReactNode;
+  badge?: string;
+  badgeTone?: string;
+  iconTone: string;
+}) {
+  return (
+    <Card className="min-w-0 self-start rounded-[0.95rem] border border-white/10 bg-white/5 px-2 py-2 text-white backdrop-blur-xl sm:rounded-[1.25rem] sm:px-4 sm:py-4">
+      <div className="mb-2 flex items-center justify-between gap-1">
+        <div className={`rounded-lg border border-white/10 p-1.5 sm:rounded-xl sm:p-2.5 ${iconTone}`}>{icon}</div>
+
+        {badge ? <Badge className={`hidden rounded-full px-2 py-0.5 text-[9px] sm:inline-flex ${badgeTone}`}>{badge}</Badge> : null}
+      </div>
+
+      <div className="truncate text-[10px] font-black leading-none tracking-tight text-white sm:text-lg">{value}</div>
+
+      <div className="mt-2 text-[9px] font-semibold leading-tight text-slate-300 sm:text-sm">{title}</div>
+    </Card>
   );
 }

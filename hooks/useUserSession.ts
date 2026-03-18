@@ -3,17 +3,12 @@
 import { useRouter } from "next/navigation";
 import { useSession, signOut } from "@/lib/auth-client";
 
-
-
 export function useUserSession() {
   const router = useRouter();
-
-  // ✅ Ambil data user dari session
   const { data: session } = useSession();
 
-  // Jika tidak ada session (belum login)
   if (!session) {
-    return { user: null, session: null};
+    return { user: null, session: null, handleSignOut: async () => {} };
   }
 
   const user = {
@@ -23,8 +18,12 @@ export function useUserSession() {
   };
 
   const handleSignOut = async () => {
-    await signOut();
-    router.push("/signup");
+    try {
+      await signOut();
+    } finally {
+      router.replace("/login");
+      router.refresh();
+    }
   };
 
   return { user, session, handleSignOut };

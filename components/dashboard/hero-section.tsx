@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { ArrowRight, CalendarDays, CheckCircle2, CreditCard, ImageIcon, Link2, Sparkles, Trophy, UtensilsCrossed } from "lucide-react";
+import { PwaInstallPrompt } from "@/components/pwa-install-prompt";
 import { useUserSession } from "@/hooks/useUserSession";
 
 const featurePills = [
@@ -58,6 +59,8 @@ export function HeroSection() {
                 Explore Features
               </Link>
             </div>
+
+            <PwaInstallPrompt />
 
             <div className="mt-10 flex flex-wrap gap-3">
               {featurePills.map((item) => {
