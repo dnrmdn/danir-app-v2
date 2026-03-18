@@ -6,10 +6,19 @@ import Image from "next/image";
 import { Folder, Image as ImageIcon, Link2, Plus, Save, X } from "lucide-react";
 import { getThumbnailUrl } from "@/lib/link-utils";
 
+type CreatedSavedLink = {
+  id: number;
+  url: string;
+  title: string;
+  label: string | null;
+  previewImage: string | null;
+  createdAt?: string;
+};
+
 type AddLinkModalProps = {
   isOpen: boolean;
   onClose: () => void;
-  onCreated?: () => void;
+  onCreated?: (link: CreatedSavedLink) => void;
 };
 
 const DEFAULT_LABELS = ["Work", "Education", "Personal", "Entertainment"];
@@ -38,7 +47,7 @@ export default function AddLinkModal({ isOpen, onClose, onCreated }: AddLinkModa
 
     const fetchLabels = async () => {
       try {
-        const res = await fetch("/api/labels");
+        const res = await fetch("/api/labels", { cache: "no-store" });
         const data = await res.json();
 
         if (data.success && Array.isArray(data.data) && data.data.length > 0) {
@@ -51,7 +60,7 @@ export default function AddLinkModal({ isOpen, onClose, onCreated }: AddLinkModa
       }
     };
 
-    fetchLabels();
+    void fetchLabels();
     setError(null);
   }, [isOpen]);
 
@@ -133,7 +142,7 @@ export default function AddLinkModal({ isOpen, onClose, onCreated }: AddLinkModa
       }
 
       handleClose();
-      onCreated?.();
+      onCreated?.(data.data);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Gagal nyimpen link.");
     } finally {
@@ -301,9 +310,7 @@ export default function AddLinkModal({ isOpen, onClose, onCreated }: AddLinkModa
                   </button>
                 </div>
 
-                {labels.length > 0 && (
-                  <p className="text-xs text-slate-400">Selected: {selectedLabelsValue}</p>
-                )}
+                {labels.length > 0 && <p className="text-xs text-slate-400">Selected: {selectedLabelsValue}</p>}
               </div>
             </div>
           )}

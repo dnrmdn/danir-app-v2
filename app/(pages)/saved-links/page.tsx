@@ -33,7 +33,7 @@ export default function SavedLinksPage() {
 
   const fetchLinks = async () => {
     try {
-      const res = await fetch("/api/links");
+      const res = await fetch("/api/links", { cache: "no-store" });
       const data = await res.json();
       if (data.success) {
         setLinks(data.data);
@@ -47,7 +47,7 @@ export default function SavedLinksPage() {
 
   useEffect(() => {
     if (session) {
-      fetchLinks();
+      void fetchLinks();
     } else {
       setLoading(false);
     }
@@ -256,9 +256,13 @@ export default function SavedLinksPage() {
       <AddLinkModal
         isOpen={showAddModal}
         onClose={() => setShowAddModal(false)}
-        onCreated={() => {
+        onCreated={(createdLink) => {
+          setLinks((prev) => {
+            const withoutDuplicate = prev.filter((link) => link.id !== createdLink.id);
+            return [createdLink, ...withoutDuplicate];
+          });
           setLoading(true);
-          fetchLinks();
+          void fetchLinks();
         }}
       />
     </>
@@ -288,8 +292,7 @@ function LinkCard({ link, onCopy }: { link: SavedLink; onCopy: (url: string) => 
 
   return (
     <div className="min-w-0 overflow-hidden rounded-[0.85rem] border border-white/10 bg-[#07111f]/70 transition hover:border-cyan-300/15 hover:bg-white/[0.06] sm:rounded-[1.1rem]">
-      {/* IMAGE */}
-      <div className="relative w-full h-16 sm:h-20">
+      <div className="relative h-16 w-full sm:h-20">
         <Image
           src={link.previewImage || getThumbnailUrl(link.url) || "https://images.unsplash.com/photo-1611162617474-5b21e879e113?q=80&w=400&h=225&auto=format&fit=crop"}
           alt={link.title}
@@ -301,15 +304,10 @@ function LinkCard({ link, onCopy }: { link: SavedLink; onCopy: (url: string) => 
         />
       </div>
 
-      {/* CONTENT */}
       <div className="space-y-1.5 p-2">
-        {/* TITLE */}
         <div className="line-clamp-2 text-[9px] font-black leading-3 text-white sm:text-[11px] sm:leading-4">{link.title}</div>
-
-        {/* URL */}
         <div className="line-clamp-1 text-[7px] text-slate-500 sm:text-[9px]">{link.url}</div>
 
-        {/* LABEL */}
         <div className="flex min-h-3 flex-wrap gap-1">
           {labels.length > 0 ? (
             labels.slice(0, 1).map((label, i) => (
@@ -322,7 +320,6 @@ function LinkCard({ link, onCopy }: { link: SavedLink; onCopy: (url: string) => 
           )}
         </div>
 
-        {/* ACTION */}
         <div className="flex items-center gap-1">
           <a href={link.url} target="_blank" rel="noopener noreferrer" className="inline-flex h-6 flex-1 items-center justify-center rounded-md border border-cyan-300/20 bg-cyan-400/10 text-cyan-100 hover:bg-cyan-400/15">
             <ExternalLink size={10} />
