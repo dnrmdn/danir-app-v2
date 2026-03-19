@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { AppProviders } from "@/components/app-providers";
 import { PwaRegister } from "@/components/pwa-register";
 import "./globals.css";
 
@@ -40,10 +41,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="overflow-x-hidden" suppressHydrationWarning>
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <PwaRegister />
-        {children}
+    <html lang="id" className="overflow-x-hidden" suppressHydrationWarning>
+      <body className={`${geistSans.variable} ${geistMono.variable} bg-background text-foreground antialiased`}>
+        <AppProviders>
+          <PwaRegister />
+          {children}
+        </AppProviders>
       </body>
     </html>
   );

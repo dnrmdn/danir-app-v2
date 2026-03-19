@@ -2,7 +2,7 @@
 @import "tw-animate-css";
 
 /* ---------------------- */
-/*   CUSTOM SCROLLBAR     */
+/* CUSTOM SCROLLBAR     */
 /* ---------------------- */
 
 /* Hilangkan scrollbar tetapi tetap bisa scroll */
@@ -18,12 +18,12 @@
 }
 
 /* ---------------------- */
-/*    DARK MODE VARIANT   */
+/* DARK MODE VARIANT   */
 /* ---------------------- */
 @custom-variant dark (&:is(.dark *));
 
 /* ---------------------- */
-/*        LIGHT MODE       */
+/* LIGHT MODE      */
 /* ---------------------- */
 :root {
   --background: oklch(0.98 0 0);
@@ -35,90 +35,94 @@
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.15 0 0);
 
-  --primary: oklch(0.45 0.18 280);
+  /* PRIMARY: Diubah ke Cyan-Emerald khas Danir App */
+  --primary: oklch(0.6 0.18 190);
   --primary-foreground: oklch(0.98 0 0);
 
-  --secondary: oklch(0.65 0.15 200);
-  --secondary-foreground: oklch(0.15 0 0);
+  --secondary: oklch(0.96 0.02 190);
+  --secondary-foreground: oklch(0.15 0.05 190);
 
   --muted: oklch(0.93 0 0);
   --muted-foreground: oklch(0.5 0 0);
 
-  --accent: oklch(0.75 0.2 120);
-  --accent-foreground: oklch(0.15 0 0);
+  /* ACCENT: Diubah ke Emerald segar agar sinkron */
+  --accent: oklch(0.85 0.12 170);
+  --accent-foreground: oklch(0.15 0.05 170);
 
   --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: oklch(0.98 0 0);
 
   --border: oklch(0.92 0 0);
   --input: oklch(0.97 0 0);
-  --ring: oklch(0.45 0.18 280);
+  --ring: oklch(0.6 0.18 190);
 
-  --chart-1: oklch(0.45 0.18 280);
-  --chart-2: oklch(0.65 0.15 200);
-  --chart-3: oklch(0.75 0.2 120);
-  --chart-4: oklch(0.6 0.16 40);
-  --chart-5: oklch(0.55 0.14 15);
+  --chart-1: oklch(0.6 0.18 190);
+  --chart-2: oklch(0.55 0.15 170);
+  --chart-3: oklch(0.45 0.14 200);
+  --chart-4: oklch(0.8 0.12 180);
+  --chart-5: oklch(0.7 0.1 160);
 
-  --radius: 0.625rem;
+  --radius: 0.85rem; /* Sedikit lebih membulat agar makin modern */
 
   --sidebar: oklch(0.98 0 0);
   --sidebar-foreground: oklch(0.15 0 0);
-  --sidebar-primary: oklch(0.45 0.18 280);
+  --sidebar-primary: oklch(0.6 0.18 190);
   --sidebar-primary-foreground: oklch(0.98 0 0);
   --sidebar-accent: oklch(0.93 0 0);
   --sidebar-accent-foreground: oklch(0.15 0 0);
   --sidebar-border: oklch(0.92 0 0);
-  --sidebar-ring: oklch(0.45 0.18 280);
+  --sidebar-ring: oklch(0.6 0.18 190);
 
   --font-sans: "Geist", "Geist Fallback";
   --font-mono: "Geist Mono", "Geist Mono Fallback";
 }
 
 /* ---------------------- */
-/*         DARK MODE       */
+/* DARK MODE      */
 /* ---------------------- */
 .dark {
   --background: oklch(0.12 0 0);
   --foreground: oklch(0.95 0 0);
 
-  --card: oklch(0.18 0 0);
+  --card: oklch(0.16 0.01 190);
   --card-foreground: oklch(0.95 0 0);
 
-  --popover: oklch(0.18 0 0);
+  --popover: oklch(0.16 0.01 190);
   --popover-foreground: oklch(0.95 0 0);
 
-  --primary: oklch(0.65 0.15 280);
+  /* PRIMARY: Cyan cerah yang menyala di mode gelap */
+  --primary: oklch(0.7 0.2 190);
   --primary-foreground: oklch(0.12 0 0);
 
-  --secondary: oklch(0.5 0.12 200);
+  --secondary: oklch(0.25 0.05 190);
   --secondary-foreground: oklch(0.95 0 0);
 
-  --muted: oklch(0.3 0 0);
+  --muted: oklch(0.22 0.02 190);
   --muted-foreground: oklch(0.65 0 0);
 
-  --accent: oklch(0.75 0.2 120);
-  --accent-foreground: oklch(0.12 0 0);
+  /* ACCENT: Emerald menyala untuk indikator aktif */
+  --accent: oklch(0.35 0.1 170);
+  --accent-foreground: oklch(0.95 0 0);
 
   --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: oklch(0.95 0 0);
 
-  --border: oklch(0.25 0 0);
-  --input: oklch(0.22 0 0);
-  --ring: oklch(0.65 0.15 280);
+  --border: oklch(0.22 0.02 190);
+  --input: oklch(0.2 0.02 190);
+  --ring: oklch(0.7 0.2 190);
 
-  --sidebar: oklch(0.15 0 0);
+  --sidebar: oklch(0.14 0.01 190);
   --sidebar-foreground: oklch(0.95 0 0);
-  --sidebar-primary: oklch(0.65 0.15 280);
+  --sidebar-primary: oklch(0.7 0.2 190);
   --sidebar-primary-foreground: oklch(0.12 0 0);
-  --sidebar-accent: oklch(0.3 0 0);
+  --sidebar-accent: oklch(0.22 0.02 190);
   --sidebar-accent-foreground: oklch(0.95 0 0);
-  --sidebar-border: oklch(0.25 0 0);
-  --sidebar-ring: oklch(0.65 0.15 280);
+  --sidebar-border: oklch(0.22 0.02 190);
+  --sidebar-ring: oklch(0.7 0.2 190);
 }
 
 /* ---------------------- */
-/*  THEME: Tailwind tokens */
+/* THEME: Tailwind tokens */
 /* ---------------------- */
 @theme inline {
   --font-sans: var(--font-sans);
@@ -178,7 +182,12 @@
   * {
     @apply border-border outline-ring/50;
   }
+  html {
+    scroll-behavior: smooth;
+  }
+
   body {
     @apply bg-background text-foreground;
+    font-feature-settings: "cv11", "ss01"; /* Mengaktifkan fitur font Geist biar makin cakep */
   }
 }
