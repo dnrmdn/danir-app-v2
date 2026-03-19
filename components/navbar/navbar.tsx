@@ -6,6 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { Calendar1, CheckCircle, ChevronDown, ForkKnifeIcon, Image as ImageIcon, Link2, LogOut, Settings2, Sparkles, Stars, UserCircle2, Wallet } from "lucide-react";
 import { useUserSession } from "@/hooks/useUserSession";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { ThemeLanguageSwitcher } from "../theme-language-switcher";
 
 const navItems = [
   { label: "Calendar", href: "/calendar", icon: Calendar1 },
@@ -57,10 +58,7 @@ export default function Navbar() {
     });
   }, [session, user?.email]);
 
-  const currentPage = useMemo(
-    () => pageMeta[pathname] ?? { title: "Workspace", subtitle: "Manage your system from one place." },
-    [pathname]
-  );
+  const currentPage = useMemo(() => pageMeta[pathname] ?? { title: "Workspace", subtitle: "Manage your system from one place." }, [pathname]);
 
   if (!session || !user) return null;
 
@@ -85,7 +83,16 @@ export default function Navbar() {
                 <div className="truncate text-xs text-slate-400">{user.email}</div>
               </div>
             </DropdownMenuLabel>
+
             <DropdownMenuSeparator className="my-2 bg-white/10" />
+
+            {/* INTEGRASI SWITCHER DI SINI */}
+            <div className="px-2 py-2 flex justify-center">
+              <ThemeLanguageSwitcher className="w-full justify-between" />
+            </div>
+
+            <DropdownMenuSeparator className="my-2 bg-white/10" />
+
             <DropdownMenuGroup>
               <DropdownMenuItem onClick={() => router.push("/profile")} className="rounded-2xl text-slate-200 focus:bg-white/10 focus:text-white">
                 <UserCircle2 className="mr-2 h-4 w-4" />
@@ -121,9 +128,7 @@ export default function Navbar() {
                 key={item.href}
                 href={item.href}
                 className={`inline-flex items-center gap-1.5 rounded-full px-3 py-2 text-xs font-medium transition-all sm:gap-2 sm:px-4 sm:py-2.5 sm:text-sm ${
-                  isActive
-                    ? "bg-gradient-to-r from-cyan-400/20 to-emerald-400/15 text-white shadow-lg shadow-cyan-950/20 ring-1 ring-cyan-300/20"
-                    : "text-slate-300 hover:bg-white/8 hover:text-white"
+                  isActive ? "bg-gradient-to-r from-cyan-400/20 to-emerald-400/15 text-white shadow-lg shadow-cyan-950/20 ring-1 ring-cyan-300/20" : "text-slate-300 hover:bg-white/8 hover:text-white"
                 }`}
               >
                 <Icon className={`h-4 w-4 ${isActive ? "text-cyan-200" : "text-slate-400"}`} />

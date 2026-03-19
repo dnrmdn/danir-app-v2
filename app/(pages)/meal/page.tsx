@@ -690,7 +690,7 @@ function SummaryCard({ title, value, subtitle, icon, compact = false }: { title:
         {!compact && <div className="hidden text-[8px] uppercase tracking-[0.12em] text-slate-500 sm:block">Overview</div>}
       </div>
 
-      <div className="text-[14px] font-black leading-none text-white sm:text-lg">{value}</div>
+      <div className="text-[14px] font-black leading-none truncate text-white sm:text-lg">{value}</div>
 
       <div className="mt-2 line-clamp-1 text-[10px] font-semibold leading-none text-slate-200 sm:text-xs">{title}</div>
 
