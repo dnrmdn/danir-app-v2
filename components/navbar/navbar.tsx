@@ -127,11 +127,10 @@ export default function Navbar() {
               <Link
                 key={item.href}
                 href={item.href}
-                className={`inline-flex items-center gap-1.5 rounded-full px-3 py-2 text-xs font-medium transition-all sm:gap-2 sm:px-4 sm:py-2.5 sm:text-sm ${
-                  isActive ? "bg-cyan-100 text-cyan-900 shadow-sm ring-1 ring-cyan-200 dark:bg-gradient-to-r dark:from-cyan-400/20 dark:to-emerald-400/15 dark:text-white dark:shadow-lg dark:shadow-cyan-950/20 dark:ring-cyan-300/20" : "text-muted-foreground hover:bg-muted hover:text-foreground dark:text-slate-300 dark:hover:bg-white/8 dark:hover:text-white"
-                }`}
+                className={`inline-flex items-center gap-1.5 rounded-full px-3 py-2 text-xs font-medium transition-all sm:gap-2 sm:px-4 sm:py-2.5 sm:text-sm ${isActive ? "bg-cyan-100 text-cyan-900 shadow-sm ring-1 ring-cyan-200 dark:bg-gradient-to-r dark:from-cyan-400/20 dark:to-emerald-400/15 dark:text-black dark:shadow-lg dark:shadow-cyan-950/20 dark:ring-cyan-300/20" : "text-muted-foreground hover:bg-muted hover:text-foreground dark:text-slate-300 dark:hover:bg-white/8 dark:hover:text-white"
+                  }`}
               >
-                <Icon className={`h-4 w-4 ${isActive ? "text-cyan-700 dark:text-cyan-200" : "text-muted-foreground dark:text-slate-400"}`} />
+                <Icon className={`h-4 w-4 ${isActive ? "text-cyan-700 dark:text-cyan-900" : "text-muted-foreground dark:text-slate-400"}`} />
                 <span>{item.label}</span>
               </Link>
             );

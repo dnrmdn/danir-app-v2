@@ -20,6 +20,10 @@ model User {
   email         String   @unique
   emailVerified Boolean  @default(false)
   image         String?
+  username      String?  @unique
+  bio           String?
+  phone         String?
+  location      String?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @default(now()) @updatedAt
 

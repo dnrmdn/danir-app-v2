@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
-import { Copy, ExternalLink, Filter, FolderKanban, Grid3X3, Link2, Search, Sparkles, Tag, TableProperties } from "lucide-react";
+import { Copy, ExternalLink, Filter, FolderKanban, Grid3X3, Link2, Plus, Search, Sparkles, Tag, TableProperties } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -201,7 +201,7 @@ export default function SavedLinksPage() {
 
   return (
     <>
-      <div className="space-y-8 pb-8">
+      <div className="space-y-8 pb-24 sm:pb-28 relative">
         <section className="rounded-[2rem] border border-border bg-card p-6 text-foreground shadow-2xl shadow-cyan-950/10 backdrop-blur-xl dark:border-white/10 dark:bg-white/5 dark:text-white sm:p-8">
           <div className="flex flex-col gap-8 xl:flex-row xl:items-end xl:justify-between">
             <div className="max-w-3xl">
@@ -211,12 +211,6 @@ export default function SavedLinksPage() {
               </div>
               <h1 className="text-4xl font-black tracking-tight text-foreground dark:text-white sm:text-5xl">{t.heroTitle}</h1>
               <p className="mt-3 max-w-2xl text-sm leading-7 text-muted-foreground dark:text-slate-300 sm:text-base">{t.heroDesc}</p>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <Button onClick={() => setShowAddModal(true)} className="rounded-2xl border border-cyan-300/20 bg-cyan-400/10 font-semibold text-cyan-700 hover:bg-cyan-400/15 dark:text-cyan-100">
-                {t.addNewLink}
-              </Button>
             </div>
           </div>
         </section>
@@ -323,6 +317,18 @@ export default function SavedLinksPage() {
             </div>
           )}
         </Card>
+      </div>
+
+      {/* FAB - Add Link Button */}
+      <div className="fixed bottom-6 right-6 sm:bottom-8 sm:right-8 z-[90] flex flex-col items-end gap-3">
+        <Button
+          size="icon"
+          className="h-14 w-14 rounded-full shadow-2xl bg-cyan-500 text-white hover:bg-cyan-600 transition-all duration-300 active:scale-90"
+          onClick={() => setShowAddModal(true)}
+          title={t.addNewLink}
+        >
+          <Plus className="h-8 w-8" />
+        </Button>
       </div>
 
       <AddLinkModal
