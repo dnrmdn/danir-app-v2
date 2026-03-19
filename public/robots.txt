@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://danir-app.my.id/sitemap.xml
