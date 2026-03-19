@@ -5,12 +5,20 @@ import { useRewardStore } from "@/lib/store/reward-store";
 import HeaderReward from "./headerReward";
 import Redeem from "./redeem";
 import { Member } from "@/types/domain";
+import { useLanguage } from "@/components/language-provider";
 
 interface MemberRewardContentProps {
   member: Member;
 }
 
+const contentMem = {
+  id: { empty: "Belum ada hadiah untuk member ini" },
+  en: { empty: "No rewards for this member yet" }
+};
+
 export default function MemberRewardContent({ member } : MemberRewardContentProps) {
+  const { locale } = useLanguage();
+  const t = contentMem[locale];
   const rewards = useRewardStore((s) => s.rewards);
   const fetchRewards = useRewardStore((s) => s.fetchRewards);
 
@@ -35,8 +43,8 @@ export default function MemberRewardContent({ member } : MemberRewardContentProp
             <Redeem key={reward.id} reward={reward} member={member} />
           ))
         ) : (
-          <p className="text-center text-gray-400 py-10">
-            Belum ada reward untuk member ini
+          <p className="text-center text-muted-foreground dark:text-gray-400 py-10">
+            {t.empty}
           </p>
         )}
       </div>

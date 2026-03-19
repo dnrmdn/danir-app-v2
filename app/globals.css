@@ -35,7 +35,6 @@
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.15 0 0);
 
-  /* PRIMARY: Diubah ke Cyan-Emerald khas Danir App */
   --primary: oklch(0.6 0.18 190);
   --primary-foreground: oklch(0.98 0 0);
 
@@ -45,7 +44,6 @@
   --muted: oklch(0.93 0 0);
   --muted-foreground: oklch(0.5 0 0);
 
-  /* ACCENT: Diubah ke Emerald segar agar sinkron */
   --accent: oklch(0.85 0.12 170);
   --accent-foreground: oklch(0.15 0.05 170);
 
@@ -62,7 +60,7 @@
   --chart-4: oklch(0.8 0.12 180);
   --chart-5: oklch(0.7 0.1 160);
 
-  --radius: 0.85rem; /* Sedikit lebih membulat agar makin modern */
+  --radius: 0.85rem;
 
   --sidebar: oklch(0.98 0 0);
   --sidebar-foreground: oklch(0.15 0 0);
@@ -90,7 +88,6 @@
   --popover: oklch(0.16 0.01 190);
   --popover-foreground: oklch(0.95 0 0);
 
-  /* PRIMARY: Cyan cerah yang menyala di mode gelap */
   --primary: oklch(0.7 0.2 190);
   --primary-foreground: oklch(0.12 0 0);
 
@@ -100,7 +97,6 @@
   --muted: oklch(0.22 0.02 190);
   --muted-foreground: oklch(0.65 0 0);
 
-  /* ACCENT: Emerald menyala untuk indikator aktif */
   --accent: oklch(0.35 0.1 170);
   --accent-foreground: oklch(0.95 0 0);
 
@@ -182,12 +178,69 @@
   * {
     @apply border-border outline-ring/50;
   }
+
   html {
     scroll-behavior: smooth;
   }
 
   body {
     @apply bg-background text-foreground;
-    font-feature-settings: "cv11", "ss01"; /* Mengaktifkan fitur font Geist biar makin cakep */
+    font-feature-settings: "cv11", "ss01";
+  }
+}
+
+/* ---------------------- */
+/* GOOEY / SONNER TOAST FIX */
+/* ---------------------- */
+[data-sonner-toaster] {
+  box-sizing: border-box;
+}
+
+[data-sonner-toast] {
+  box-sizing: border-box;
+  max-width: min(420px, calc(100vw - 24px)) !important;
+  width: 100% !important;
+}
+
+[data-sonner-toast] * {
+  box-sizing: border-box;
+}
+
+[data-sonner-toast] button {
+  max-width: 100%;
+}
+
+[data-sonner-toast] [data-button],
+[data-sonner-toast] button {
+  white-space: normal !important;
+}
+
+/* Mobile fix */
+@media (max-width: 640px) {
+  [data-sonner-toaster] {
+    left: 12px !important;
+    right: 12px !important;
+    width: auto !important;
+  }
+
+  [data-sonner-toast] {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: calc(100vw - 24px) !important;
+    margin: 0 !important;
+    padding-inline: 0 !important;
+    overflow: hidden !important;
+  }
+
+  [data-sonner-toast] p,
+  [data-sonner-toast] div,
+  [data-sonner-toast] span {
+    word-break: break-word;
+    overflow-wrap: anywhere;
+  }
+
+  [data-sonner-toast] button {
+    width: 100%;
+    min-width: 0;
   }
 }

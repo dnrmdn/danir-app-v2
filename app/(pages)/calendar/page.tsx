@@ -2,8 +2,10 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { addDays, addMonths, eachDayOfInterval, endOfMonth, endOfWeek, format, isSameDay, isSameMonth, parseISO, startOfMonth, startOfWeek, subMonths } from "date-fns";
+import { id as localeID, enUS as localeEN } from "date-fns/locale";
 import { CalendarDays, ChevronLeft, ChevronRight, Coins, Gift, Link2, Soup, Target } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useLanguage } from "@/components/language-provider";
 
 type TaskItem = {
   id: number;
@@ -69,35 +71,80 @@ type CalendarEvent = {
   tone: string;
 };
 
-const weekdayLabels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+const contentLocal = {
+  id: {
+    badge: "Kalender Bulanan Terpadu",
+    subtitle: "Semua activity dari task, reward, meal plan, money, dan saved links ngumpul di satu kalender yang cakep.",
+    today: "Hari Ini",
+    monthlyEvents: "Event Bulanan",
+    tasks: "Tugas",
+    meals: "Makanan",
+    moneyMoves: "Keuangan",
+    savedLinks: "Simpanan Link",
+    weekdayLabels: ["Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min"],
+    selectedDayTitle: "Hari Terpilih",
+    selectedDayDesc: "Semua catatan harian dari page lain masuk di sini biar gampang dipantau.",
+    eventsLabel: "Event",
+    noActivity: "Belum ada aktivitas",
+    noActivityDesc: "Hari ini belum ada record. Tambahkan input di menu lain dan datanya bakal muncul di sini.",
+    more: "lagi",
+    mealLabels: { BREAKFAST: "Sarapan", SNACK: "Cemilan", LUNCH: "Makan Siang", DINNER: "Makan Malam" },
+    fallbacks: { task: "Tugas", reward: "Hadiah", link: "Link", money: "Uang", meal: "Makanan" },
+    rewardClaimed: "Hadiah diklaim",
+    rewardSubtitle: "Bintang",
+    savedSubtitle: "Link tersimpan"
+  },
+  en: {
+    badge: "Unified monthly planner",
+    subtitle: "All your activities from tasks, rewards, meal plans, money, and saved links gathered in one beautiful calendar.",
+    today: "Today",
+    monthlyEvents: "Monthly events",
+    tasks: "Tasks",
+    meals: "Meals",
+    moneyMoves: "Money moves",
+    savedLinks: "Saved links",
+    weekdayLabels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+    selectedDayTitle: "Selected day",
+    selectedDayDesc: "All daily notes from other pages appear here, making them easy to monitor.",
+    eventsLabel: "Events",
+    noActivity: "No activity yet",
+    noActivityDesc: "Today is still empty. Items will appear here once you input them from other pages.",
+    more: "more",
+    mealLabels: { BREAKFAST: "Breakfast", SNACK: "Snack", LUNCH: "Lunch", DINNER: "Dinner" },
+    fallbacks: { task: "Task", reward: "Reward", link: "Link", money: "Money", meal: "Meal" },
+    rewardClaimed: "Reward claimed",
+    rewardSubtitle: "Stars",
+    savedSubtitle: "Saved link"
+  }
+};
 
 function getEventTone(kind: CalendarEvent["kind"]) {
   switch (kind) {
     case "task":
-      return "border-cyan-300/20 bg-cyan-400/10 text-cyan-100";
+      return "border-cyan-200 bg-cyan-100 text-cyan-800 dark:border-cyan-300/20 dark:bg-cyan-400/10 dark:text-cyan-100";
     case "reward":
-      return "border-violet-300/20 bg-violet-400/10 text-violet-100";
+      return "border-violet-200 bg-violet-100 text-violet-800 dark:border-violet-300/20 dark:bg-violet-400/10 dark:text-violet-100";
     case "meal":
-      return "border-amber-300/20 bg-amber-400/10 text-amber-100";
+      return "border-amber-200 bg-amber-100 text-amber-800 dark:border-amber-300/20 dark:bg-amber-400/10 dark:text-amber-100";
     case "money":
-      return "border-emerald-300/20 bg-emerald-400/10 text-emerald-100";
+      return "border-emerald-200 bg-emerald-100 text-emerald-800 dark:border-emerald-300/20 dark:bg-emerald-400/10 dark:text-emerald-100";
     case "link":
-      return "border-pink-300/20 bg-pink-400/10 text-pink-100";
+      return "border-pink-200 bg-pink-100 text-pink-800 dark:border-pink-300/20 dark:bg-pink-400/10 dark:text-pink-100";
   }
 }
 
 function getEventDot(kind: CalendarEvent["kind"]) {
   switch (kind) {
     case "task":
-      return "bg-cyan-300";
+      return "bg-cyan-400 dark:bg-cyan-300";
     case "reward":
-      return "bg-violet-300";
+      return "bg-violet-400 dark:bg-violet-300";
     case "meal":
-      return "bg-amber-300";
+      return "bg-amber-400 dark:bg-amber-300";
     case "money":
-      return "bg-emerald-300";
+      return "bg-emerald-400 dark:bg-emerald-300";
     case "link":
-      return "bg-pink-300";
+      return "bg-pink-400 dark:bg-pink-300";
   }
 }
 
@@ -109,19 +156,6 @@ function formatMoney(amount: string, currency: string) {
     currency,
     maximumFractionDigits: 0,
   }).format(numeric);
-}
-
-function getMealTypeLabel(type: MealEntry["mealType"]) {
-  switch (type) {
-    case "BREAKFAST":
-      return "Breakfast";
-    case "SNACK":
-      return "Snack";
-    case "LUNCH":
-      return "Lunch";
-    case "DINNER":
-      return "Dinner";
-  }
 }
 
 function getDateFromTask(task: TaskItem) {
@@ -154,6 +188,10 @@ async function safeFetchJson<T>(url: string, fallback: T): Promise<T> {
 }
 
 export default function CalendarPage() {
+  const { locale } = useLanguage();
+  const t = contentLocal[locale];
+  const dateLocale = locale === "id" ? localeID : localeEN;
+
   const [currentMonth, setCurrentMonth] = useState(() => startOfMonth(new Date()));
   const [selectedDate, setSelectedDate] = useState(() => new Date());
   const [loading, setLoading] = useState(true);
@@ -236,18 +274,18 @@ export default function CalendarPage() {
         id: `task-${task.id}`,
         kind: "task",
         title: task.label,
-        subtitle: memberById.get(task.memberId) ?? "Task",
+        subtitle: memberById.get(task.memberId) ?? t.fallbacks.task,
         date,
         timeLabel: task.time || format(date, "HH:mm"),
         tone: getEventTone("task"),
       });
 
-      if (task.label.toLowerCase().includes("claim reward")) {
+      if (task.label.toLowerCase().includes("claim reward") || task.label.toLowerCase().includes("klaim hadiah")) {
         generated.push({
           id: `reward-claim-${task.id}`,
           kind: "reward",
-          title: "Reward claimed",
-          subtitle: memberById.get(task.memberId) ?? "Reward",
+          title: t.rewardClaimed,
+          subtitle: memberById.get(task.memberId) ?? t.fallbacks.reward,
           date,
           timeLabel: task.time || format(date, "HH:mm"),
           tone: getEventTone("reward"),
@@ -261,7 +299,7 @@ export default function CalendarPage() {
         id: `reward-${reward.id}`,
         kind: "reward",
         title: reward.name,
-        subtitle: `${reward.minStars} stars · ${memberById.get(reward.memberId) ?? "Reward"}`,
+        subtitle: `${reward.minStars} ${t.rewardSubtitle.toLowerCase()} · ${memberById.get(reward.memberId) ?? t.fallbacks.reward}`,
         date,
         timeLabel: format(date, "HH:mm"),
         tone: getEventTone("reward"),
@@ -274,7 +312,7 @@ export default function CalendarPage() {
         id: `link-${link.id}`,
         kind: "link",
         title: link.title,
-        subtitle: link.label ?? "Saved link",
+        subtitle: link.label ?? t.savedSubtitle,
         date,
         timeLabel: format(date, "HH:mm"),
         tone: getEventTone("link"),
@@ -302,7 +340,7 @@ export default function CalendarPage() {
           id: `meal-${meal.id}-${meal.weekStart}`,
           kind: "meal",
           title: meal.text,
-          subtitle: getMealTypeLabel(meal.mealType),
+          subtitle: t.mealLabels[meal.mealType],
           date: mealDate,
           tone: getEventTone("meal"),
         });
@@ -310,7 +348,7 @@ export default function CalendarPage() {
     });
 
     return generated.sort((a, b) => a.date.getTime() - b.date.getTime());
-  }, [gridEnd, gridStart, mealEntries, memberById, rewards, savedLinks, tasks, transactions]);
+  }, [gridEnd, gridStart, mealEntries, memberById, rewards, savedLinks, tasks, transactions, t]);
 
   const eventsByDay = useMemo(() => {
     const map = new Map<string, CalendarEvent[]>();
@@ -338,19 +376,19 @@ export default function CalendarPage() {
 
   return (
     <div className="space-y-6">
-      <section className="overflow-hidden rounded-[1.25rem] border border-white/10 bg-[#08111f]/90 p-3 shadow-2xl shadow-cyan-950/20 backdrop-blur-xl sm:rounded-[2rem] sm:p-6">
+      <section className="overflow-hidden rounded-[1.25rem] border border-border bg-card/80 p-3 shadow-sm dark:border-white/10 dark:bg-[#08111f]/90 dark:shadow-2xl dark:shadow-cyan-950/20 backdrop-blur-xl sm:rounded-[2rem] sm:p-6">
         <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-cyan-400/20 bg-cyan-400/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-cyan-200">
+            <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-cyan-200 bg-cyan-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-cyan-800 dark:border-cyan-400/20 dark:bg-cyan-400/10 dark:text-cyan-200">
               <CalendarDays className="h-3.5 w-3.5" />
-              Unified monthly planner
+              {t.badge}
             </div>
-            <h1 className="text-3xl font-black text-white sm:text-4xl">{format(currentMonth, "MMMM yyyy")}</h1>
-            <p className="mt-2 max-w-2xl text-sm text-slate-400">Semua activity dari task, reward, meal plan, money, dan saved links ngumpul di satu calendar yang cakep.</p>
+            <h1 className="text-3xl font-black text-foreground sm:text-4xl">{format(currentMonth, "MMMM yyyy", { locale: dateLocale })}</h1>
+            <p className="mt-2 max-w-2xl text-sm text-muted-foreground dark:text-slate-400">{t.subtitle}</p>
           </div>
 
           <div className="flex items-center gap-2">
-            <Button type="button" onClick={() => setCurrentMonth(subMonths(currentMonth, 1))} variant="outline" className="rounded-2xl border-white/10 bg-white/[0.04] text-slate-200 hover:bg-white/[0.08]">
+            <Button type="button" onClick={() => setCurrentMonth(subMonths(currentMonth, 1))} variant="outline" className="rounded-2xl border-border bg-background text-foreground hover:bg-muted dark:border-white/10 dark:bg-white/[0.04] dark:text-slate-200 dark:hover:bg-white/[0.08]">
               <ChevronLeft className="h-4 w-4" />
             </Button>
             <Button
@@ -361,11 +399,11 @@ export default function CalendarPage() {
                 setSelectedDate(today);
               }}
               variant="outline"
-              className="rounded-2xl border-cyan-300/15 bg-cyan-400/10 text-cyan-100 hover:bg-cyan-400/15"
+              className="rounded-2xl border-cyan-200 bg-cyan-100/50 text-cyan-800 hover:bg-cyan-100 dark:border-cyan-300/15 dark:bg-cyan-400/10 dark:text-cyan-100 dark:hover:bg-cyan-400/15"
             >
-              Today
+              {t.today}
             </Button>
-            <Button type="button" onClick={() => setCurrentMonth(addMonths(currentMonth, 1))} variant="outline" className="rounded-2xl border-white/10 bg-white/[0.04] text-slate-200 hover:bg-white/[0.08]">
+            <Button type="button" onClick={() => setCurrentMonth(addMonths(currentMonth, 1))} variant="outline" className="rounded-2xl border-border bg-background text-foreground hover:bg-muted dark:border-white/10 dark:bg-white/[0.04] dark:text-slate-200 dark:hover:bg-white/[0.08]">
               <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
@@ -373,16 +411,16 @@ export default function CalendarPage() {
 
         <div className="mb-4 grid grid-cols-4 gap-2 sm:mb-6 sm:grid-cols-2 sm:gap-3 xl:grid-cols-5">
           {[
-            { label: "Monthly events", value: stats.total, icon: Target, tone: "text-cyan-100 bg-cyan-400/10 border-cyan-300/15" },
-            { label: "Tasks", value: stats.tasks, icon: Target, tone: "text-cyan-100 bg-cyan-400/10 border-cyan-300/15" },
-            { label: "Meals", value: stats.meals, icon: Soup, tone: "text-amber-100 bg-amber-400/10 border-amber-300/15" },
-            { label: "Money moves", value: stats.money, icon: Coins, tone: "text-emerald-100 bg-emerald-400/10 border-emerald-300/15" },
-            { label: "Saved links", value: stats.links, icon: Link2, tone: "text-pink-100 bg-pink-400/10 border-pink-300/15" },
+            { label: t.monthlyEvents, value: stats.total, icon: Target, tone: "text-cyan-800 bg-cyan-100 border-cyan-200 dark:text-cyan-100 dark:bg-cyan-400/10 dark:border-cyan-300/15" },
+            { label: t.tasks, value: stats.tasks, icon: Target, tone: "text-cyan-800 bg-cyan-100 border-cyan-200 dark:text-cyan-100 dark:bg-cyan-400/10 dark:border-cyan-300/15" },
+            { label: t.meals, value: stats.meals, icon: Soup, tone: "text-amber-800 bg-amber-100 border-amber-200 dark:text-amber-100 dark:bg-amber-400/10 dark:border-amber-300/15" },
+            { label: t.moneyMoves, value: stats.money, icon: Coins, tone: "text-emerald-800 bg-emerald-100 border-emerald-200 dark:text-emerald-100 dark:bg-emerald-400/10 dark:border-emerald-300/15" },
+            { label: t.savedLinks, value: stats.links, icon: Link2, tone: "text-pink-800 bg-pink-100 border-pink-200 dark:text-pink-100 dark:bg-pink-400/10 dark:border-pink-300/15" },
           ].map((stat) => {
             const Icon = stat.icon;
             return (
-              <div key={stat.label} className={`min-h-[82px] rounded-[0.95rem] border p-2 ${stat.label === "Saved links" ? "col-span-4 sm:col-span-1" : "col-span-1"} sm:min-h-[unset] sm:rounded-[1.5rem] sm:p-4 ${stat.tone}`}>
-                <div className="mb-1.5 inline-flex rounded-lg bg-black/10 p-1 sm:mb-3 sm:rounded-2xl sm:p-2">
+              <div key={stat.label} className={`min-h-[82px] rounded-[0.95rem] border p-2 ${stat.label === t.savedLinks ? "col-span-4 sm:col-span-1" : "col-span-1"} sm:min-h-[unset] sm:rounded-[1.5rem] sm:p-4 ${stat.tone}`}>
+                <div className="mb-1.5 inline-flex rounded-lg bg-black/5 dark:bg-black/10 p-1 sm:mb-3 sm:rounded-2xl sm:p-2">
                   <Icon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                 </div>
                 <div className="text-base font-black leading-none sm:text-2xl">{stat.value}</div>
@@ -393,10 +431,10 @@ export default function CalendarPage() {
         </div>
 
         <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
-          <div className="rounded-[1.25rem] border border-white/10 bg-white/[0.04] p-2 sm:rounded-[1.75rem] sm:p-4">
+          <div className="rounded-[1.25rem] border border-border bg-secondary/30 dark:border-white/10 dark:bg-white/[0.04] p-2 sm:rounded-[1.75rem] sm:p-4">
             <div className="mb-2 grid grid-cols-7 gap-1 sm:mb-3 sm:gap-2">
-              {weekdayLabels.map((label) => (
-                <div key={label} className="px-0.5 py-1 text-center text-[9px] font-bold uppercase tracking-[0.08em] text-slate-500 sm:px-2 sm:py-2 sm:text-xs sm:tracking-[0.18em]">
+              {t.weekdayLabels.map((label) => (
+                <div key={label} className="px-0.5 py-1 text-center text-[9px] font-bold uppercase tracking-[0.08em] text-muted-foreground sm:px-2 sm:py-2 sm:text-xs sm:tracking-[0.18em]">
                   {label}
                 </div>
               ))}
@@ -415,19 +453,19 @@ export default function CalendarPage() {
                     type="button"
                     onClick={() => setSelectedDate(day)}
                     className={`flex min-h-[68px] flex-col rounded-[0.85rem] border p-1.5 text-left transition sm:min-h-[138px] sm:rounded-[1.4rem] sm:p-3 ${
-                      isSelected ? "border-cyan-300/30 bg-cyan-400/10 shadow-lg shadow-cyan-950/20" : "border-white/10 bg-[#07111f]/70 hover:border-white/20 hover:bg-white/[0.06]"
+                      isSelected ? "border-cyan-300 bg-cyan-50 shadow-md dark:border-cyan-300/30 dark:bg-cyan-400/10 dark:shadow-lg dark:shadow-cyan-950/20" : "border-border bg-card hover:bg-muted dark:border-white/10 dark:bg-[#07111f]/70 dark:hover:border-white/20 dark:hover:bg-white/[0.06]"
                     }`}
                   >
                     <div className="mb-1 flex items-start justify-between sm:mb-3 sm:items-center">
                       <span
                         className={`inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[9px] font-bold leading-none sm:h-8 sm:w-8 sm:text-sm ${
-                          isToday ? "bg-gradient-to-br from-cyan-300 to-emerald-300 text-slate-950" : isSameMonth(day, currentMonth) ? "text-white" : "text-slate-600"
+                          isToday ? "bg-gradient-to-br from-cyan-400 to-emerald-400 dark:from-cyan-300 dark:to-emerald-300 text-slate-50 dark:text-slate-950" : isSameMonth(day, currentMonth) ? "text-foreground" : "text-muted-foreground dark:text-slate-600"
                         }`}
                       >
                         {format(day, "d")}
                       </span>
 
-                      <span className="shrink-0 text-[7px] font-medium leading-none text-slate-500 sm:text-[10px] sm:uppercase sm:tracking-[0.18em]">{dayEvents.length}</span>
+                      <span className="shrink-0 text-[7px] font-medium leading-none text-muted-foreground sm:text-[10px] sm:uppercase sm:tracking-[0.18em]">{dayEvents.length}</span>
                     </div>
 
                     <div className="mt-auto flex min-h-[14px] items-end sm:mt-0 sm:block sm:min-h-0">
@@ -445,13 +483,13 @@ export default function CalendarPage() {
                         ))}
 
                         {dayEvents.length > 3 && (
-                          <div className="rounded-md border border-white/10 bg-white/[0.04] px-1 py-0.5 text-[8px] font-semibold leading-3 text-slate-300 sm:rounded-xl sm:px-2 sm:py-1.5 sm:text-[11px] sm:leading-normal">
-                            +{dayEvents.length - 3} more
+                          <div className="rounded-md border border-border bg-secondary/50 dark:border-white/10 dark:bg-white/[0.04] px-1 py-0.5 text-[8px] font-semibold leading-3 text-muted-foreground sm:rounded-xl sm:px-2 sm:py-1.5 sm:text-[11px] sm:leading-normal">
+                            +{dayEvents.length - 3} {t.more}
                           </div>
                         )}
                       </div>
 
-                      {dayEvents.length === 0 && <div className="text-[8px] leading-none text-slate-700 sm:pt-4 sm:text-[11px]">—</div>}
+                      {dayEvents.length === 0 && <div className="text-[8px] leading-none text-muted-foreground sm:pt-4 sm:text-[11px]">—</div>}
                     </div>
                   </button>
                 );
@@ -459,16 +497,16 @@ export default function CalendarPage() {
             </div>
           </div>
 
-          <div className="rounded-[1.75rem] border border-white/10 bg-white/[0.04] p-5">
+          <div className="rounded-[1.75rem] border border-border bg-card/60 dark:border-white/10 dark:bg-white/[0.04] p-5">
             <div className="mb-5 flex items-start justify-between gap-3">
               <div>
-                <div className="text-xs font-bold uppercase tracking-[0.18em] text-cyan-200">Selected day</div>
-                <h2 className="mt-2 text-lg font-black leading-tight text-white sm:text-2xl">{format(selectedDate, "EEEE, d MMMM yyyy")}</h2>
-                <p className="mt-2 text-xs leading-relaxed text-slate-400 sm:text-sm">Semua catatan harian dari page lain nongol di sini biar gampang dipantau.</p>
+                <div className="text-xs font-bold uppercase tracking-[0.18em] text-cyan-600 dark:text-cyan-200">{t.selectedDayTitle}</div>
+                <h2 className="mt-2 text-lg font-black leading-tight text-foreground sm:text-2xl">{format(selectedDate, "EEEE, d MMMM yyyy", { locale: dateLocale })}</h2>
+                <p className="mt-2 text-xs leading-relaxed text-muted-foreground">{t.selectedDayDesc}</p>
               </div>
-              <div className="rounded-2xl border border-white/10 bg-[#07111f]/80 px-3 py-2 text-right">
-                <div className="text-xs uppercase tracking-[0.18em] text-slate-500">Events</div>
-                <div className="text-xl font-black text-white">{selectedEvents.length}</div>
+              <div className="rounded-2xl border border-border bg-secondary/40 dark:border-white/10 dark:bg-[#07111f]/80 px-3 py-2 text-right">
+                <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">{t.eventsLabel}</div>
+                <div className="text-xl font-black text-foreground">{selectedEvents.length}</div>
               </div>
             </div>
 
@@ -476,7 +514,7 @@ export default function CalendarPage() {
               {loading ? (
                 <div className="space-y-3">
                   {Array.from({ length: 6 }).map((_, index) => (
-                    <div key={index} className="h-20 animate-pulse rounded-2xl bg-white/[0.04]" />
+                    <div key={index} className="h-20 animate-pulse rounded-2xl bg-muted dark:bg-white/[0.04]" />
                   ))}
                 </div>
               ) : selectedEvents.length > 0 ? (
@@ -492,10 +530,10 @@ export default function CalendarPage() {
                   </div>
                 ))
               ) : (
-                <div className="rounded-[1.5rem] border border-dashed border-white/10 bg-[#07111f]/70 px-5 py-10 text-center">
-                  <Gift className="mx-auto mb-3 h-6 w-6 text-slate-500" />
-                  <h3 className="text-sm font-semibold text-white">No activity yet</h3>
-                  <p className="mt-1 text-sm text-slate-400">Hari ini masih kosong. Begitu user input dari page lain, item-nya bakal nongol di sini.</p>
+                <div className="rounded-[1.5rem] border border-dashed border-border bg-secondary/40 dark:border-white/10 dark:bg-[#07111f]/70 px-5 py-10 text-center">
+                  <Gift className="mx-auto mb-3 h-6 w-6 text-muted-foreground" />
+                  <h3 className="text-sm font-semibold text-foreground">{t.noActivity}</h3>
+                  <p className="mt-1 text-sm text-muted-foreground">{t.noActivityDesc}</p>
                 </div>
               )}
             </div>

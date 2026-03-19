@@ -5,6 +5,58 @@ import { createPortal } from "react-dom";
 import Image from "next/image";
 import { Folder, Image as ImageIcon, Link2, Plus, Save, X } from "lucide-react";
 import { getThumbnailUrl } from "@/lib/link-utils";
+import { useLanguage } from "@/components/language-provider";
+
+const contentModalLocal = {
+  id: {
+    saveNewLink: "Simpan link baru",
+    addLink: "Tambah Link",
+    linkPreview: "Pratinjau link",
+    previewDetails: "Pratinjau & detail",
+    previewReadyDesc: "Pratinjau sudah terbaca. Tinggal isi judul dan label biar rapi.",
+    pasteDesc: "Tempel link dari platform mana saja, lalu lanjut ke pratinjau sebelum disimpan.",
+    urlLabel: "URL / Link",
+    urlPlaceholder: "https://instagram.com/p/... atau link platform lain",
+    cancel: "Batal",
+    nextStep: "Langkah berikut",
+    fetchingPreview: "Mengambil pratinjau...",
+    detectedPreview: "Pratinjau terdeteksi",
+    changeLink: "Ganti link",
+    addTitle: "Tambah judul",
+    titlePlaceholder: "Beri judul yang mudah dicari nanti",
+    addLabelFolder: "Tambah label / folder",
+    addNewLabelPlaceholder: "Tambah label baru...",
+    selectedLabel: "Dipilih",
+    saving: "Menyimpan...",
+    saveLink: "Simpan link",
+    errorInvalidUrl: "URL-nya sepertinya belum valid. Coba cek lagi ya.",
+    errorSaveFailed: "Gagal menyimpan link.",
+  },
+  en: {
+    saveNewLink: "Save new link",
+    addLink: "Add Link",
+    linkPreview: "Link preview",
+    previewDetails: "Preview & details",
+    previewReadyDesc: "Preview is ready. Fill in the title and label to keep things organized.",
+    pasteDesc: "Paste a link from any platform, then continue to the preview before saving.",
+    urlLabel: "URL / Link",
+    urlPlaceholder: "https://instagram.com/p/... or any other link",
+    cancel: "Cancel",
+    nextStep: "Next step",
+    fetchingPreview: "Fetching preview...",
+    detectedPreview: "Detected preview",
+    changeLink: "Change link",
+    addTitle: "Add title",
+    titlePlaceholder: "Give it a title that's easy to find later",
+    addLabelFolder: "Add label / folder",
+    addNewLabelPlaceholder: "Add new label...",
+    selectedLabel: "Selected",
+    saving: "Saving...",
+    saveLink: "Save link",
+    errorInvalidUrl: "The URL doesn't seem valid. Please check again.",
+    errorSaveFailed: "Failed to save link.",
+  },
+};
 
 type CreatedSavedLink = {
   id: number;
@@ -26,6 +78,8 @@ const FALLBACK_PREVIEW =
   "https://images.unsplash.com/photo-1611162617474-5b21e879e113?q=80&w=400&h=225&auto=format&fit=crop";
 
 export default function AddLinkModal({ isOpen, onClose, onCreated }: AddLinkModalProps) {
+  const { locale } = useLanguage();
+  const t = contentModalLocal[locale];
   const [mounted, setMounted] = useState(false);
   const [url, setUrl] = useState("");
   const [showDetails, setShowDetails] = useState(false);
@@ -96,7 +150,7 @@ export default function AddLinkModal({ isOpen, onClose, onCreated }: AddLinkModa
       setPreviewImage(preview);
       setShowDetails(true);
     } catch {
-      setError("URL-nya kayaknya belum valid. Coba cek lagi ya.");
+      setError(t.errorInvalidUrl);
     } finally {
       setIsFetching(false);
     }
@@ -144,7 +198,7 @@ export default function AddLinkModal({ isOpen, onClose, onCreated }: AddLinkModa
       handleClose();
       onCreated?.(data.data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Gagal nyimpen link.");
+      setError(err instanceof Error ? err.message : t.errorSaveFailed);
     } finally {
       setIsSaving(false);
     }
@@ -153,28 +207,26 @@ export default function AddLinkModal({ isOpen, onClose, onCreated }: AddLinkModa
   if (!mounted || !isOpen) return null;
 
   return createPortal(
-    <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-slate-950/75 px-4 py-8 backdrop-blur-xl" onClick={handleClose}>
+    <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-background/60 px-4 py-8 backdrop-blur-xl dark:bg-slate-950/75" onClick={handleClose}>
       <div
-        className="relative z-[100000] flex max-h-[90vh] w-full max-w-3xl flex-col overflow-hidden rounded-[2rem] border border-white/10 bg-[#08111f]/98 text-white shadow-[0_30px_120px_rgba(0,0,0,0.55)]"
+        className="relative z-[100000] flex max-h-[90vh] w-full max-w-3xl flex-col overflow-hidden rounded-[2rem] border border-border bg-card text-foreground shadow-[0_30px_120px_rgba(0,0,0,0.25)] dark:border-white/10 dark:bg-[#08111f]/98 dark:text-white dark:shadow-[0_30px_120px_rgba(0,0,0,0.55)]"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-start justify-between gap-4 border-b border-white/10 px-6 pb-5 pt-6">
+        <div className="flex items-start justify-between gap-4 border-b border-border px-6 pb-5 pt-6 dark:border-white/10">
           <div>
-            <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-cyan-400/20 bg-cyan-400/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-cyan-200">
+            <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-cyan-400/20 bg-cyan-400/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-cyan-700 dark:text-cyan-200">
               <Link2 className="h-3.5 w-3.5" />
-              {showDetails ? "Link preview" : "Save new link"}
+              {showDetails ? t.linkPreview : t.saveNewLink}
             </div>
-            <h2 className="text-3xl font-black">{showDetails ? "Preview & details" : "Add Link"}</h2>
-            <p className="mt-2 text-sm text-slate-400">
-              {showDetails
-                ? "Preview-nya udah kebaca. Tinggal isi title dan label/folder biar rapi."
-                : "Paste link dari platform apa aja, terus lanjut ke preview sebelum disimpan."}
+            <h2 className="text-3xl font-black">{showDetails ? t.previewDetails : t.addLink}</h2>
+            <p className="mt-2 text-sm text-muted-foreground dark:text-slate-400">
+              {showDetails ? t.previewReadyDesc : t.pasteDesc}
             </p>
           </div>
 
           <button
             onClick={handleClose}
-            className="group rounded-full border border-cyan-300/15 bg-cyan-400/10 p-2 text-cyan-100 transition hover:bg-cyan-400/15 active:scale-95"
+            className="group rounded-full border border-cyan-300/15 bg-cyan-400/10 p-2 text-cyan-700 transition hover:bg-cyan-400/15 active:scale-95 dark:text-cyan-100"
           >
             <X size={18} className="transition-transform duration-200 group-hover:rotate-12 group-active:rotate-90" />
           </button>
@@ -182,7 +234,7 @@ export default function AddLinkModal({ isOpen, onClose, onCreated }: AddLinkModa
 
         <div className="flex-1 overflow-y-auto px-6 py-6">
           {error && (
-            <div className="mb-5 rounded-2xl border border-rose-400/20 bg-rose-500/10 px-4 py-3 text-sm font-medium text-rose-200">
+            <div className="mb-5 rounded-2xl border border-rose-400/20 bg-rose-500/10 px-4 py-3 text-sm font-medium text-rose-700 dark:text-rose-200">
               {error}
             </div>
           )}
@@ -190,9 +242,9 @@ export default function AddLinkModal({ isOpen, onClose, onCreated }: AddLinkModa
           {!showDetails ? (
             <div className="space-y-5">
               <div>
-                <label className="mb-2 block text-sm font-semibold text-slate-200">URL / Link</label>
+                <label className="mb-2 block text-sm font-semibold text-foreground dark:text-slate-200">{t.urlLabel}</label>
                 <div className="relative">
-                  <Link2 size={18} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-cyan-200" />
+                  <Link2 size={18} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-cyan-600 dark:text-cyan-200" />
                   <input
                     value={url}
                     onChange={(e) => setUrl(e.target.value)}
@@ -202,29 +254,29 @@ export default function AddLinkModal({ isOpen, onClose, onCreated }: AddLinkModa
                         void handleUrlSubmit();
                       }
                     }}
-                    placeholder="https://instagram.com/p/... atau link platform lain"
-                    className="w-full rounded-2xl border border-white/10 bg-[#07111f]/80 py-3.5 pl-11 pr-4 text-white outline-none placeholder:text-slate-500"
+                    placeholder={t.urlPlaceholder}
+                    className="w-full rounded-2xl border border-border bg-muted/50 py-3.5 pl-11 pr-4 text-foreground outline-none placeholder:text-muted-foreground dark:border-white/10 dark:bg-[#07111f]/80 dark:text-white dark:placeholder:text-slate-500"
                   />
                 </div>
               </div>
 
               <div className="flex justify-end gap-3">
-                <button onClick={handleClose} className="rounded-2xl border border-white/10 bg-white/5 px-4 py-2.5 text-slate-200 hover:bg-white/10">
-                  Cancel
+                <button onClick={handleClose} className="rounded-2xl border border-border bg-muted/50 px-4 py-2.5 text-muted-foreground hover:bg-muted dark:border-white/10 dark:bg-white/5 dark:text-slate-200 dark:hover:bg-white/10">
+                  {t.cancel}
                 </button>
                 <button
                   onClick={() => void handleUrlSubmit()}
                   disabled={isFetching || !url.trim()}
-                  className="rounded-2xl border border-cyan-300/20 bg-cyan-400/10 px-4 py-2.5 font-semibold text-cyan-100 hover:bg-cyan-400/15 disabled:opacity-50"
+                  className="rounded-2xl border border-cyan-300/20 bg-cyan-400/10 px-4 py-2.5 font-semibold text-cyan-700 hover:bg-cyan-400/15 disabled:opacity-50 dark:text-cyan-100"
                 >
-                  {isFetching ? "Fetching preview..." : "Next step"}
+                  {isFetching ? t.fetchingPreview : t.nextStep}
                 </button>
               </div>
             </div>
           ) : (
             <div className="space-y-6">
               <div className="flex flex-col gap-5 rounded-[1.5rem] border border-cyan-300/10 bg-cyan-400/5 p-4 md:flex-row md:items-center">
-                <div className="relative aspect-video w-full overflow-hidden rounded-2xl border border-white/10 bg-white/5 md:w-56 md:shrink-0">
+                <div className="relative aspect-video w-full overflow-hidden rounded-2xl border border-border bg-muted/50 dark:border-white/10 dark:bg-white/5 md:w-56 md:shrink-0">
                   <Image
                     src={previewImage || FALLBACK_PREVIEW}
                     alt="Link preview"
@@ -240,35 +292,35 @@ export default function AddLinkModal({ isOpen, onClose, onCreated }: AddLinkModa
                 </div>
 
                 <div className="min-w-0 flex-1">
-                  <div className="text-[11px] font-black uppercase tracking-[0.2em] text-cyan-200">Detected preview</div>
-                  <p className="mt-2 break-all text-sm italic text-slate-300">{url}</p>
+                  <div className="text-[11px] font-black uppercase tracking-[0.2em] text-cyan-700 dark:text-cyan-200">{t.detectedPreview}</div>
+                  <p className="mt-2 break-all text-sm italic text-muted-foreground dark:text-slate-300">{url}</p>
                   <button
                     type="button"
                     onClick={() => setShowDetails(false)}
-                    className="mt-3 inline-flex items-center rounded-full border border-cyan-300/15 bg-cyan-400/10 px-3 py-1.5 text-xs font-semibold text-cyan-100 hover:bg-cyan-400/15"
+                    className="mt-3 inline-flex items-center rounded-full border border-cyan-300/15 bg-cyan-400/10 px-3 py-1.5 text-xs font-semibold text-cyan-700 hover:bg-cyan-400/15 dark:text-cyan-100"
                   >
-                    Change link
+                    {t.changeLink}
                   </button>
                 </div>
               </div>
 
               <div>
-                <label className="mb-2 block text-sm font-semibold text-slate-200">Add title</label>
+                <label className="mb-2 block text-sm font-semibold text-foreground dark:text-slate-200">{t.addTitle}</label>
                 <input
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  placeholder="Kasih judul yang gampang dicari nanti"
-                  className="w-full rounded-2xl border border-white/10 bg-[#07111f]/80 px-4 py-3 text-white outline-none placeholder:text-slate-500"
+                  placeholder={t.titlePlaceholder}
+                  className="w-full rounded-2xl border border-border bg-muted/50 px-4 py-3 text-foreground outline-none placeholder:text-muted-foreground dark:border-white/10 dark:bg-[#07111f]/80 dark:text-white dark:placeholder:text-slate-500"
                 />
               </div>
 
               <div className="space-y-3">
-                <label className="flex items-center gap-2 text-sm font-semibold text-slate-200">
-                  <Folder size={16} className="text-amber-200" />
-                  Add label / folder
+                <label className="flex items-center gap-2 text-sm font-semibold text-foreground dark:text-slate-200">
+                  <Folder size={16} className="text-amber-600 dark:text-amber-200" />
+                  {t.addLabelFolder}
                 </label>
 
-                <div className="flex min-h-[56px] flex-wrap gap-2 rounded-2xl border border-white/10 bg-[#07111f]/70 p-3">
+                <div className="flex min-h-[56px] flex-wrap gap-2 rounded-2xl border border-border bg-muted/30 p-3 dark:border-white/10 dark:bg-[#07111f]/70">
                   {existingLabels.map((label) => {
                     const active = labels.includes(label);
                     return (
@@ -278,8 +330,8 @@ export default function AddLinkModal({ isOpen, onClose, onCreated }: AddLinkModa
                         onClick={() => toggleLabel(label)}
                         className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${
                           active
-                            ? "border border-cyan-300/20 bg-cyan-400/15 text-cyan-100"
-                            : "border border-white/10 bg-white/5 text-slate-300 hover:bg-white/10"
+                            ? "border border-cyan-300/20 bg-cyan-400/15 text-cyan-700 dark:text-cyan-100"
+                            : "border border-border bg-muted/50 text-muted-foreground hover:bg-muted dark:border-white/10 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10"
                         }`}
                       >
                         {label}
@@ -298,36 +350,36 @@ export default function AddLinkModal({ isOpen, onClose, onCreated }: AddLinkModa
                         addNewLabel();
                       }
                     }}
-                    placeholder="Tambah label baru..."
-                    className="w-full rounded-2xl border border-white/10 bg-[#07111f]/80 px-4 py-3 text-white outline-none placeholder:text-slate-500"
+                    placeholder={t.addNewLabelPlaceholder}
+                    className="w-full rounded-2xl border border-border bg-muted/50 px-4 py-3 text-foreground outline-none placeholder:text-muted-foreground dark:border-white/10 dark:bg-[#07111f]/80 dark:text-white dark:placeholder:text-slate-500"
                   />
                   <button
                     type="button"
                     onClick={addNewLabel}
-                    className="rounded-2xl border border-white/10 bg-white/5 px-4 text-slate-200 hover:bg-white/10"
+                    className="rounded-2xl border border-border bg-muted/50 px-4 text-muted-foreground hover:bg-muted dark:border-white/10 dark:bg-white/5 dark:text-slate-200 dark:hover:bg-white/10"
                   >
                     <Plus size={18} />
                   </button>
                 </div>
 
-                {labels.length > 0 && <p className="text-xs text-slate-400">Selected: {selectedLabelsValue}</p>}
+                {labels.length > 0 && <p className="text-xs text-muted-foreground dark:text-slate-400">{t.selectedLabel}: {selectedLabelsValue}</p>}
               </div>
             </div>
           )}
         </div>
 
         {showDetails && (
-          <div className="sticky bottom-0 flex justify-end gap-3 border-t border-white/10 bg-[#08111f]/98 px-6 py-4">
-            <button onClick={handleClose} className="rounded-2xl border border-white/10 bg-white/5 px-4 py-2.5 text-slate-200 hover:bg-white/10">
-              Cancel
+          <div className="sticky bottom-0 flex justify-end gap-3 border-t border-border bg-card px-6 py-4 dark:border-white/10 dark:bg-[#08111f]/98">
+            <button onClick={handleClose} className="rounded-2xl border border-border bg-muted/50 px-4 py-2.5 text-muted-foreground hover:bg-muted dark:border-white/10 dark:bg-white/5 dark:text-slate-200 dark:hover:bg-white/10">
+              {t.cancel}
             </button>
             <button
               onClick={() => void handleSave()}
               disabled={isSaving || !title.trim() || labels.length === 0}
-              className="inline-flex items-center gap-2 rounded-2xl border border-cyan-300/20 bg-cyan-400/10 px-4 py-2.5 font-semibold text-cyan-100 hover:bg-cyan-400/15 disabled:opacity-50"
+              className="inline-flex items-center gap-2 rounded-2xl border border-cyan-300/20 bg-cyan-400/10 px-4 py-2.5 font-semibold text-cyan-700 hover:bg-cyan-400/15 disabled:opacity-50 dark:text-cyan-100"
             >
               <Save size={16} />
-              {isSaving ? "Saving..." : "Save link"}
+              {isSaving ? t.saving : t.saveLink}
             </button>
           </div>
         )}

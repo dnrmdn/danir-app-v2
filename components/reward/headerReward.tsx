@@ -17,8 +17,8 @@ export default function HeaderReward({ member }: HeaderCardProps) {
         <div className="relative w-full h-6">
           <div className={`w-full h-full ${member.taskColor} rounded-full`} />
 
-          <div className="absolute inset-0 flex items-center justify-center text-gray-700 font-medium text-sm select-none">
-            <Star size={18} className="mr-1 text-yellow-500" fill="#eab308" />
+          <div className="absolute inset-0 flex items-center justify-center text-gray-700 dark:text-gray-200 font-medium text-sm select-none">
+            <Star size={18} className="mr-1 text-yellow-500 dark:text-yellow-400" fill="#eab308" />
             {totalStar}
           </div>
         </div>

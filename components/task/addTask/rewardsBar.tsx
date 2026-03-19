@@ -26,7 +26,7 @@ export default function RewardsBar({ member }: RewardsBarProps) {
       <div className={`w-full h-full ${member.taskColor} rounded-full`} />
 
       {/* Teks tengah (ikon + angka) */}
-      <div className="absolute inset-0 flex items-center justify-center text-gray-700 font-medium text-sm select-none">
+      <div className="absolute inset-0 flex items-center justify-center text-gray-700 dark:text-slate-200 font-medium text-sm select-none">
         <Star size={18} className="mr-1 text-yellow-500" fill="#eab308"  />
         {totalReward}
       </div>

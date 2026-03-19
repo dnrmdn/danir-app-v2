@@ -35,6 +35,35 @@ export async function GET(req: NextRequest) {
       },
     });
 
+    const history = await prisma.mealPlanEntry.groupBy({
+      by: ['mealType', 'text'],
+      where: {
+        week: { userId: session.userId },
+        text: { not: "" },
+      },
+      _count: {
+        text: true
+      },
+      orderBy: {
+        _count: {
+          text: 'desc'
+        }
+      }
+    });
+
+    const userIdeas: Record<string, string[]> = {
+      BREAKFAST: [],
+      SNACK: [],
+      LUNCH: [],
+      DINNER: [],
+    };
+
+    history.forEach(entry => {
+      if (userIdeas[entry.mealType] && userIdeas[entry.mealType].length < 15) {
+        userIdeas[entry.mealType].push(entry.text);
+      }
+    });
+
     if (!week) {
       return NextResponse.json({
         success: true,
@@ -42,6 +71,7 @@ export async function GET(req: NextRequest) {
           weekStart,
           entries: [],
         },
+        ideas: userIdeas,
       });
     }
 
@@ -52,6 +82,7 @@ export async function GET(req: NextRequest) {
         weekStart: week.weekStart,
         entries: week.entries,
       },
+      ideas: userIdeas,
     });
   } catch (error) {
     console.error("GET meal plan error:", error);
