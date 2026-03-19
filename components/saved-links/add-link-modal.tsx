@@ -145,10 +145,28 @@ export default function AddLinkModal({ isOpen, onClose, onCreated }: AddLinkModa
 
     try {
       const cleanUrl = url.trim();
-      const preview = getThumbnailUrl(cleanUrl);
+      let preview = FALLBACK_PREVIEW;
+      let fetchedTitle = "";
+
+      try {
+        const res = await fetch(`/api/link-preview?url=${encodeURIComponent(cleanUrl)}`);
+        const data = await res.json();
+        
+        if (data.success && data.data) {
+          if (data.data.image) preview = data.data.image;
+          if (data.data.title) fetchedTitle = data.data.title;
+        } else {
+          // fallback if api fails
+          preview = getThumbnailUrl(cleanUrl);
+        }
+      } catch {
+        preview = getThumbnailUrl(cleanUrl);
+      }
 
       setPreviewImage(preview);
+      if (fetchedTitle && !title) setTitle(fetchedTitle);
       setShowDetails(true);
+
     } catch {
       setError(t.errorInvalidUrl);
     } finally {

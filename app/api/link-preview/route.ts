@@ -8,35 +8,26 @@ function isMetaUrl(hostname: string) {
   return hostname.includes("instagram.com") || hostname.includes("facebook.com") || hostname.includes("fb.watch");
 }
 
-async function getMetaPreview(targetUrl: string) {
-  const accessToken = process.env.META_APP_ACCESS_TOKEN;
-
-  if (!accessToken) {
-    return { image: null, title: null, description: null, source: "meta_missing_token" };
-  }
-
+async function getMicrolinkPreview(targetUrl: string) {
   const params = new URLSearchParams({
     url: targetUrl,
-    access_token: accessToken,
-    omitscript: "true",
   });
 
-  const response = await fetch(`${META_GRAPH_BASE_URL}?${params.toString()}`, {
+  const response = await fetch(`https://api.microlink.io/?${params.toString()}`, {
     cache: "no-store",
   });
 
   const data = await response.json().catch(() => null);
 
-  if (!response.ok) {
-    const message = data?.error?.message || `Meta oEmbed failed (${response.status})`;
-    throw new Error(message);
+  if (!response.ok || data?.status !== "success") {
+    throw new Error("Microlink fetch failed");
   }
 
   return {
-    image: typeof data?.thumbnail_url === "string" ? data.thumbnail_url : null,
-    title: typeof data?.title === "string" ? data.title : null,
-    description: typeof data?.author_name === "string" ? data.author_name : null,
-    source: "meta",
+    image: data.data?.image?.url || data.data?.logo?.url || null,
+    title: typeof data.data?.title === "string" ? data.data?.title : null,
+    description: typeof data.data?.description === "string" ? data.data?.description : null,
+    source: "microlink",
   };
 }
 
@@ -123,12 +114,12 @@ export async function GET(req: Request) {
     const hostname = parsedUrl.hostname.toLowerCase();
 
     try {
-      const metaPreview = isMetaUrl(hostname) ? await getMetaPreview(targetUrl) : null;
+      const metaPreview = isMetaUrl(hostname) ? await getMicrolinkPreview(targetUrl) : null;
       if (metaPreview?.image || metaPreview?.title || metaPreview?.description) {
         return NextResponse.json({ success: true, data: metaPreview });
       }
     } catch (error) {
-      console.error("Meta preview failed:", error);
+      console.error("Microlink preview failed:", error);
     }
 
     const genericPreview = await getGenericPreview(targetUrl);
