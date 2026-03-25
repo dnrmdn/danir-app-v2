@@ -14,6 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useLanguage } from "@/components/language-provider";
+import { GroceriesView } from "./_components/GroceriesView";
 
 type MealType = "BREAKFAST" | "SNACK" | "LUNCH" | "DINNER";
 
@@ -206,6 +207,7 @@ export default function MealPage() {
   const { session } = useUserSession();
   const { locale } = useLanguage();
   const t = contentMealLocal[locale];
+  const [activeTab, setActiveTab] = useState<"meal" | "groceries">("meal");
   const [currentDate, setCurrentDate] = useState(() => new Date());
   const [week, setWeek] = useState<ApiWeek | null>(null);
   const [loading, setLoading] = useState(true);
@@ -509,10 +511,27 @@ export default function MealPage() {
               {t.desc}
             </p>
           </div>
+          
+          <div className="mt-4 flex w-fit gap-1 rounded-2xl bg-muted/60 p-1 dark:bg-white/5 sm:mt-0 xl:flex-row">
+            <button
+              onClick={() => setActiveTab("meal")}
+              className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${activeTab === "meal" ? "bg-white text-cyan-800 shadow dark:bg-cyan-500/20 dark:text-cyan-200" : "text-muted-foreground hover:bg-white/50 dark:hover:bg-white/5"}`}
+            >
+              Meal Plan
+            </button>
+            <button
+              onClick={() => setActiveTab("groceries")}
+              className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${activeTab === "groceries" ? "bg-white text-cyan-800 shadow dark:bg-cyan-500/20 dark:text-cyan-200" : "text-muted-foreground hover:bg-white/50 dark:hover:bg-white/5"}`}
+            >
+              Groceries
+            </button>
+          </div>
         </div>
       </section>
 
-      <section className="mb-5 grid grid-cols-4 gap-2 sm:mb-8 sm:gap-3">
+      {activeTab === "meal" && (
+        <>
+          <section className="mb-5 grid grid-cols-4 gap-2 sm:mb-8 sm:gap-3">
         <SummaryCard title={t.summPlanned} value={`${plannedCount}/${TOTAL_SLOTS}`} subtitle={t.summPlannedSub} icon={<CalendarDays className="h-4 w-4 text-cyan-600 dark:text-cyan-200 sm:h-5 sm:w-5" />} />
         <SummaryCard title={t.summEmpty} value={String(emptyCount)} subtitle={t.summEmptySub} icon={<Plus className="h-4 w-4 text-amber-600 dark:text-amber-200 sm:h-5 sm:w-5" />} />
         <SummaryCard title={t.summProg} value={`${progress}%`} subtitle={t.summProgSub} icon={<Flame className="h-4 w-4 text-pink-600 dark:text-pink-200 sm:h-5 sm:w-5" />} />
@@ -766,6 +785,10 @@ export default function MealPage() {
           </Card>
         </div>
       </section>
+      </>
+      )}
+
+      {activeTab === "groceries" && <GroceriesView />}
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="max-w-2xl rounded-[1.25rem] border border-border bg-popover/95 p-4 text-popover-foreground backdrop-blur-xl dark:border-white/10 dark:bg-[#08111f]/95 dark:text-white sm:rounded-[2rem] sm:p-6">

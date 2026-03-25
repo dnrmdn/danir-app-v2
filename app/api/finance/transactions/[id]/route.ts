@@ -1,175 +1,260 @@
-import { auth } from "@/lib/auth"
-import prisma from "@/lib/db"
-import { getUserIdFromSession } from "@/lib/finance/session"
-import { NextRequest, NextResponse } from "next/server"
+import { NextRequest, NextResponse } from "next/server";
+import { Prisma } from "@/lib/generated/prisma";
+import { auth } from "@/lib/auth";
+import prisma from "@/lib/db";
+import { getUserIdFromSession } from "@/lib/finance/session";
+import {
+  assertPositiveDecimal,
+  assertSufficientBalance,
+  parseDate,
+  toDecimal,
+} from "@/lib/finance/money";
 
-function parseDate(value: string | null) {
-  if (!value) return null
-  const d = new Date(value)
-  return Number.isNaN(d.getTime()) ? null : d
+function rollbackDelta(type: "INCOME" | "EXPENSE", amount: Prisma.Decimal) {
+  return type === "INCOME"
+    ? { decrement: amount }
+    : { increment: amount };
 }
 
-async function upsertTags(userId: string, rawTags: unknown) {
-  const tags =
-    Array.isArray(rawTags) ? rawTags : typeof rawTags === "string" ? rawTags.split(",") : []
-  const names = Array.from(
-    new Set(
-      tags
-        .map((t) => (typeof t === "string" ? t.trim() : ""))
-        .filter((t) => t.length > 0)
-    )
-  )
-
-  if (names.length === 0) return []
-
-  await prisma.financeTag.createMany({
-    data: names.map((name) => ({ userId, name })),
-    skipDuplicates: true,
-  })
-
-  return prisma.financeTag.findMany({
-    where: { userId, name: { in: names } },
-    select: { id: true, name: true },
-  })
+function applyDelta(type: "INCOME" | "EXPENSE", amount: Prisma.Decimal) {
+  return type === "INCOME"
+    ? { increment: amount }
+    : { decrement: amount };
 }
 
 export async function PUT(req: NextRequest, context: { params: Promise<{ id: string }> }) {
   try {
-    const session = await auth.api.getSession({ headers: req.headers })
-    const userId = getUserIdFromSession(session)
-    if (!userId) return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 })
+    const session = await auth.api.getSession({ headers: req.headers });
+    const userId = getUserIdFromSession(session);
 
-    const { id: idParam } = await context.params
-    const id = Number(idParam)
-    if (!Number.isFinite(id)) return NextResponse.json({ success: false, error: "Invalid id" }, { status: 400 })
-
-    const existing = await prisma.financeTransaction.findFirst({
-      where: { id, userId },
-      select: { id: true, accountId: true },
-    })
-    if (!existing) return NextResponse.json({ success: false, error: "Not found" }, { status: 404 })
-
-    const body = await req.json()
-    const type = body.type as "INCOME" | "EXPENSE" | "TRANSFER" | undefined
-    const accountId = body.accountId === undefined ? undefined : Number(body.accountId)
-    const amountRaw = body.amount
-    const amount =
-      amountRaw === undefined
-        ? undefined
-        : typeof amountRaw === "number"
-          ? String(amountRaw)
-          : typeof amountRaw === "string"
-            ? amountRaw.trim()
-            : undefined
-    const currency = body.currency === undefined ? undefined : String(body.currency).trim().toUpperCase()
-    const date = body.date === undefined ? undefined : parseDate(String(body.date)) || undefined
-    const note = body.note === undefined ? undefined : typeof body.note === "string" ? body.note.trim() : null
-    const categoryId = body.categoryId === undefined ? undefined : body.categoryId === null ? null : Number(body.categoryId)
-
-    if (type !== undefined && !["INCOME", "EXPENSE", "TRANSFER"].includes(type)) {
-      return NextResponse.json({ success: false, error: "Type tidak valid" }, { status: 400 })
-    }
-    if (accountId !== undefined && !Number.isFinite(accountId)) {
-      return NextResponse.json({ success: false, error: "Account tidak valid" }, { status: 400 })
-    }
-    if (amount !== undefined && (!amount || Number.isNaN(Number(amount)) || Number(amount) <= 0)) {
-      return NextResponse.json({ success: false, error: "Nominal harus > 0" }, { status: 400 })
-    }
-    if (currency !== undefined && currency.length !== 3) {
-      return NextResponse.json({ success: false, error: "Currency tidak valid" }, { status: 400 })
-    }
-    if (categoryId !== undefined && categoryId !== null && !Number.isFinite(categoryId)) {
-      return NextResponse.json({ success: false, error: "Category tidak valid" }, { status: 400 })
+    if (!userId) {
+      return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
     }
 
-    if (accountId !== undefined) {
-      const account = await prisma.financeAccount.findFirst({ where: { id: accountId, userId }, select: { id: true } })
-      if (!account) return NextResponse.json({ success: false, error: "Account tidak ditemukan" }, { status: 404 })
+    const { id: idParam } = await context.params;
+    const id = Number(idParam);
+
+    if (!Number.isFinite(id)) {
+      return NextResponse.json({ success: false, error: "Invalid id" }, { status: 400 });
     }
 
-    if (categoryId !== undefined && categoryId !== null) {
-      const category = await prisma.financeCategory.findFirst({ where: { id: categoryId, userId }, select: { id: true } })
-      if (!category) return NextResponse.json({ success: false, error: "Category tidak ditemukan" }, { status: 404 })
-    }
+    const body = await req.json();
 
-    const tags = body.tags === undefined ? undefined : await upsertTags(userId, body.tags)
+    const type = body.type as "INCOME" | "EXPENSE";
+    const accountId = Number(body.accountId);
+    const categoryId = body.categoryId ? Number(body.categoryId) : null;
+    const currency = "IDR";
+    const amount = toDecimal(body.amount);
+    const date = parseDate(body.date);
+    const note = typeof body.note === "string" ? body.note.trim() : null;
+    const tags: string[] =
+      typeof body.tags === "string"
+        ? body.tags.split(",").map((t: string) => t.trim()).filter(Boolean)
+        : [];
 
-    const updated = await prisma.financeTransaction.update({
-      where: { id },
-      data: {
-        ...(type !== undefined ? { type } : {}),
-        ...(accountId !== undefined ? { accountId } : {}),
-        ...(amount !== undefined ? { amount } : {}),
-        ...(currency !== undefined ? { currency } : {}),
-        ...(date !== undefined ? { date } : {}),
-        ...(note !== undefined ? { note } : {}),
-        ...(categoryId !== undefined ? { categoryId } : {}),
-      },
-      include: {
-        account: true,
-        category: true,
-        tags: { include: { tag: true } },
-      },
-    })
+    assertPositiveDecimal(amount);
 
-    if (tags !== undefined) {
-      await prisma.financeTransactionTag.deleteMany({ where: { transactionId: id } })
-      if (tags.length > 0) {
-        await prisma.financeTransactionTag.createMany({
-          data: tags.map((t) => ({ transactionId: id, tagId: t.id })),
-          skipDuplicates: true,
-        })
+    const result = await prisma.$transaction(async (tx) => {
+      const existing = await tx.financeTransaction.findFirst({
+        where: { id, userId },
+      });
+
+      if (!existing) {
+        throw new Error("Transaksi tidak ditemukan");
       }
-    }
 
-    const refreshed = await prisma.financeTransaction.findFirst({
-      where: { id, userId },
-      include: { account: true, category: true, tags: { include: { tag: true } } },
-    })
+      if (existing.type === "TRANSFER") {
+        throw new Error("Transfer tidak bisa diupdate dari endpoint transaksi biasa");
+      }
 
-    return NextResponse.json({
-      success: true,
-      data: refreshed
-        ? {
-            id: refreshed.id,
-            type: refreshed.type,
-            transferDirection: refreshed.transferDirection,
-            otherAccountId: refreshed.otherAccountId,
-            amount: refreshed.amount,
-            currency: refreshed.currency,
-            date: refreshed.date,
-            note: refreshed.note,
-            category: refreshed.category,
-            account: refreshed.account,
-            tags: refreshed.tags.map((x) => x.tag),
+      const newAccount = await tx.financeAccount.findFirst({
+        where: { id: accountId, userId },
+      });
+
+      if (!newAccount) {
+        throw new Error("Akun tidak ditemukan");
+      }
+
+      if (categoryId) {
+        const category = await tx.financeCategory.findFirst({
+          where: { id: categoryId, userId, kind: type },
+        });
+
+        if (!category) {
+          throw new Error("Kategori tidak valid");
+        }
+      }
+
+      const tagIds: number[] = [];
+      if (tags.length > 0) {
+        for (const tagName of tags) {
+          const existingTag = await tx.financeTag.findFirst({
+            where: { name: tagName, userId },
+          });
+
+          if (existingTag) {
+            tagIds.push(existingTag.id);
+          } else {
+            const newTag = await tx.financeTag.create({
+              data: { userId, name: tagName },
+            });
+            tagIds.push(newTag.id);
           }
-        : {
-            id: updated.id,
-          },
-    })
+        }
+      }
+
+      await tx.financeAccount.update({
+        where: { id: existing.accountId },
+        data: {
+          balance: rollbackDelta(existing.type as "INCOME" | "EXPENSE", new Prisma.Decimal(existing.amount)),
+        },
+      });
+
+      const refreshed = await tx.financeAccount.findFirst({
+        where: { id: accountId, userId },
+      });
+
+      if (!refreshed) {
+        throw new Error("Akun tidak ditemukan");
+      }
+
+      if (type === "EXPENSE") {
+        assertSufficientBalance(new Prisma.Decimal(refreshed.balance), amount);
+      }
+
+      await tx.financeAccount.update({
+        where: { id: accountId },
+        data: {
+          balance: applyDelta(type, amount),
+        },
+      });
+
+      await tx.financeTransaction.update({
+        where: { id },
+        data: {
+          accountId,
+          type,
+          amount,
+          currency,
+          date,
+          note,
+          categoryId,
+        },
+      });
+
+      await tx.financeTransactionTag.deleteMany({
+        where: { transactionId: id },
+      });
+
+      if (tagIds.length > 0) {
+        await tx.financeTransactionTag.createMany({
+          data: tagIds.map((tagId) => ({
+            transactionId: id,
+            tagId,
+          })),
+          skipDuplicates: true,
+        });
+      }
+
+      return tx.financeTransaction.findUnique({
+        where: { id },
+        include: {
+          account: true,
+          category: true,
+          tags: { include: { tag: true } },
+        },
+      });
+    });
+
+    return NextResponse.json({ success: true, data: result });
   } catch (error) {
-    console.error("finance transactions PUT error:", error)
-    return NextResponse.json({ success: false, error: "Internal Server Error" }, { status: 500 })
+    const message = error instanceof Error ? error.message : "Internal Server Error";
+    return NextResponse.json({ success: false, error: message }, { status: 500 });
   }
 }
 
 export async function DELETE(req: NextRequest, context: { params: Promise<{ id: string }> }) {
   try {
-    const session = await auth.api.getSession({ headers: req.headers })
-    const userId = getUserIdFromSession(session)
-    if (!userId) return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 })
+    const session = await auth.api.getSession({ headers: req.headers });
+    const userId = getUserIdFromSession(session);
 
-    const { id: idParam } = await context.params
-    const id = Number(idParam)
-    if (!Number.isFinite(id)) return NextResponse.json({ success: false, error: "Invalid id" }, { status: 400 })
+    if (!userId) {
+      return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
+    }
 
-    const existing = await prisma.financeTransaction.findFirst({ where: { id, userId }, select: { id: true } })
-    if (!existing) return NextResponse.json({ success: false, error: "Not found" }, { status: 404 })
+    const { id: idParam } = await context.params;
+    const id = Number(idParam);
 
-    await prisma.financeTransaction.delete({ where: { id } })
-    return NextResponse.json({ success: true })
+    if (!Number.isFinite(id)) {
+      return NextResponse.json({ success: false, error: "Invalid id" }, { status: 400 });
+    }
+
+    await prisma.$transaction(async (tx) => {
+      const existing = await tx.financeTransaction.findFirst({
+        where: { id, userId },
+      });
+
+      if (!existing) {
+        throw new Error("Transaksi tidak ditemukan");
+      }
+
+      if (existing.type === "TRANSFER") {
+        if (!existing.transferGroup) {
+          throw new Error("Transfer group tidak valid");
+        }
+
+        const pair = await tx.financeTransaction.findMany({
+          where: {
+            userId,
+            transferGroup: existing.transferGroup,
+            type: "TRANSFER",
+          },
+        });
+
+        for (const item of pair) {
+          if (item.transferDirection === "OUT") {
+            await tx.financeAccount.update({
+              where: { id: item.accountId },
+              data: { balance: { increment: item.amount } },
+            });
+          }
+
+          if (item.transferDirection === "IN") {
+            await tx.financeAccount.update({
+              where: { id: item.accountId },
+              data: { balance: { decrement: item.amount } },
+            });
+          }
+        }
+
+        await tx.financeTransaction.deleteMany({
+          where: {
+            userId,
+            transferGroup: existing.transferGroup,
+            type: "TRANSFER",
+          },
+        });
+
+        return;
+      }
+
+      await tx.financeAccount.update({
+        where: { id: existing.accountId },
+        data: {
+          balance: existing.type === "INCOME"
+            ? { decrement: existing.amount }
+            : { increment: existing.amount },
+        },
+      });
+
+      await tx.financeTransaction.delete({
+        where: { id },
+      });
+    });
+
+    return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("finance transactions DELETE error:", error)
-    return NextResponse.json({ success: false, error: "Internal Server Error" }, { status: 500 })
+    const message = error instanceof Error ? error.message : "Internal Server Error";
+    return NextResponse.json({ success: false, error: message }, { status: 500 });
   }
 }

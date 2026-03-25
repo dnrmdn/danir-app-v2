@@ -71,3 +71,78 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: false, error: "Internal Server Error" }, { status: 500 })
   }
 }
+
+export async function DELETE(req: NextRequest) {
+  try {
+    const session = await auth.api.getSession({ headers: req.headers })
+    const userId = getUserIdFromSession(session)
+    if (!userId) return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 })
+
+    const { searchParams } = new URL(req.url)
+    const id = Number(searchParams.get("id"))
+    if (Number.isNaN(id)) return NextResponse.json({ success: false, error: "ID tidak valid" }, { status: 400 })
+
+    await prisma.$transaction(async (tx) => {
+      const goal = await tx.financeGoal.findUnique({
+        where: { id, userId }
+      })
+      if (!goal) throw new Error("Goal tidak ditemukan")
+
+      // 1. Cari atau buat parent category "Investasi & tabungan"
+      let parentCat = await tx.financeCategory.findFirst({
+        where: { userId, name: "Investasi & tabungan", kind: "EXPENSE", parentId: null }
+      })
+      if (!parentCat) {
+        parentCat = await tx.financeCategory.create({
+          data: {
+            userId,
+            name: "Investasi & tabungan",
+            kind: "EXPENSE",
+            classification: "SAVING",
+            isSystem: true,
+            color: "#10b981",
+            icon: "PiggyBank"
+          }
+        })
+      }
+
+      // 2. Cari atau buat sub category "Tabungan rutin"
+      let subCat = await tx.financeCategory.findFirst({
+        where: { userId, name: "Tabungan rutin", kind: "EXPENSE", parentId: parentCat.id }
+      })
+      if (!subCat) {
+        subCat = await tx.financeCategory.create({
+          data: {
+            userId,
+            name: "Tabungan rutin",
+            kind: "EXPENSE",
+            parentId: parentCat.id,
+            classification: "SAVING",
+            isSystem: true,
+            color: "#10b981",
+            icon: "Save"
+          }
+        })
+      }
+
+      // 3. Update semua transaksi pendaftaran (isi) tabungan
+      await tx.financeTransaction.updateMany({
+        where: { userId, note: `Isi tabungan untuk: ${goal.name}` },
+        data: {
+          categoryId: subCat.id,
+          note: `Pindahan dari goal ${goal.name}`
+        }
+      })
+
+      // 4. Hapus goal
+      await tx.financeGoal.delete({
+        where: { id: goal.id }
+      })
+    })
+
+    return NextResponse.json({ success: true })
+  } catch (error: any) {
+    console.error("finance goals DELETE error:", error)
+    return NextResponse.json({ success: false, error: error.message || "Internal Server Error" }, { status: 500 })
+  }
+}

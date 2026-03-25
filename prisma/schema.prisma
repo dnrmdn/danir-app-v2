@@ -27,17 +27,17 @@ model User {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @default(now()) @updatedAt
 
-  sessions Session[]
-  accounts Account[]
-  members  Member[] // USER → MEMBER
-  savedLinks SavedLink[] // USER → SAVEDLINK
-  mealPlanWeeks MealPlanWeek[]
-  financeAccounts FinanceAccount[]
-  financeCategories FinanceCategory[]
-  financeTags FinanceTag[]
+  sessions            Session[]
+  accounts            Account[]
+  members             Member[] // USER → MEMBER
+  savedLinks          SavedLink[] // USER → SAVEDLINK
+  mealPlanWeeks       MealPlanWeek[]
+  financeAccounts     FinanceAccount[]
+  financeCategories   FinanceCategory[]
+  financeTags         FinanceTag[]
   financeTransactions FinanceTransaction[]
-  financeBudgets FinanceBudget[]
-  financeGoals FinanceGoal[]
+  financeBudgets      FinanceBudget[]
+  financeGoals        FinanceGoal[]
 
   @@map("user")
 }
@@ -48,15 +48,15 @@ model User {
  * ======================
  */
 model SavedLink {
-  id          Int      @id @default(autoincrement())
-  userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  url         String
-  title       String
-  label       String?
+  id           Int      @id @default(autoincrement())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  url          String
+  title        String
+  label        String?
   previewImage String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   @@unique([userId, url])
   @@map("saved_link")
@@ -84,15 +84,15 @@ model MealPlanWeek {
 }
 
 model MealPlanEntry {
-  id        Int      @id @default(autoincrement())
+  id        Int          @id @default(autoincrement())
   weekId    Int
   week      MealPlanWeek @relation(fields: [weekId], references: [id], onDelete: Cascade)
   dayIndex  Int
   mealType  MealType
   text      String
-  sortOrder Int      @default(0)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  sortOrder Int          @default(0)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
 
   @@unique([weekId, dayIndex, mealType, sortOrder])
   @@map("meal_plan_entry")
@@ -121,36 +121,56 @@ enum FinanceCategoryKind {
 }
 
 model FinanceAccount {
-  id             Int      @id @default(autoincrement())
+  id             Int                @id @default(autoincrement())
   userId         String
-  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user           User               @relation(fields: [userId], references: [id], onDelete: Cascade)
   name           String
   type           FinanceAccountType
   currency       String
-  initialBalance Decimal  @default(0)
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  initialBalance Decimal            @default(0) @db.Decimal(18, 2)
+  balance        Decimal            @default(0) @db.Decimal(18, 2)
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
 
-  transactions FinanceTransaction[]
   transferCounterpartTransactions FinanceTransaction[] @relation("finance_transfer_other_account")
+  goals                           FinanceGoal[]
 
   @@unique([userId, name])
   @@map("finance_account")
 }
 
+enum FinanceCategoryClassification {
+  NEED
+  WANT
+  INVESTMENT
+  SAVING
+  DEBT
+  TAX
+  OTHER
+}
+
 model FinanceCategory {
-  id        Int      @id @default(autoincrement())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  name      String
-  kind      FinanceCategoryKind
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id             Int                            @id @default(autoincrement())
+  userId         String
+  user           User                           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name           String
+  kind           FinanceCategoryKind
+  parentId       Int?
+  parent         FinanceCategory?               @relation("FinanceCategoryToParent", fields: [parentId], references: [id], onDelete: SetNull)
+  children       FinanceCategory[]              @relation("FinanceCategoryToParent")
+  classification FinanceCategoryClassification?
+  icon           String?
+  color          String?
+  isSystem       Boolean                        @default(false)
+  createdAt      DateTime                       @default(now())
+  updatedAt      DateTime                       @updatedAt
 
   transactions FinanceTransaction[]
   budgets      FinanceBudget[]
 
-  @@unique([userId, name, kind])
+  @@unique([userId, name, kind, parentId])
+  @@index([userId, kind])
+  @@index([parentId])
   @@map("finance_category")
 }
 
@@ -169,24 +189,24 @@ model FinanceTag {
 }
 
 model FinanceTransaction {
-  id            Int      @id @default(autoincrement())
-  userId        String
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  accountId     Int
-  account       FinanceAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
-  type          FinanceTransactionType
+  id                Int                       @id @default(autoincrement())
+  userId            String
+  user              User                      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accountId         Int
+  account           FinanceAccount            @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  type              FinanceTransactionType
   transferDirection FinanceTransferDirection?
-  otherAccountId Int?
-  otherAccount   FinanceAccount? @relation("finance_transfer_other_account", fields: [otherAccountId], references: [id], onDelete: SetNull)
-  amount        Decimal
-  currency      String
-  date          DateTime
-  note          String?
-  categoryId    Int?
-  category      FinanceCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
-  transferGroup String?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  otherAccountId    Int?
+  otherAccount      FinanceAccount?           @relation("finance_transfer_other_account", fields: [otherAccountId], references: [id], onDelete: SetNull)
+  amount            Decimal
+  currency          String
+  date              DateTime
+  note              String?
+  categoryId        Int?
+  category          FinanceCategory?          @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  transferGroup     String?
+  createdAt         DateTime                  @default(now())
+  updatedAt         DateTime                  @updatedAt
 
   tags FinanceTransactionTag[]
 
@@ -195,43 +215,47 @@ model FinanceTransaction {
 }
 
 model FinanceTransactionTag {
-  id            Int @id @default(autoincrement())
+  id            Int                @id @default(autoincrement())
   transactionId Int
   transaction   FinanceTransaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
   tagId         Int
-  tag           FinanceTag @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  tag           FinanceTag         @relation(fields: [tagId], references: [id], onDelete: Cascade)
 
   @@unique([transactionId, tagId])
   @@map("finance_transaction_tag")
 }
 
 model FinanceBudget {
-  id         Int      @id @default(autoincrement())
+  id         Int             @id @default(autoincrement())
   userId     String
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user       User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   categoryId Int
   category   FinanceCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   month      String
   currency   String
   limit      Decimal
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
 
   @@unique([userId, categoryId, month, currency])
   @@map("finance_budget")
 }
 
 model FinanceGoal {
-  id            Int      @id @default(autoincrement())
+  id            Int       @id @default(autoincrement())
   userId        String
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   name          String
   currency      String
   targetAmount  Decimal
-  currentAmount Decimal  @default(0)
+  currentAmount Decimal   @default(0)
   targetDate    DateTime?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  accountId     Int?
+  account       FinanceAccount? @relation(fields: [accountId], references: [id], onDelete: SetNull)
+  icon          String?
+  color         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 
   @@map("finance_goal")
 }
@@ -277,6 +301,7 @@ model Account {
   createdAt             DateTime  @default(now())
   updatedAt             DateTime  @updatedAt
 
+  @@unique([userId, providerId])
   @@map("account")
 }
 

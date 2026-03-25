@@ -34,9 +34,8 @@ export async function PUT(req: NextRequest, context: { params: Promise<{ id: str
       data: {
         ...(name ? { name } : {}),
         ...(currency ? { currency } : {}),
-        ...(initialBalance !== undefined ? { initialBalance } : {}),
       },
-    })
+    });
 
     return NextResponse.json({ success: true, data: updated })
   } catch (error) {

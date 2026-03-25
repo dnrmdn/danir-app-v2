@@ -60,8 +60,15 @@ export async function POST(req: NextRequest) {
     }
 
     const account = await prisma.financeAccount.create({
-      data: { userId, name, type, currency, initialBalance },
-    })
+      data: {
+        userId,
+        name,
+        type,
+        currency,
+        initialBalance,
+        balance: initialBalance,
+      },
+    });
 
     return NextResponse.json({ success: true, data: account }, { status: 201 })
   } catch (error) {
