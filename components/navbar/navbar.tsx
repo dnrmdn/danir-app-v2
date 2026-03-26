@@ -7,6 +7,7 @@ import { Calendar1, CheckCircle, ChevronDown, ForkKnifeIcon, Image as ImageIcon,
 import { useUserSession } from "@/hooks/useUserSession";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { ThemeLanguageSwitcher } from "../theme-language-switcher";
+import { PlanStatusBadge } from "./plan-status-badge";
 
 const navItems = [
   { label: "Calendar", href: "/calendar", icon: Calendar1 },
@@ -110,6 +111,9 @@ export default function Navbar() {
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
+
+        {/* Plan status badge — visible below greeting, above page title */}
+        <PlanStatusBadge />
 
         <div className="flex-1">
           <h1 className="text-3xl font-black tracking-tight text-foreground dark:text-white sm:text-4xl">{currentPage.title}</h1>

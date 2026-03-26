@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Bell, LogOut, Palette, Sparkles, Languages, ShieldCheck, LockKeyhole } from "lucide-react";
 import { useUserSession } from "@/hooks/useUserSession";
 import { Button } from "@/components/ui/button";
@@ -116,6 +117,7 @@ export default function SettingsPage() {
   const { locale, setLocale } = useLanguage();
   const { plan } = usePlanAccess();
   const t = contentSettingsLocal[locale];
+  const router = useRouter();
 
   const [emailNotif, setEmailNotif, emailMounted] = useLocalSetting("email_notif", true);
   const [taskReminder, setTaskReminder, taskMounted] = useLocalSetting("task_reminder", true);
@@ -182,6 +184,30 @@ export default function SettingsPage() {
                   </div>
                 </div>
               </div>
+
+              {/* Upgrade / Manage Plan CTA */}
+              {plan && (
+                <div className="mt-3">
+                  {plan.isPaidPro ? (
+                    <button
+                      onClick={() => router.push("/settings/billing")}
+                      className="w-full rounded-2xl border border-cyan-300/30 bg-cyan-50/60 px-4 py-2.5 text-xs font-semibold text-cyan-700 transition hover:bg-cyan-100/60 dark:border-cyan-400/15 dark:bg-cyan-400/5 dark:text-cyan-300 dark:hover:bg-cyan-400/10"
+                    >
+                      {locale === "id" ? "Kelola Paket" : "Manage Plan"}
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => router.push("/settings/billing")}
+                      className="w-full rounded-2xl bg-gradient-to-r from-cyan-500 to-cyan-600 px-4 py-2.5 text-xs font-semibold text-white shadow-sm shadow-cyan-500/20 transition hover:from-cyan-400 hover:to-cyan-500"
+                    >
+                      <span className="flex items-center justify-center gap-1.5">
+                        <Sparkles className="h-3.5 w-3.5" />
+                        {locale === "id" ? "Upgrade ke Pro" : "Upgrade to Pro"}
+                      </span>
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
           </div>
 

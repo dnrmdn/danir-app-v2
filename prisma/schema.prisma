@@ -14,6 +14,16 @@ datasource db {
  * USER
  * ======================
  */
+/**
+ * ======================
+ * ROLE
+ * ======================
+ */
+enum UserRole {
+  USER
+  ADMIN
+}
+
 model User {
   id            String   @id
   name          String
@@ -24,6 +34,7 @@ model User {
   bio           String?
   phone         String?
   location      String?
+  role          UserRole @default(USER)
   planType      PlanType @default(PRO_TRIAL)
   subscriptionStatus SubscriptionStatus @default(TRIALING)
   trialStartAt  DateTime? @default(now())
@@ -49,6 +60,7 @@ model User {
   partnerConnectionsA    PartnerConnection[]    @relation("PartnerUserA")
   partnerConnectionsB    PartnerConnection[]    @relation("PartnerUserB")
   partnerFeatureAccesses PartnerFeatureAccess[]
+  paymentRequests        PaymentRequest[]
 
   @@map("user")
 }
@@ -510,4 +522,43 @@ model GroceryItem {
   category GroceryCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
 
   @@map("grocery_item")
+}
+
+/**
+ * ======================
+ * PAYMENT REQUEST
+ * (Foundation for QRIS payment confirmation)
+ * ======================
+ */
+enum PaymentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum PaymentPlanTarget {
+  PRO
+}
+
+model PaymentRequest {
+  id            String        @id @default(cuid())
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  invoiceCode   String        @unique @default(cuid())
+  planTarget    PaymentPlanTarget
+  amount        Decimal       @db.Decimal(18, 2)
+  currency      String        @default("IDR")
+  paymentMethod String?       // e.g. "QRIS"
+  proofImageUrl String?       // uploaded payment proof
+  status        PaymentStatus @default(PENDING)
+  notes         String?       // admin notes on approve/reject
+  reviewedAt    DateTime?
+  reviewedBy    String?       // admin user id who reviewed
+  submittedAt   DateTime      @default(now())
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@index([userId])
+  @@index([status])
+  @@map("payment_request")
 }
