@@ -13,6 +13,8 @@ import { FilterType, SavedLink } from "./_types";
 import { SummaryCard } from "./_components/summaryLinksCard";
 import { LinkCard } from "./_components/linkCard";
 import { ListRow } from "./_components/listRow";
+import { ViewModeToggle } from "@/components/partner/view-mode-toggle";
+import { usePartnerStore } from "@/lib/store/partner-store";
 
 export default function SavedLinksPage() {
   const { session } = useUserSession();
@@ -26,9 +28,24 @@ export default function SavedLinksPage() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [visibleCount, setVisibleCount] = useState(24);
 
+  const { viewMode: partnerViewMode, fetchConnection, fetchFeatureAccess, getActiveConnectionId, isFeatureShared } = usePartnerStore();
+
+  // Fetch partner data on mount
+  useEffect(() => {
+    fetchConnection().then(() => fetchFeatureAccess());
+  }, [fetchConnection, fetchFeatureAccess]);
+
   const fetchLinks = async () => {
     try {
-      const res = await fetch("/api/links", { cache: "no-store" });
+      const connectionId = getActiveConnectionId();
+      const isShared = isFeatureShared("LINKS");
+      let url = "/api/links";
+      if (isShared && partnerViewMode === "shared" && connectionId) {
+        url += `?view=shared&connectionId=${connectionId}`;
+      } else {
+        url += "?view=personal";
+      }
+      const res = await fetch(url, { cache: "no-store" });
       const data = await res.json();
       if (data.success) {
         setLinks(data.data);
@@ -42,11 +59,13 @@ export default function SavedLinksPage() {
 
   useEffect(() => {
     if (session) {
+      setLoading(true);
       void fetchLinks();
     } else {
       setLoading(false);
     }
-  }, [session]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session, partnerViewMode]);
 
   const allLabels = useMemo(() => {
     const raw = links.flatMap((link) => (link.label ? link.label.split(",").map((item) => item.trim()) : []));
@@ -134,6 +153,9 @@ export default function SavedLinksPage() {
               </div>
               <h1 className="text-4xl font-black tracking-tight text-foreground dark:text-white sm:text-5xl">{t.heroTitle}</h1>
               <p className="mt-3 max-w-2xl text-sm leading-7 text-muted-foreground dark:text-slate-300 sm:text-base">{t.heroDesc}</p>
+            </div>
+            <div className="flex items-center gap-3">
+              <ViewModeToggle feature="LINKS" locale={locale} />
             </div>
           </div>
         </section>
@@ -270,6 +292,7 @@ export default function SavedLinksPage() {
       <AddLinkModal
         isOpen={showAddModal}
         onClose={() => setShowAddModal(false)}
+        connectionId={partnerViewMode === "shared" && isFeatureShared("LINKS") ? getActiveConnectionId() : null}
         onCreated={(createdLink) => {
           setLinks((prev) => {
             const withoutDuplicate = prev.filter((link) => link.id !== createdLink.id);

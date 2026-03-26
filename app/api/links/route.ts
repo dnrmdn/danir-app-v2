@@ -17,7 +17,7 @@ export async function POST(req: Request) {
         }
 
         const body = await req.json();
-        const { url, title, labels, previewImage } = body;
+        const { url, title, labels, previewImage, connectionId } = body;
 
         const urlValue = typeof url === "string" ? url.trim() : "";
         const titleValue = typeof title === "string" ? title.trim() : "";
@@ -28,6 +28,25 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: "URL, Title, and Labels are required" }, { status: 400 });
         }
 
+        // Validate connectionId if provided
+        let validConnectionId: string | null = null;
+        if (connectionId) {
+            const conn = await prisma.partnerConnection.findFirst({
+                where: {
+                    id: connectionId,
+                    status: "ACCEPTED",
+                    OR: [
+                        { userAId: session.user.id },
+                        { userBId: session.user.id }
+                    ]
+                }
+            });
+            if (!conn) {
+                return NextResponse.json({ error: "Invalid partner connection" }, { status: 403 });
+            }
+            validConnectionId = conn.id;
+        }
+
         const savedLink = await prisma.savedLink.create({
             data: {
                 url: urlValue,
@@ -35,6 +54,7 @@ export async function POST(req: Request) {
                 label: labelsValue,
                 previewImage: previewImageValue,
                 userId: session.user.id,
+                connectionId: validConnectionId,
             },
             select: {
                 id: true,
@@ -43,6 +63,7 @@ export async function POST(req: Request) {
                 label: true,
                 previewImage: true,
                 createdAt: true,
+                connectionId: true,
             },
         });
 
@@ -56,7 +77,7 @@ export async function POST(req: Request) {
     }
 }
 
-export async function GET() {
+export async function GET(req: Request) {
     try {
         const session = await auth.api.getSession({
             headers: await headers()
@@ -66,10 +87,39 @@ export async function GET() {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
+        const url = new URL(req.url);
+        const view = url.searchParams.get("view") || "personal";
+        const connectionId = url.searchParams.get("connectionId");
+
+        let whereClause;
+
+        if (view === "shared" && connectionId) {
+            // Verify the user belongs to this connection
+            const conn = await prisma.partnerConnection.findFirst({
+                where: {
+                    id: connectionId,
+                    status: "ACCEPTED",
+                    OR: [
+                        { userAId: session.user.id },
+                        { userBId: session.user.id }
+                    ]
+                }
+            });
+
+            if (!conn) {
+                return NextResponse.json({ error: "Invalid connection" }, { status: 403 });
+            }
+
+            // Shared view: show the PARTNER's links (not current user's)
+            const partnerId = conn.userAId === session.user.id ? conn.userBId : conn.userAId;
+            whereClause = { userId: partnerId };
+        } else {
+            // Personal view: only show links belonging to this user
+            whereClause = { userId: session.user.id };
+        }
+
         const savedLinks = await prisma.savedLink.findMany({
-            where: {
-                userId: session.user.id,
-            },
+            where: whereClause,
             orderBy: {
                 createdAt: "desc",
             },
@@ -80,6 +130,7 @@ export async function GET() {
                 label: true,
                 previewImage: true,
                 createdAt: true,
+                connectionId: true,
             },
         });
 

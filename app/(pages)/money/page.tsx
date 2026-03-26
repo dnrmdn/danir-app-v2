@@ -21,7 +21,9 @@ import { MoneyFab } from "./_components/money-fab";
 export default function MoneyPage() {
   const {
     t,
+    locale,
     session,
+    partnerName,
     active,
     setActive,
     month,
@@ -101,6 +103,7 @@ export default function MoneyPage() {
       <div className="mx-auto max-w-7xl px-2 py-4 sm:px-4 sm:py-8 lg:px-6">
         <MoneyPageHeader
           t={t}
+          locale={locale}
           month={month}
           setMonth={setMonth}
           reloadMonthData={reloadMonthData}
@@ -109,6 +112,7 @@ export default function MoneyPage() {
           handleImportClick={handleImportClick}
           importInputRef={importInputRef}
           handleImportFile={handleImportFile}
+          partnerName={partnerName}
         />
         <MoneyTabs t={t} active={active} setActive={setActive} />
 

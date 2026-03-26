@@ -15,6 +15,8 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useLanguage } from "@/components/language-provider";
 import { GroceriesView } from "./_components/GroceriesView";
+import { ViewModeToggle } from "@/components/partner/view-mode-toggle";
+import { usePartnerStore } from "@/lib/store/partner-store";
 
 type MealType = "BREAKFAST" | "SNACK" | "LUNCH" | "DINNER";
 
@@ -221,6 +223,38 @@ export default function MealPage() {
   const [userIdeas, setUserIdeas] = useState<Record<MealType, string[]>>({ BREAKFAST: [], SNACK: [], LUNCH: [], DINNER: [] });
   const [weekNote, setWeekNote] = useState("");
 
+  // Partner sharing
+  const { viewMode: partnerViewMode, fetchConnection, fetchFeatureAccess, getActiveConnectionId, isFeatureShared, connection } = usePartnerStore();
+
+  const partnerQs = useMemo(() => {
+    if (partnerViewMode === "shared" && isFeatureShared("MEAL")) {
+      const connId = getActiveConnectionId();
+      if (connId) return `view=shared&connectionId=${connId}`;
+    }
+    return "";
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [partnerViewMode]);
+
+  const partnerBodyParams = useMemo(() => {
+    if (partnerViewMode === "shared" && isFeatureShared("MEAL")) {
+      const connId = getActiveConnectionId();
+      if (connId) return { view: "shared", connectionId: connId };
+    }
+    return {};
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [partnerViewMode]);
+
+  const partnerName = useMemo(() => {
+    if (!connection || !session) return null;
+    const partner = connection.userAId === session.user.id ? connection.userB : connection.userA;
+    return partner?.name || partner?.email || null;
+  }, [connection, session]);
+
+  const appendPartnerQs = (url: string) => {
+    if (!partnerQs) return url;
+    return url + (url.includes("?") ? "&" : "?") + partnerQs;
+  };
+
   const weekStart = useMemo(() => weekStartString(currentDate), [currentDate]);
   const weekDates = useMemo(() => {
     const start = startOfWeek(currentDate, { weekStartsOn: 1 });
@@ -276,7 +310,7 @@ export default function MealPage() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`/api/meal-plan?weekStart=${encodeURIComponent(ws)}`);
+      const res = await fetch(appendPartnerQs(`/api/meal-plan?weekStart=${encodeURIComponent(ws)}`));
       const json = await res.json();
       if (json.success) {
         setWeek(json.data);
@@ -295,8 +329,15 @@ export default function MealPage() {
 
   useEffect(() => {
     if (!session) return;
+    fetchConnection().then(() => fetchFeatureAccess());
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session]);
+
+  useEffect(() => {
+    if (!session) return;
     fetchWeek(weekStart);
-  }, [session, weekStart]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session, weekStart, partnerQs]);
 
   const openCell = (dayIndex: number, mealType: MealType) => {
     const existing = entryMap.get(makeKey(dayIndex, mealType));
@@ -316,6 +357,7 @@ export default function MealPage() {
         mealType,
         text,
         sortOrder: 0,
+        ...partnerBodyParams,
       }),
     });
 
@@ -506,7 +548,15 @@ export default function MealPage() {
               <Sparkles className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
               {t.badge}
             </div>
-            <h1 className="text-2xl font-black tracking-tight text-foreground dark:text-white sm:text-4xl lg:text-5xl">{t.title}</h1>
+            <div className="flex items-center gap-3 flex-wrap">
+              <h1 className="text-2xl font-black tracking-tight text-foreground dark:text-white sm:text-4xl lg:text-5xl">{t.title}</h1>
+              <ViewModeToggle feature="MEAL" locale={locale} />
+            </div>
+            {partnerViewMode === "shared" && isFeatureShared("MEAL") && partnerName && (
+              <div className="mt-2 inline-flex items-center gap-1.5 rounded-full border border-cyan-200 bg-cyan-50/80 px-3 py-1 text-xs font-medium text-cyan-800 dark:border-cyan-400/20 dark:bg-cyan-400/10 dark:text-cyan-200">
+                👀 {locale === "id" ? `Berbagi dengan ${partnerName}` : `Shared with ${partnerName}`}
+              </div>
+            )}
             <p className="mt-2 max-w-2xl text-xs leading-6 text-muted-foreground dark:text-slate-300 sm:mt-3 sm:text-sm sm:leading-7 lg:text-base">
               {t.desc}
             </p>

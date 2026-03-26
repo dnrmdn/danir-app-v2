@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth"
 import prisma from "@/lib/db"
 import { getUserIdFromSession } from "@/lib/finance/session"
+import { resolveFinanceUserIds, buildUserWhereClause } from "@/lib/finance/partner-helper"
 import { NextRequest, NextResponse } from "next/server"
 
 function parseDate(value: string | null) {
@@ -15,7 +16,14 @@ export async function GET(req: NextRequest) {
     const userId = getUserIdFromSession(session)
     if (!userId) return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 })
 
-    const goals = await prisma.financeGoal.findMany({ where: { userId }, orderBy: { createdAt: "desc" } })
+    const view = req.nextUrl.searchParams.get("view")
+    const connectionId = req.nextUrl.searchParams.get("connectionId")
+    const resolved = await resolveFinanceUserIds(userId, view, connectionId)
+    if (!resolved) return NextResponse.json({ success: false, error: "Invalid connection" }, { status: 403 })
+
+    const whereClause = buildUserWhereClause(resolved.userIds, resolved.connectionId)
+
+    const goals = await prisma.financeGoal.findMany({ where: whereClause as any, orderBy: { createdAt: "desc" } })
     return NextResponse.json({ success: true, data: goals })
   } catch (error) {
     console.error("finance goals GET error:", error)

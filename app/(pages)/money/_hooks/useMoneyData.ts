@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { format } from "date-fns";
 import { useUserSession } from "@/hooks/useUserSession";
 import { useLanguage } from "@/components/language-provider";
+import { usePartnerStore } from "@/lib/store/partner-store";
 import {
   FinanceAccount,
   FinanceBudgetRow,
@@ -22,6 +23,30 @@ export function useMoneyData() {
   const { session } = useUserSession();
   const { locale } = useLanguage();
   const t = contentMoneyLocal[locale];
+
+  const { viewMode: partnerViewMode, fetchConnection, fetchFeatureAccess, getActiveConnectionId, isFeatureShared, connection } = usePartnerStore();
+
+  const partnerName = useMemo(() => {
+    if (!connection || !session || partnerViewMode !== "shared" || !isFeatureShared("MONEY")) return null;
+    const partner = connection.userAId === session.user.id ? connection.userB : connection.userA;
+    return partner?.name || partner?.email || null;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [connection, session, partnerViewMode]);
+
+  // Build query string for partner view
+  const partnerQs = useMemo(() => {
+    if (partnerViewMode === "shared" && isFeatureShared("MONEY")) {
+      const connId = getActiveConnectionId();
+      if (connId) return `view=shared&connectionId=${connId}`;
+    }
+    return "";
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [partnerViewMode]);
+
+  const appendPartnerQs = (url: string) => {
+    if (!partnerQs) return url;
+    return url + (url.includes("?") ? "&" : "?") + partnerQs;
+  };
 
   const [active, setActive] = useState<MoneyNavId>("dashboard");
   const [month, setMonth] = useState<string>(() => monthString());
@@ -103,10 +128,10 @@ export function useMoneyData() {
     setError(null);
     try {
       const [a, c, tagsResp, g] = await Promise.all([
-        fetch("/api/finance/accounts").then((r) => r.json()),
-        fetch("/api/finance/categories").then((r) => r.json()),
-        fetch("/api/finance/tags").then((r) => r.json()),
-        fetch("/api/finance/goals").then((r) => r.json()),
+        fetch(appendPartnerQs("/api/finance/accounts")).then((r) => r.json()),
+        fetch(appendPartnerQs("/api/finance/categories")).then((r) => r.json()),
+        fetch(appendPartnerQs("/api/finance/tags")).then((r) => r.json()),
+        fetch(appendPartnerQs("/api/finance/goals")).then((r) => r.json()),
       ]);
 
       if (a.success) setAccounts(a.data);
@@ -118,7 +143,8 @@ export function useMoneyData() {
     } finally {
       setLoading(false);
     }
-  }, [t.errorLoadCore]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [t.errorLoadCore, partnerQs]);
 
   const [goalContributeDialogOpen, setGoalContributeDialogOpen] = useState(false);
   const [goalContributeForm, setGoalContributeForm] = useState<GoalContributeForm>({ goalId: "", accountId: "", amount: "" });
@@ -131,9 +157,9 @@ export function useMoneyData() {
       const end = monthStartEnd.end.toISOString();
 
       const [tx, b, ins] = await Promise.all([
-        fetch(`/api/finance/transactions?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}&_t=${Date.now()}`).then((r) => r.json()),
-        fetch(`/api/finance/budgets?month=${encodeURIComponent(month)}&_t=${Date.now()}`).then((r) => r.json()),
-        fetch(`/api/finance/insights?month=${encodeURIComponent(month)}&_t=${Date.now()}`).then((r) => r.json()),
+        fetch(appendPartnerQs(`/api/finance/transactions?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}&_t=${Date.now()}`)).then((r) => r.json()),
+        fetch(appendPartnerQs(`/api/finance/budgets?month=${encodeURIComponent(month)}&_t=${Date.now()}`)).then((r) => r.json()),
+        fetch(appendPartnerQs(`/api/finance/insights?month=${encodeURIComponent(month)}&_t=${Date.now()}`)).then((r) => r.json()),
       ]);
 
       if (tx.success) setTransactions(tx.data);
@@ -144,7 +170,14 @@ export function useMoneyData() {
     } finally {
       setLoading(false);
     }
-  }, [month, monthStartEnd, t.errorLoadMonth]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [month, monthStartEnd, t.errorLoadMonth, partnerQs]);
+
+  useEffect(() => {
+    if (!session) return;
+    fetchConnection().then(() => fetchFeatureAccess());
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session]);
 
   useEffect(() => {
     if (!session) return;
@@ -621,7 +654,9 @@ export function useMoneyData() {
 
   return {
     t,
+    locale,
     session,
+    partnerName,
     active,
     setActive,
     month,

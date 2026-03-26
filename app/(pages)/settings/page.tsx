@@ -8,6 +8,7 @@ import { Switch } from "@/components/ui/switch";
 import { useTheme } from "next-themes";
 import { useLanguage } from "@/components/language-provider";
 import { ChangePasswordDialog } from "@/components/setting/change-password-dialog";
+import { PartnerSection } from "@/components/setting/partner-section";
 
 const contentSettingsLocal = {
   id: {
@@ -119,6 +120,8 @@ export default function SettingsPage() {
         </div>
 
         <div className="grid gap-5 lg:grid-cols-2">
+          {/* Left Column */}
+          <div className="space-y-5">
           {/* Notifications Section */}
           <div className="rounded-[1.75rem] border border-border bg-muted/30 p-5 dark:border-white/10 dark:bg-white/4">
             <div className="mb-4 flex items-start gap-3">
@@ -144,6 +147,10 @@ export default function SettingsPage() {
                 </div>
               ))}
             </div>
+          </div>
+
+            {/* Partner Sharing Section */}
+            <PartnerSection locale={locale} />
           </div>
 
           {/* Right Column */}

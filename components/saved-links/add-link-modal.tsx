@@ -71,13 +71,14 @@ type AddLinkModalProps = {
   isOpen: boolean;
   onClose: () => void;
   onCreated?: (link: CreatedSavedLink) => void;
+  connectionId?: string | null;
 };
 
 const DEFAULT_LABELS = ["Work", "Education", "Personal", "Entertainment"];
 const FALLBACK_PREVIEW =
   "https://images.unsplash.com/photo-1611162617474-5b21e879e113?q=80&w=400&h=225&auto=format&fit=crop";
 
-export default function AddLinkModal({ isOpen, onClose, onCreated }: AddLinkModalProps) {
+export default function AddLinkModal({ isOpen, onClose, onCreated, connectionId }: AddLinkModalProps) {
   const { locale } = useLanguage();
   const t = contentModalLocal[locale];
   const [mounted, setMounted] = useState(false);
@@ -205,6 +206,7 @@ export default function AddLinkModal({ isOpen, onClose, onCreated }: AddLinkModa
           title: title.trim(),
           labels: selectedLabelsValue,
           previewImage,
+          ...(connectionId ? { connectionId } : {}),
         }),
       });
 

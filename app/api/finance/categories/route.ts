@@ -1,6 +1,8 @@
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/db";
 import { getUserIdFromSession } from "@/lib/finance/session";
+import { resolveFinanceUserIds, buildUserWhereClause } from "@/lib/finance/partner-helper";
+import { seedDefaultCategories } from "@/lib/finance/default-categories";
 import { NextRequest, NextResponse } from "next/server";
 import { Prisma } from "@/lib/generated/prisma";
 
@@ -23,8 +25,20 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
     }
 
+    const view = req.nextUrl.searchParams.get("view");
+    const connectionId = req.nextUrl.searchParams.get("connectionId");
+    const resolved = await resolveFinanceUserIds(userId, view, connectionId);
+    if (!resolved) return NextResponse.json({ success: false, error: "Invalid connection" }, { status: 403 });
+
+    const whereClause = buildUserWhereClause(resolved.userIds, resolved.connectionId);
+
+    // Auto-seed default categories for new users (personal view only)
+    if (!view) {
+      await seedDefaultCategories(userId);
+    }
+
     const categories = await prisma.financeCategory.findMany({
-      where: { userId },
+      where: whereClause as any,
       orderBy: [
         { kind: "asc" },
         { parentId: "asc" },

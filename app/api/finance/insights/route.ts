@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth"
 import prisma from "@/lib/db"
 import { getUserIdFromSession } from "@/lib/finance/session"
+import { resolveFinanceUserIds, buildUserWhereClause } from "@/lib/finance/partner-helper"
 import { NextRequest, NextResponse } from "next/server"
 
 function monthRange(month: string) {
@@ -40,6 +41,13 @@ export async function GET(req: NextRequest) {
       )
     }
 
+    const view = req.nextUrl.searchParams.get("view")
+    const connectionIdParam = req.nextUrl.searchParams.get("connectionId")
+    const resolved = await resolveFinanceUserIds(userId, view, connectionIdParam)
+    if (!resolved) return NextResponse.json({ success: false, error: "Invalid connection" }, { status: 403 })
+
+    const wc = buildUserWhereClause(resolved.userIds, resolved.connectionId)
+
     const current = monthRange(month)
     const previousMonth = prevMonth(month)
     const previous = monthRange(previousMonth)
@@ -49,7 +57,7 @@ export async function GET(req: NextRequest) {
         prisma.financeTransaction.groupBy({
           by: ["currency", "type"],
           where: {
-            userId,
+            ...wc as any,
             date: { gte: current.start, lte: current.end },
             type: { in: ["INCOME", "EXPENSE"] },
           },
@@ -60,7 +68,7 @@ export async function GET(req: NextRequest) {
         prisma.financeTransaction.groupBy({
           by: ["currency", "type"],
           where: {
-            userId,
+            ...wc as any,
             date: { gte: previous.start, lte: previous.end },
             type: { in: ["INCOME", "EXPENSE"] },
           },
@@ -71,7 +79,7 @@ export async function GET(req: NextRequest) {
         prisma.financeTransaction.groupBy({
           by: ["currency", "categoryId"],
           where: {
-            userId,
+            ...wc as any,
             type: "EXPENSE",
             date: { gte: current.start, lte: current.end },
             categoryId: { not: null },
@@ -83,7 +91,7 @@ export async function GET(req: NextRequest) {
         prisma.financeTransaction.groupBy({
           by: ["currency", "categoryId"],
           where: {
-            userId,
+            ...wc as any,
             type: "EXPENSE",
             date: { gte: previous.start, lte: previous.end },
             categoryId: { not: null },
@@ -94,7 +102,7 @@ export async function GET(req: NextRequest) {
         prisma.financeTransaction.groupBy({
           by: ["currency", "categoryId"],
           where: {
-            userId,
+            ...wc as any,
             type: "INCOME",
             date: { gte: current.start, lte: current.end },
             categoryId: { not: null },
@@ -106,7 +114,7 @@ export async function GET(req: NextRequest) {
         prisma.financeTransaction.groupBy({
           by: ["currency", "categoryId"],
           where: {
-            userId,
+            ...wc as any,
             type: "INCOME",
             date: { gte: previous.start, lte: previous.end },
             categoryId: { not: null },
@@ -115,16 +123,16 @@ export async function GET(req: NextRequest) {
         }),
 
         prisma.financeBudget.findMany({
-          where: { userId, month },
+          where: { ...wc as any, month },
           include: { category: { select: { id: true, name: true } } },
         }),
 
         prisma.financeAccount.findMany({
-          where: { userId },
+          where: wc as any,
           select: {
             id: true,
             currency: true,
-            balance: true, // kalau di schema kamu namanya bukan "balance", ganti di sini
+            balance: true,
           },
         }),
       ])
@@ -138,7 +146,7 @@ export async function GET(req: NextRequest) {
     )
 
     const categories = await prisma.financeCategory.findMany({
-      where: { userId },
+      where: wc as any,
       select: { id: true, name: true, parentId: true },
     })
 

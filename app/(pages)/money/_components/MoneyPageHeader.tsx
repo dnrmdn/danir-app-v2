@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Download, FileUp, RefreshCcw } from "lucide-react";
+import { ViewModeToggle } from "@/components/partner/view-mode-toggle";
 
 type MoneyPageHeaderProps = {
   t: {
@@ -21,14 +22,24 @@ type MoneyPageHeaderProps = {
   handleImportClick: () => void;
   importInputRef: React.RefObject<HTMLInputElement | null>;
   handleImportFile: (file: File | null) => void;
+  locale?: "id" | "en";
+  partnerName?: string | null;
 };
 
-export function MoneyPageHeader({ t, month, setMonth, reloadMonthData, loading, exportUrl, handleImportClick, importInputRef, handleImportFile }: MoneyPageHeaderProps) {
+export function MoneyPageHeader({ t, month, setMonth, reloadMonthData, loading, exportUrl, handleImportClick, importInputRef, handleImportFile, locale = "id", partnerName }: MoneyPageHeaderProps) {
   return (
     <div className="mb-5 flex flex-col gap-4 sm:mb-8 lg:flex-row lg:items-end lg:justify-between">
       <div>
-        <div className="text-[10px] font-black uppercase tracking-[0.2em] text-primary sm:text-sm">{t.title}</div>
+        <div className="flex items-center gap-3">
+          <div className="text-[10px] font-black uppercase tracking-[0.2em] text-primary sm:text-sm">{t.title}</div>
+          <ViewModeToggle feature="MONEY" locale={locale} />
+        </div>
         <h1 className="text-2xl font-black tracking-tight sm:text-4xl lg:text-5xl">{t.subtitle}</h1>
+        {partnerName && (
+          <div className="mt-1.5 inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-xs font-medium text-primary dark:border-primary/20 dark:bg-primary/10 dark:text-primary">
+            👀 {locale === "id" ? `Berbagi dengan ${partnerName}` : `Shared with ${partnerName}`}
+          </div>
+        )}
         <p className="mt-1 text-xs text-muted-foreground sm:mt-2 sm:text-sm">{t.desc}</p>
       </div>
 

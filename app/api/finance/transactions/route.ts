@@ -3,6 +3,7 @@ import { Prisma } from "@/lib/generated/prisma";
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/db";
 import { getUserIdFromSession } from "@/lib/finance/session";
+import { resolveFinanceUserIds, buildUserWhereClause } from "@/lib/finance/partner-helper";
 import {
   assertPositiveDecimal,
   assertSufficientBalance,
@@ -28,10 +29,17 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const start = parseDateParam(searchParams.get("start"));
     const end = parseDateParam(searchParams.get("end"));
+    const view = searchParams.get("view");
+    const connectionId = searchParams.get("connectionId");
+
+    const resolved = await resolveFinanceUserIds(userId, view, connectionId);
+    if (!resolved) return NextResponse.json({ success: false, error: "Invalid connection" }, { status: 403 });
+
+    const whereClause = buildUserWhereClause(resolved.userIds, resolved.connectionId);
 
     const transactions = await prisma.financeTransaction.findMany({
       where: {
-        userId,
+        ...whereClause as any,
         ...(start || end
           ? {
             date: {

@@ -3,6 +3,7 @@ import prisma from "@/lib/db";
 import { Session } from "better-auth";
 import { NextRequest, NextResponse } from "next/server";
 import { startOfWeek, format, parseISO } from "date-fns";
+import { resolveFinanceUserIds } from "@/lib/finance/partner-helper";
 
 function getWeekStartString(input?: string | null) {
   const base = input ? parseISO(input) : new Date();
@@ -19,12 +20,18 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
     }
 
+    const view = req.nextUrl.searchParams.get("view");
+    const connectionId = req.nextUrl.searchParams.get("connectionId");
+    const resolved = await resolveFinanceUserIds(session.userId, view, connectionId);
+    if (!resolved) return NextResponse.json({ success: false, error: "Invalid connection" }, { status: 403 });
+
+    const targetUserId = resolved.userIds[0];
     const weekStart = getWeekStartString(req.nextUrl.searchParams.get("weekStart"));
 
     const week = await prisma.mealPlanWeek.findUnique({
       where: {
         userId_weekStart: {
-          userId: session.userId,
+          userId: targetUserId,
           weekStart,
         },
       },
@@ -38,7 +45,7 @@ export async function GET(req: NextRequest) {
     const history = await prisma.mealPlanEntry.groupBy({
       by: ['mealType', 'text'],
       where: {
-        week: { userId: session.userId },
+        week: { userId: targetUserId },
         text: { not: "" },
       },
       _count: {
@@ -100,6 +107,14 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
+
+    // Resolve partner view
+    const view = body.view || null;
+    const connectionIdParam = body.connectionId || null;
+    const resolved = await resolveFinanceUserIds(session.userId, view, connectionIdParam);
+    if (!resolved) return NextResponse.json({ success: false, error: "Invalid connection" }, { status: 403 });
+
+    const targetUserId = resolved.userIds[0];
     const weekStart = getWeekStartString(body.weekStart);
     const dayIndex = Number(body.dayIndex);
     const mealType = body.mealType as "BREAKFAST" | "SNACK" | "LUNCH" | "DINNER";
@@ -121,12 +136,12 @@ export async function POST(req: NextRequest) {
     const week = await prisma.mealPlanWeek.upsert({
       where: {
         userId_weekStart: {
-          userId: session.userId,
+          userId: targetUserId,
           weekStart,
         },
       },
       create: {
-        userId: session.userId,
+        userId: targetUserId,
         weekStart,
       },
       update: {},
