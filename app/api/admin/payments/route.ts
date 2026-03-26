@@ -82,39 +82,68 @@ export async function PATCH(req: NextRequest) {
       );
     }
 
-    const payment = await prisma.paymentRequest.update({
-      where: { id: paymentId },
-      data: {
-        status,
-        notes: notes ?? null,
-        reviewedAt: new Date(),
-        reviewedBy: authResult.userId,
-      },
-      include: {
-        user: {
-          select: { id: true, name: true, email: true },
-        },
-      },
-    });
+    // Use a transaction to ensure both PaymentRequest and User are updated atomically
+    const result = await prisma.$transaction(async (tx) => {
+      // 1. Fetch current payment request and verify it's still PENDING
+      const current = await tx.paymentRequest.findUnique({
+        where: { id: paymentId },
+        select: { id: true, status: true, userId: true },
+      });
 
-    // If approved, upgrade the user to PRO plan
-    if (status === "APPROVED") {
-      await prisma.user.update({
-        where: { id: payment.userId },
+      if (!current) {
+        throw new Error("Payment request not found");
+      }
+
+      if (current.status !== "PENDING") {
+        throw new Error(`Cannot process payment with status ${current.status}`);
+      }
+
+      // 2. Update PaymentRequest status and reviewer info
+      const updatedPayment = await tx.paymentRequest.update({
+        where: { id: paymentId },
         data: {
-          planType: "PRO",
-          subscriptionStatus: "ACTIVE",
-          proStartedAt: new Date(),
+          status,
+          notes: notes?.trim() || null,
+          reviewedAt: new Date(),
+          reviewedBy: authResult.userId,
+        },
+        include: {
+          user: {
+            select: { id: true, name: true, email: true },
+          },
         },
       });
-    }
 
-    return NextResponse.json({ success: true, data: payment });
-  } catch (error) {
+      // 3. If approved, upgrade the related user to PRO
+      if (status === "APPROVED") {
+        const now = new Date();
+        const thirtyDaysLater = new Date(now);
+        thirtyDaysLater.setDate(thirtyDaysLater.getDate() + 30);
+
+        await tx.user.update({
+          where: { id: current.userId },
+          data: {
+            planType: "PRO",
+            subscriptionStatus: "ACTIVE",
+            proStartedAt: now,
+            subscriptionEndsAt: thirtyDaysLater,
+          },
+        });
+      }
+
+      return updatedPayment;
+    });
+
+    return NextResponse.json({ success: true, data: result });
+  } catch (error: any) {
     console.error("admin payments PATCH error:", error);
+    const errorMessage = error.message || "Internal Server Error";
+    const status = error.message && error.message.includes("not found") ? 404 : 
+                   error.message && error.message.includes("Cannot process") ? 400 : 500;
+    
     return NextResponse.json(
-      { success: false, error: "Internal Server Error" },
-      { status: 500 }
+      { success: false, error: errorMessage },
+      { status }
     );
   }
 }

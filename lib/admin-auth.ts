@@ -45,7 +45,8 @@ export async function requireAdminSession(
   req: NextRequest
 ): Promise<{ userId: string; role: "ADMIN" } | NextResponse> {
   try {
-    const session = await auth.api.getSession({ headers: req.headers });
+    const headersList = await headers();
+    const session = await auth.api.getSession({ headers: headersList });
 
     if (!session?.user?.id) {
       return NextResponse.json(

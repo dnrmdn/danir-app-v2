@@ -56,30 +56,58 @@ export function PaymentsTable({ payments: initialPayments }: { payments: any[] }
   const [processingId, setProcessingId] = useState<string | null>(null);
   const router = useRouter();
 
-  const handleAction = async (paymentId: string, status: "APPROVED" | "REJECTED") => {
-    if (!confirm(`Are you sure you want to ${status.toLowerCase()} this payment?`)) return;
+  const executeAction = async (paymentId: string, status: "APPROVED" | "REJECTED") => {
+    // Using empty notes since toast notifications don't typically support input prompts natively
+    const notes = "";
 
     setProcessingId(paymentId);
     try {
       const res = await fetch("/api/admin/payments", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ paymentId, status }),
+        body: JSON.stringify({ paymentId, status, notes }),
       });
 
       const json = await res.json();
-      if (!res.ok || !json.success) throw new Error(json.error || "Failed to update payment");
+      if (!res.ok || !json.success) {
+        throw new Error(json.error || `Failed to ${status.toLowerCase()} payment`);
+      }
 
-      toast.success(`Payment ${status.toLowerCase()} successfully`);
+      if (status === "APPROVED") {
+        toast.success("Payment approved successfully");
+      } else {
+        toast.error("Payment rejected successfully");
+      }
       
       // Update local state
-      setPayments(prev => prev.map(p => p.id === paymentId ? { ...p, status } : p));
+      setPayments(prev => prev.map(p => p.id === paymentId ? { ...p, status, notes: notes || p.notes } : p));
       
-      router.refresh(); // Refresh server props
+      router.refresh(); // Refresh server data/stats
     } catch (err: any) {
-      toast.error(err.message);
+      console.error("Action error:", err);
+      toast.error(err.message || "An unexpected error occurred");
     } finally {
       setProcessingId(null);
+    }
+  };
+
+  const handleAction = (paymentId: string, status: "APPROVED" | "REJECTED") => {
+    if (status === "APPROVED") {
+      toast.success("Are you sure you want to APPROVE this?", {
+        action: {
+          label: "Approve",
+          onClick: () => executeAction(paymentId, "APPROVED"),
+        },
+        duration: 5000,
+      });
+    } else {
+      toast.error("Are you sure you want to REJECT this?", {
+        action: {
+          label: "Reject",
+          onClick: () => executeAction(paymentId, "REJECTED"),
+        },
+        duration: 5000,
+      });
     }
   };
 
@@ -118,7 +146,7 @@ export function PaymentsTable({ payments: initialPayments }: { payments: any[] }
               </td>
               <td className="px-5 py-4 text-sm font-medium text-foreground dark:text-white">
                 <div className="flex flex-col">
-                  <span>{formatAmount(payment.amount, payment.currency)}</span>
+                  <span suppressHydrationWarning>{formatAmount(payment.amount, payment.currency)}</span>
                   <span className="text-[10px] text-muted-foreground uppercase">{payment.paymentMethod}</span>
                 </div>
               </td>
@@ -134,7 +162,7 @@ export function PaymentsTable({ payments: initialPayments }: { payments: any[] }
                   <span className="text-xs text-muted-foreground select-none">—</span>
                 )}
               </td>
-              <td className="px-5 py-4 text-[11px] text-muted-foreground dark:text-slate-500 hidden lg:table-cell">
+              <td suppressHydrationWarning className="px-5 py-4 text-[11px] text-muted-foreground dark:text-slate-500 hidden lg:table-cell">
                 {formatDate(payment.submittedAt)}
               </td>
               <td className="px-5 py-4">
