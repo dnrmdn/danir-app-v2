@@ -1,8 +1,11 @@
 import { auth } from "@/lib/auth"
 import prisma from "@/lib/db"
+import { Prisma } from "@/lib/generated/prisma"
 import { getUserIdFromSession } from "@/lib/finance/session"
-import { resolveFinanceUserIds, buildUserWhereClause } from "@/lib/finance/partner-helper"
+import { buildUserWhereClause } from "@/lib/finance/partner-helper"
 import { NextRequest, NextResponse } from "next/server"
+import { createPlanLimitResponse, isMonthBeforeDate } from "@/lib/plan"
+import { resolvePartnerAccess } from "@/lib/partner-access"
 
 function monthRange(month: string) {
   const [y, m] = month.split("-").map((v) => Number(v))
@@ -24,27 +27,46 @@ export async function GET(req: NextRequest) {
 
     const view = req.nextUrl.searchParams.get("view")
     const connectionId = req.nextUrl.searchParams.get("connectionId")
-    const resolved = await resolveFinanceUserIds(userId, view, connectionId)
+    const resolved = await resolvePartnerAccess({
+      userId,
+      view,
+      connectionId,
+      feature: "MONEY",
+    })
     if (!resolved) return NextResponse.json({ success: false, error: "Invalid connection" }, { status: 403 })
+    if (resolved.kind === "locked") {
+      return NextResponse.json(resolved.payload, { status: resolved.status })
+    }
 
-    const whereClause = buildUserWhereClause(resolved.userIds, resolved.connectionId)
+    if (resolved.access.moneyHistoryStartAt && isMonthBeforeDate(month, resolved.access.moneyHistoryStartAt)) {
+      return NextResponse.json(
+        createPlanLimitResponse(
+          `Free plan can only view money history from the last ${resolved.access.moneyHistoryMonths} months. Upgrade to Pro to open older months.`,
+          resolved.access
+        ),
+        { status: 403 }
+      )
+    }
+
+    const whereClause: Prisma.FinanceBudgetWhereInput = buildUserWhereClause(resolved.userIds, resolved.connectionId)
 
     const budgets = await prisma.financeBudget.findMany({
-      where: { ...whereClause as any, month },
+      where: { ...whereClause, month },
       include: { category: true },
       orderBy: [{ currency: "asc" }, { category: { name: "asc" } }],
     })
 
     const { start, end } = monthRange(month)
+    const spentWhere: Prisma.FinanceTransactionWhereInput = {
+      ...buildUserWhereClause(resolved.userIds, resolved.connectionId),
+      type: "EXPENSE",
+      date: { gte: start, lte: end },
+      categoryId: { not: null },
+    }
 
     const spent = await prisma.financeTransaction.groupBy({
       by: ["categoryId", "currency"],
-      where: {
-        ...whereClause as any,
-        type: "EXPENSE",
-        date: { gte: start, lte: end },
-        categoryId: { not: null },
-      },
+      where: spentWhere,
       _sum: { amount: true },
     })
 

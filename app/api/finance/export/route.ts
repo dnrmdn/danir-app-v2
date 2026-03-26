@@ -3,6 +3,7 @@ import prisma from "@/lib/db"
 import { Prisma } from "@/lib/generated/prisma"
 import { getUserIdFromSession } from "@/lib/finance/session"
 import { NextRequest, NextResponse } from "next/server"
+import { createPlanLimitResponse, getPlanAccessForUserId, isMoneyDateRangeRestricted } from "@/lib/plan"
 
 function parseDate(value: string | null) {
   if (!value) return null
@@ -24,10 +25,31 @@ export async function GET(req: NextRequest) {
 
     const start = parseDate(req.nextUrl.searchParams.get("start"))
     const end = parseDate(req.nextUrl.searchParams.get("end"))
+    const access = await getPlanAccessForUserId(userId)
+
+    if (!access) {
+      return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 })
+    }
+
+    if (isMoneyDateRangeRestricted(access, start, end)) {
+      return NextResponse.json(
+        createPlanLimitResponse(
+          `Free plan can only export money history from the last ${access.moneyHistoryMonths} months. Upgrade to Pro to export older history.`,
+          access
+        ),
+        { status: 403 }
+      )
+    }
 
     const where: Prisma.FinanceTransactionWhereInput = { userId }
     if (start || end) {
-      where.date = { ...(start ? { gte: start } : {}), ...(end ? { lte: end } : {}) }
+      where.date = {
+        ...(access.moneyHistoryStartAt ? { gte: access.moneyHistoryStartAt } : {}),
+        ...(start ? { gte: start } : {}),
+        ...(end ? { lte: end } : {}),
+      }
+    } else if (access.moneyHistoryStartAt) {
+      where.date = { gte: access.moneyHistoryStartAt }
     }
 
     const txs = await prisma.financeTransaction.findMany({

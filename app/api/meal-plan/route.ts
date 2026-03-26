@@ -3,7 +3,7 @@ import prisma from "@/lib/db";
 import { Session } from "better-auth";
 import { NextRequest, NextResponse } from "next/server";
 import { startOfWeek, format, parseISO } from "date-fns";
-import { resolveFinanceUserIds } from "@/lib/finance/partner-helper";
+import { resolvePartnerAccess } from "@/lib/partner-access";
 
 function getWeekStartString(input?: string | null) {
   const base = input ? parseISO(input) : new Date();
@@ -22,8 +22,16 @@ export async function GET(req: NextRequest) {
 
     const view = req.nextUrl.searchParams.get("view");
     const connectionId = req.nextUrl.searchParams.get("connectionId");
-    const resolved = await resolveFinanceUserIds(session.userId, view, connectionId);
+    const resolved = await resolvePartnerAccess({
+      userId: session.userId,
+      view,
+      connectionId,
+      feature: "MEAL",
+    });
     if (!resolved) return NextResponse.json({ success: false, error: "Invalid connection" }, { status: 403 });
+    if (resolved.kind === "locked") {
+      return NextResponse.json(resolved.payload, { status: resolved.status });
+    }
 
     const targetUserId = resolved.userIds[0];
     const weekStart = getWeekStartString(req.nextUrl.searchParams.get("weekStart"));
@@ -111,8 +119,16 @@ export async function POST(req: NextRequest) {
     // Resolve partner view
     const view = body.view || null;
     const connectionIdParam = body.connectionId || null;
-    const resolved = await resolveFinanceUserIds(session.userId, view, connectionIdParam);
+    const resolved = await resolvePartnerAccess({
+      userId: session.userId,
+      view,
+      connectionId: connectionIdParam,
+      feature: "MEAL",
+    });
     if (!resolved) return NextResponse.json({ success: false, error: "Invalid connection" }, { status: 403 });
+    if (resolved.kind === "locked") {
+      return NextResponse.json(resolved.payload, { status: resolved.status });
+    }
 
     const targetUserId = resolved.userIds[0];
     const weekStart = getWeekStartString(body.weekStart);

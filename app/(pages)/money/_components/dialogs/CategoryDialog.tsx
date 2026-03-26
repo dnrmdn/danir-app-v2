@@ -1,5 +1,5 @@
 import type { Dispatch, SetStateAction } from "react";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -39,13 +39,16 @@ export function CategoryDialog({
     return all.filter((c) => c.parentId === null);
   }, [form.kind, incomeCategories, expenseCategories]);
 
-  const [level, setLevel] = useState<"parent" | "sub">("sub");
+  const [level, setLevel] = useState<"parent" | "sub">(form.parentId ? "sub" : "parent");
 
-  useEffect(() => {
-    if (open) {
+  const handleOpenChange = (nextOpen: boolean) => {
+    if (nextOpen) {
       setLevel(form.parentId ? "sub" : "parent");
+    } else {
+      setLevel("parent");
     }
-  }, [open, form.parentId]);
+    onOpenChange(nextOpen);
+  };
 
   const handleTabChange = (val: string) => {
     const newLevel = val as "parent" | "sub";
@@ -56,7 +59,7 @@ export function CategoryDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-md rounded-[1.25rem] border-border bg-card p-4 text-foreground dark:border-white/10 dark:bg-[#07111f] dark:text-white sm:rounded-3xl sm:p-6">
         <DialogHeader>
           <DialogTitle className="text-base font-black sm:text-lg">{t.addCategory}</DialogTitle>

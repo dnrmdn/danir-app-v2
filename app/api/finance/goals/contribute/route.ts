@@ -1,6 +1,5 @@
 import { auth } from "@/lib/auth"
 import { NextRequest, NextResponse } from "next/server";
-import { Prisma } from "@/lib/generated/prisma";
 import prisma from "@/lib/db";
 import { getUserIdFromSession } from "@/lib/finance/session";
 import { toDecimal } from "@/lib/finance/money";
@@ -57,8 +56,9 @@ export async function POST(req: NextRequest) {
     })
 
     return NextResponse.json({ success: true, data: result })
-  } catch (error: any) {
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Internal Server Error";
     console.error("finance goals contribute POST error:", error)
-    return NextResponse.json({ success: false, error: error.message || "Internal Server Error" }, { status: error.message ? 400 : 500 })
+    return NextResponse.json({ success: false, error: message }, { status: error instanceof Error ? 400 : 500 })
   }
 }

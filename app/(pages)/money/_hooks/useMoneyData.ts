@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { format } from "date-fns";
 import { useUserSession } from "@/hooks/useUserSession";
 import { useLanguage } from "@/components/language-provider";
+import { usePlanAccess } from "@/hooks/usePlanAccess";
 import { usePartnerStore } from "@/lib/store/partner-store";
 import {
   FinanceAccount,
@@ -22,9 +23,10 @@ import { monthRange, monthString, showDeleteConfirmToast, showErrorToast, showSu
 export function useMoneyData() {
   const { session } = useUserSession();
   const { locale } = useLanguage();
+  const { plan } = usePlanAccess();
   const t = contentMoneyLocal[locale];
 
-  const { viewMode: partnerViewMode, fetchConnection, fetchFeatureAccess, getActiveConnectionId, isFeatureShared, connection } = usePartnerStore();
+  const { viewMode: partnerViewMode, setViewMode, fetchConnection, fetchFeatureAccess, getActiveConnectionId, isFeatureShared, connection } = usePartnerStore();
 
   const partnerName = useMemo(() => {
     if (!connection || !session || partnerViewMode !== "shared" || !isFeatureShared("MONEY")) return null;
@@ -122,6 +124,23 @@ export function useMoneyData() {
   const incomeCategories = useMemo(() => categories.filter((c) => c.kind === "INCOME"), [categories]);
 
   const monthStartEnd = useMemo(() => monthRange(month), [month]);
+  const moneyHistoryStartAt = useMemo(() => {
+    if (!plan?.moneyHistoryStartAt) return null;
+    return new Date(plan.moneyHistoryStartAt);
+  }, [plan?.moneyHistoryStartAt]);
+  const isHistoryLocked = useMemo(() => {
+    if (!moneyHistoryStartAt) return false;
+    const [year, monthIndex] = month.split("-").map(Number);
+    const selectedMonthStart = new Date(year, monthIndex - 1, 1);
+    const minMonthStart = new Date(moneyHistoryStartAt.getFullYear(), moneyHistoryStartAt.getMonth(), 1);
+    return selectedMonthStart < minMonthStart;
+  }, [moneyHistoryStartAt, month]);
+  const historyLimitMessage = useMemo(() => {
+    if (!isHistoryLocked || !plan?.moneyHistoryMonths) return null;
+    return locale === "id"
+      ? `Paket Free hanya bisa membuka riwayat money ${plan.moneyHistoryMonths} bulan terakhir. Upgrade ke Pro untuk melihat bulan yang lebih lama.`
+      : `Free plan can only open money history from the last ${plan.moneyHistoryMonths} months. Upgrade to Pro to view older months.`;
+  }, [isHistoryLocked, locale, plan?.moneyHistoryMonths]);
 
   const reloadCore = useCallback(async () => {
     setLoading(true);
@@ -152,6 +171,14 @@ export function useMoneyData() {
   const reloadMonthData = useCallback(async () => {
     setLoading(true);
     setError(null);
+    if (isHistoryLocked) {
+      setTransactions([]);
+      setBudgets([]);
+      setInsights(null);
+      setLoading(false);
+      return;
+    }
+    
     try {
       const start = monthStartEnd.start.toISOString();
       const end = monthStartEnd.end.toISOString();
@@ -163,21 +190,30 @@ export function useMoneyData() {
       ]);
 
       if (tx.success) setTransactions(tx.data);
+      else setTransactions([]);
       if (b.success) setBudgets(b.data);
+      else setBudgets([]);
       if (ins.success) setInsights(ins.data);
+      else setInsights(null);
     } catch {
       setError(t.errorLoadMonth);
     } finally {
       setLoading(false);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [month, monthStartEnd, t.errorLoadMonth, partnerQs]);
+  }, [isHistoryLocked, month, monthStartEnd, t.errorLoadMonth, partnerQs]);
 
   useEffect(() => {
     if (!session) return;
     fetchConnection().then(() => fetchFeatureAccess());
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session]);
+
+  useEffect(() => {
+    if (!plan?.hasSharedFeatures && partnerViewMode === "shared") {
+      setViewMode("personal");
+    }
+  }, [partnerViewMode, plan?.hasSharedFeatures, setViewMode]);
 
   useEffect(() => {
     if (!session) return;
@@ -657,6 +693,7 @@ export function useMoneyData() {
     locale,
     session,
     partnerName,
+    plan,
     active,
     setActive,
     month,
@@ -707,6 +744,8 @@ export function useMoneyData() {
     expenseCategories,
     incomeCategories,
     monthStartEnd,
+    isHistoryLocked,
+    historyLimitMessage,
     reloadMonthData,
     openNewTransaction,
     openEditTransaction,

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/db";
 import { headers } from "next/headers";
+import { requireSharedFeaturePlan } from "@/lib/partner-access";
 
 export const dynamic = "force-dynamic";
 
@@ -64,6 +65,11 @@ export async function PUT(req: Request) {
         }
 
         const userId = session.user.id;
+        const sharedPlan = await requireSharedFeaturePlan(userId, feature);
+
+        if (sharedPlan && "payload" in sharedPlan) {
+            return NextResponse.json(sharedPlan.payload, { status: sharedPlan.status });
+        }
 
         const connection = await prisma.partnerConnection.findFirst({
             where: {

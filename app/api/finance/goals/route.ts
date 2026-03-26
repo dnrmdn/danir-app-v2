@@ -1,5 +1,6 @@
 import { auth } from "@/lib/auth"
 import prisma from "@/lib/db"
+import { Prisma } from "@/lib/generated/prisma"
 import { getUserIdFromSession } from "@/lib/finance/session"
 import { resolveFinanceUserIds, buildUserWhereClause } from "@/lib/finance/partner-helper"
 import { NextRequest, NextResponse } from "next/server"
@@ -21,9 +22,9 @@ export async function GET(req: NextRequest) {
     const resolved = await resolveFinanceUserIds(userId, view, connectionId)
     if (!resolved) return NextResponse.json({ success: false, error: "Invalid connection" }, { status: 403 })
 
-    const whereClause = buildUserWhereClause(resolved.userIds, resolved.connectionId)
+    const whereClause: Prisma.FinanceGoalWhereInput = buildUserWhereClause(resolved.userIds, resolved.connectionId)
 
-    const goals = await prisma.financeGoal.findMany({ where: whereClause as any, orderBy: { createdAt: "desc" } })
+    const goals = await prisma.financeGoal.findMany({ where: whereClause, orderBy: { createdAt: "desc" } })
     return NextResponse.json({ success: true, data: goals })
   } catch (error) {
     console.error("finance goals GET error:", error)
@@ -149,8 +150,9 @@ export async function DELETE(req: NextRequest) {
     })
 
     return NextResponse.json({ success: true })
-  } catch (error: any) {
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Internal Server Error"
     console.error("finance goals DELETE error:", error)
-    return NextResponse.json({ success: false, error: error.message || "Internal Server Error" }, { status: 500 })
+    return NextResponse.json({ success: false, error: message }, { status: 500 })
   }
 }

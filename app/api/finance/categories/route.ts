@@ -30,7 +30,7 @@ export async function GET(req: NextRequest) {
     const resolved = await resolveFinanceUserIds(userId, view, connectionId);
     if (!resolved) return NextResponse.json({ success: false, error: "Invalid connection" }, { status: 403 });
 
-    const whereClause = buildUserWhereClause(resolved.userIds, resolved.connectionId);
+    const whereClause: Prisma.FinanceCategoryWhereInput = buildUserWhereClause(resolved.userIds, resolved.connectionId);
 
     // Auto-seed default categories for new users (personal view only)
     if (!view) {
@@ -38,7 +38,7 @@ export async function GET(req: NextRequest) {
     }
 
     const categories = await prisma.financeCategory.findMany({
-      where: whereClause as any,
+      where: whereClause,
       orderBy: [
         { kind: "asc" },
         { parentId: "asc" },

@@ -1,4 +1,5 @@
-import prisma from "@/lib/db";
+import { resolvePartnerAccess } from "@/lib/partner-access";
+import type { PartnerFeatureKey } from "@/types/partner";
 
 /**
  * Resolves the userId to use in finance queries based on the view context.
@@ -12,32 +13,24 @@ import prisma from "@/lib/db";
 export async function resolveFinanceUserIds(
   userId: string,
   view: string | null,
-  connectionId: string | null
+  connectionId: string | null,
+  feature: PartnerFeatureKey = "MONEY"
 ): Promise<{ userIds: string[]; connectionId: string | null } | null> {
-  if (view === "shared" && connectionId) {
-    const conn = await prisma.partnerConnection.findFirst({
-      where: {
-        id: connectionId,
-        status: "ACCEPTED",
-        OR: [
-          { userAId: userId },
-          { userBId: userId },
-        ],
-      },
-    });
+  const resolved = await resolvePartnerAccess({
+    userId,
+    view,
+    connectionId,
+    feature,
+  });
 
-    if (!conn) return null;
-
-    // Return ONLY the partner's userId — the user sees the partner's data
-    const partnerId = conn.userAId === userId ? conn.userBId : conn.userAId;
-    return {
-      userIds: [partnerId],
-      connectionId: conn.id,
-    };
+  if (!resolved || resolved.kind === "locked") {
+    return null;
   }
 
-  // Personal view (default)
-  return { userIds: [userId], connectionId: null };
+  return {
+    userIds: resolved.userIds,
+    connectionId: resolved.connectionId,
+  };
 }
 
 /**
@@ -48,8 +41,8 @@ export async function resolveFinanceUserIds(
  */
 export function buildUserWhereClause(
   userIds: string[],
-  _connectionId: string | null
+  connectionId: string | null
 ): { userId: string } {
+  void connectionId;
   return { userId: userIds[0] };
 }
-

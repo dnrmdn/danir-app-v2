@@ -240,8 +240,8 @@ export function GroceriesView() {
             )}
             <p className="mt-1 text-xs text-muted-foreground sm:mt-2 sm:text-sm">{t.desc}</p>
           </div>
-          <Button variant="ghost" className="h-10 text-cyan-600 dark:text-cyan-300 hover:bg-cyan-50 dark:hover:bg-cyan-950/30" onClick={handleAddCategory} disabled={saving}>
-            <Plus className="mr-2 h-4 w-4" />
+          <Button variant="ghost" className="h-10 text-cyan-600 text-xs sm:text-xl dark:text-cyan-300 hover:bg-cyan-50 dark:hover:bg-cyan-950/30" onClick={handleAddCategory} disabled={saving}>
+            <Plus className="h-4 w-4" />
             {t.addGroup}
           </Button>
         </div>

@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/db";
 import { headers } from "next/headers";
+import { getPlanAccessForUserId, createPlanLimitResponse } from "@/lib/plan";
+import { resolvePartnerAccess } from "@/lib/partner-access";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -28,23 +30,48 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: "URL, Title, and Labels are required" }, { status: 400 });
         }
 
+        const access = await getPlanAccessForUserId(session.user.id);
+        if (!access) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
+        const currentLinkCount = await prisma.savedLink.count({
+            where: { userId: session.user.id },
+        });
+
+        if (access.savedLinksLimit !== null && currentLinkCount >= access.savedLinksLimit) {
+            return NextResponse.json(
+                createPlanLimitResponse(
+                    `Free plan can only save up to ${access.savedLinksLimit} links. Upgrade to Pro to keep adding new links.`,
+                    access,
+                    {
+                        currentCount: currentLinkCount,
+                        limit: access.savedLinksLimit,
+                    }
+                ),
+                { status: 403 }
+            );
+        }
+
         // Validate connectionId if provided
         let validConnectionId: string | null = null;
         if (connectionId) {
-            const conn = await prisma.partnerConnection.findFirst({
-                where: {
-                    id: connectionId,
-                    status: "ACCEPTED",
-                    OR: [
-                        { userAId: session.user.id },
-                        { userBId: session.user.id }
-                    ]
-                }
+            const resolved = await resolvePartnerAccess({
+                userId: session.user.id,
+                view: "shared",
+                connectionId,
+                feature: "LINKS",
             });
-            if (!conn) {
+
+            if (!resolved) {
                 return NextResponse.json({ error: "Invalid partner connection" }, { status: 403 });
             }
-            validConnectionId = conn.id;
+
+            if (resolved.kind === "locked") {
+                return NextResponse.json(resolved.payload, { status: resolved.status });
+            }
+
+            validConnectionId = resolved.connectionId;
         }
 
         const savedLink = await prisma.savedLink.create({
@@ -94,25 +121,22 @@ export async function GET(req: Request) {
         let whereClause;
 
         if (view === "shared" && connectionId) {
-            // Verify the user belongs to this connection
-            const conn = await prisma.partnerConnection.findFirst({
-                where: {
-                    id: connectionId,
-                    status: "ACCEPTED",
-                    OR: [
-                        { userAId: session.user.id },
-                        { userBId: session.user.id }
-                    ]
-                }
+            const resolved = await resolvePartnerAccess({
+                userId: session.user.id,
+                view,
+                connectionId,
+                feature: "LINKS",
             });
 
-            if (!conn) {
+            if (!resolved) {
                 return NextResponse.json({ error: "Invalid connection" }, { status: 403 });
             }
 
-            // Shared view: show the PARTNER's links (not current user's)
-            const partnerId = conn.userAId === session.user.id ? conn.userBId : conn.userAId;
-            whereClause = { userId: partnerId };
+            if (resolved.kind === "locked") {
+                return NextResponse.json(resolved.payload, { status: resolved.status });
+            }
+
+            whereClause = { userId: resolved.userIds[0] };
         } else {
             // Personal view: only show links belonging to this user
             whereClause = { userId: session.user.id };

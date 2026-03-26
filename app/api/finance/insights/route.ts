@@ -1,8 +1,11 @@
 import { auth } from "@/lib/auth"
 import prisma from "@/lib/db"
+import { Prisma } from "@/lib/generated/prisma"
 import { getUserIdFromSession } from "@/lib/finance/session"
-import { resolveFinanceUserIds, buildUserWhereClause } from "@/lib/finance/partner-helper"
+import { buildUserWhereClause } from "@/lib/finance/partner-helper"
 import { NextRequest, NextResponse } from "next/server"
+import { createPlanLimitResponse, isMonthBeforeDate } from "@/lib/plan"
+import { resolvePartnerAccess } from "@/lib/partner-access"
 
 function monthRange(month: string) {
   const [y, m] = month.split("-").map((v) => Number(v))
@@ -43,92 +46,118 @@ export async function GET(req: NextRequest) {
 
     const view = req.nextUrl.searchParams.get("view")
     const connectionIdParam = req.nextUrl.searchParams.get("connectionId")
-    const resolved = await resolveFinanceUserIds(userId, view, connectionIdParam)
+    const resolved = await resolvePartnerAccess({
+      userId,
+      view,
+      connectionId: connectionIdParam,
+      feature: "MONEY",
+    })
     if (!resolved) return NextResponse.json({ success: false, error: "Invalid connection" }, { status: 403 })
+    if (resolved.kind === "locked") {
+      return NextResponse.json(resolved.payload, { status: resolved.status })
+    }
 
-    const wc = buildUserWhereClause(resolved.userIds, resolved.connectionId)
+    if (resolved.access.moneyHistoryStartAt && isMonthBeforeDate(month, resolved.access.moneyHistoryStartAt)) {
+      return NextResponse.json(
+        createPlanLimitResponse(
+          `Free plan can only view money history from the last ${resolved.access.moneyHistoryMonths} months. Upgrade to Pro to open older months.`,
+          resolved.access
+        ),
+        { status: 403 }
+      )
+    }
 
+    const baseWhere = buildUserWhereClause(resolved.userIds, resolved.connectionId)
     const current = monthRange(month)
     const previousMonth = prevMonth(month)
     const previous = monthRange(previousMonth)
+    const currentTotalsWhere: Prisma.FinanceTransactionWhereInput = {
+      ...baseWhere,
+      date: { gte: current.start, lte: current.end },
+      type: { in: ["INCOME", "EXPENSE"] },
+    }
+    const previousTotalsWhere: Prisma.FinanceTransactionWhereInput = {
+      ...baseWhere,
+      date: { gte: previous.start, lte: previous.end },
+      type: { in: ["INCOME", "EXPENSE"] },
+    }
+    const currentExpenseWhere: Prisma.FinanceTransactionWhereInput = {
+      ...baseWhere,
+      type: "EXPENSE",
+      date: { gte: current.start, lte: current.end },
+      categoryId: { not: null },
+    }
+    const previousExpenseWhere: Prisma.FinanceTransactionWhereInput = {
+      ...baseWhere,
+      type: "EXPENSE",
+      date: { gte: previous.start, lte: previous.end },
+      categoryId: { not: null },
+    }
+    const currentIncomeWhere: Prisma.FinanceTransactionWhereInput = {
+      ...baseWhere,
+      type: "INCOME",
+      date: { gte: current.start, lte: current.end },
+      categoryId: { not: null },
+    }
+    const previousIncomeWhere: Prisma.FinanceTransactionWhereInput = {
+      ...baseWhere,
+      type: "INCOME",
+      date: { gte: previous.start, lte: previous.end },
+      categoryId: { not: null },
+    }
+    const budgetWhere: Prisma.FinanceBudgetWhereInput = { ...baseWhere, month }
+    const accountWhere: Prisma.FinanceAccountWhereInput = baseWhere
+    const categoryWhere: Prisma.FinanceCategoryWhereInput = baseWhere
 
     const [totals, totalsPrev, expenseByCategory, expenseByCategoryPrevMonth, incomeByCategory, incomeByCategoryPrevMonth, budgets, accounts] =
       await Promise.all([
         prisma.financeTransaction.groupBy({
           by: ["currency", "type"],
-          where: {
-            ...wc as any,
-            date: { gte: current.start, lte: current.end },
-            type: { in: ["INCOME", "EXPENSE"] },
-          },
+          where: currentTotalsWhere,
           _sum: { amount: true },
           _count: { id: true },
         }),
 
         prisma.financeTransaction.groupBy({
           by: ["currency", "type"],
-          where: {
-            ...wc as any,
-            date: { gte: previous.start, lte: previous.end },
-            type: { in: ["INCOME", "EXPENSE"] },
-          },
+          where: previousTotalsWhere,
           _sum: { amount: true },
           _count: { id: true },
         }),
 
         prisma.financeTransaction.groupBy({
           by: ["currency", "categoryId"],
-          where: {
-            ...wc as any,
-            type: "EXPENSE",
-            date: { gte: current.start, lte: current.end },
-            categoryId: { not: null },
-          },
+          where: currentExpenseWhere,
           _sum: { amount: true },
           orderBy: { _sum: { amount: "desc" } },
         }),
 
         prisma.financeTransaction.groupBy({
           by: ["currency", "categoryId"],
-          where: {
-            ...wc as any,
-            type: "EXPENSE",
-            date: { gte: previous.start, lte: previous.end },
-            categoryId: { not: null },
-          },
+          where: previousExpenseWhere,
           _sum: { amount: true },
         }),
 
         prisma.financeTransaction.groupBy({
           by: ["currency", "categoryId"],
-          where: {
-            ...wc as any,
-            type: "INCOME",
-            date: { gte: current.start, lte: current.end },
-            categoryId: { not: null },
-          },
+          where: currentIncomeWhere,
           _sum: { amount: true },
           orderBy: { _sum: { amount: "desc" } },
         }),
 
         prisma.financeTransaction.groupBy({
           by: ["currency", "categoryId"],
-          where: {
-            ...wc as any,
-            type: "INCOME",
-            date: { gte: previous.start, lte: previous.end },
-            categoryId: { not: null },
-          },
+          where: previousIncomeWhere,
           _sum: { amount: true },
         }),
 
         prisma.financeBudget.findMany({
-          where: { ...wc as any, month },
+          where: budgetWhere,
           include: { category: { select: { id: true, name: true } } },
         }),
 
         prisma.financeAccount.findMany({
-          where: wc as any,
+          where: accountWhere,
           select: {
             id: true,
             currency: true,
@@ -137,16 +166,8 @@ export async function GET(req: NextRequest) {
         }),
       ])
 
-    const categoryIds = Array.from(
-      new Set(
-        expenseByCategory
-          .map((x) => x.categoryId)
-          .filter(Boolean) as number[]
-      )
-    )
-
     const categories = await prisma.financeCategory.findMany({
-      where: wc as any,
+      where: categoryWhere,
       select: { id: true, name: true, parentId: true },
     })
 
@@ -304,7 +325,7 @@ export async function GET(req: NextRequest) {
             amount: Number(x._sum.amount || 0),
           };
         }),
-        categoryMap: Array.from(categoryMap.entries()).map(([k, v]) => ({ id: v.id, name: v.name, parentId: v.parentId })),
+        categoryMap: Array.from(categoryMap.values()).map((value) => ({ id: value.id, name: value.name, parentId: value.parentId })),
         budgetUsage,
       },
     })

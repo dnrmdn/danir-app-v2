@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import { ArrowRight, CalendarDays, CheckCircle2, CreditCard, ImageIcon, Link2, Sparkles, Trophy, UtensilsCrossed } from "lucide-react";
 import { useLanguage } from "@/components/language-provider";
 import { PwaInstallPrompt } from "@/components/pwa-install-prompt";
 import { useUserSession } from "@/hooks/useUserSession";
+import { useHasMounted } from "@/hooks/useHasMounted";
 
 const ThemeLanguageSwitcher = dynamic(() => import("@/components/theme-language-switcher").then((mod) => mod.ThemeLanguageSwitcher), { ssr: false });
 
@@ -87,11 +87,7 @@ const copy = {
 export function HeroSection() {
   const { session } = useUserSession();
   const { locale } = useLanguage();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const mounted = useHasMounted();
 
   if (!mounted) {
     return <div className="min-h-screen bg-background" />;

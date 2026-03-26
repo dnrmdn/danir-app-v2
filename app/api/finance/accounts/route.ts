@@ -1,5 +1,6 @@
 import { auth } from "@/lib/auth"
 import prisma from "@/lib/db"
+import { Prisma } from "@/lib/generated/prisma"
 import { getUserIdFromSession } from "@/lib/finance/session"
 import { resolveFinanceUserIds, buildUserWhereClause } from "@/lib/finance/partner-helper"
 import { NextRequest, NextResponse } from "next/server"
@@ -15,9 +16,9 @@ export async function GET(req: NextRequest) {
     const resolved = await resolveFinanceUserIds(userId, view, connectionId)
     if (!resolved) return NextResponse.json({ success: false, error: "Invalid connection" }, { status: 403 })
 
-    const whereClause = buildUserWhereClause(resolved.userIds, resolved.connectionId)
+    const whereClause: Prisma.FinanceAccountWhereInput = buildUserWhereClause(resolved.userIds, resolved.connectionId)
 
-    const count = await prisma.financeAccount.count({ where: whereClause as any })
+    const count = await prisma.financeAccount.count({ where: whereClause })
     if (count === 0 && !view) {
       await prisma.financeAccount.createMany({
         data: [
@@ -30,7 +31,7 @@ export async function GET(req: NextRequest) {
     }
 
     const accounts = await prisma.financeAccount.findMany({
-      where: whereClause as any,
+      where: whereClause,
       orderBy: { createdAt: "asc" },
     })
 

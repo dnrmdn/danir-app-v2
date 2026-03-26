@@ -2,7 +2,8 @@
 
 import { User, Users } from "lucide-react";
 import { usePartnerStore } from "@/lib/store/partner-store";
-import type { ViewMode, PartnerFeatureKey } from "@/types/partner";
+import type { PartnerFeatureKey } from "@/types/partner";
+import { usePlanAccess } from "@/hooks/usePlanAccess";
 
 interface ViewModeToggleProps {
   feature: PartnerFeatureKey;
@@ -16,11 +17,12 @@ const labels = {
 
 export function ViewModeToggle({ feature, locale = "id" }: ViewModeToggleProps) {
   const { viewMode, setViewMode, isFeatureShared } = usePartnerStore();
+  const { plan } = usePlanAccess();
 
   const isShared = isFeatureShared(feature);
 
   // Don't render the toggle if this feature isn't shared
-  if (!isShared) return null;
+  if (!isShared || !plan?.hasSharedFeatures) return null;
 
   const t = labels[locale];
 

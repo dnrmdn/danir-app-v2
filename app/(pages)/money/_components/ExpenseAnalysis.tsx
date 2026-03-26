@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useCallback, useMemo } from "react";
 import { Card } from "@/components/ui/card";
 import { formatDashboardCurrency } from "../_lib/utils";
 import type { DashboardViewText, InsightsResponse } from "../_types";
@@ -24,7 +24,16 @@ const COLORS = [
   "#84cc16", // lime-500
 ];
 
-const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }: any) => {
+type PieLabelProps = {
+  cx: number;
+  cy: number;
+  midAngle: number;
+  innerRadius: number;
+  outerRadius: number;
+  percent: number;
+};
+
+const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }: PieLabelProps) => {
   const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
   const x = cx + radius * Math.cos(-midAngle * (Math.PI / 180));
   const y = cy + radius * Math.sin(-midAngle * (Math.PI / 180));
@@ -46,11 +55,11 @@ const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, per
 };
 
 export function ExpenseAnalysis({ insights, t }: ExpenseAnalysisProps) {
-  const currentExpenses = insights?.expenseByCategory || [];
-  const prevExpenses = insights?.expenseByCategoryPrev || [];
-  const categoryMap = insights?.categoryMap || [];
+  const currentExpenses = useMemo(() => insights?.expenseByCategory ?? [], [insights]);
+  const prevExpenses = useMemo(() => insights?.expenseByCategoryPrev ?? [], [insights]);
+  const categoryMap = useMemo(() => insights?.categoryMap ?? [], [insights]);
 
-  const getCatName = (id: number | null) => {
+  const getCatName = useCallback((id: number | null) => {
     if (!id) return t.otherItem;
     const targetId = Number(id);
     const found = categoryMap.find((c) => Number(c.id) === targetId);
@@ -63,7 +72,7 @@ export function ExpenseAnalysis({ insights, t }: ExpenseAnalysisProps) {
     if (inPrev && inPrev.category) return inPrev.category;
 
     return t.otherItem;
-  };
+  }, [categoryMap, currentExpenses, prevExpenses, t.otherItem]);
 
   // 1. PENGELUARAN TERTINGGI (Sub Kategori)
   const subCategoryRanking = useMemo(() => {
@@ -88,9 +97,7 @@ export function ExpenseAnalysis({ insights, t }: ExpenseAnalysisProps) {
       value: amount,
     }));
     return arr.sort((a, b) => b.value - a.value);
-  }, [currentExpenses, categoryMap]);
-
-  const totalParentAlloc = parentAllocations.reduce((idx, item) => idx + item.value, 0);
+  }, [currentExpenses, getCatName]);
 
   // 3. PENGELUARAN BULAN INI VS BULAN LALU (Sub Kategori)
   const comparisonList = useMemo(() => {
@@ -118,7 +125,7 @@ export function ExpenseAnalysis({ insights, t }: ExpenseAnalysisProps) {
     }
 
     return list.sort((a, b) => b.current - a.current);
-  }, [currentExpenses, prevExpenses, categoryMap]);
+  }, [currentExpenses, getCatName, prevExpenses]);
 
   if (!insights) return null;
 
@@ -173,7 +180,7 @@ export function ExpenseAnalysis({ insights, t }: ExpenseAnalysisProps) {
                 labelLine={false}
                 label={renderCustomizedLabel}
               >
-                {parentAllocations.map((entry, index) => (
+                {parentAllocations.map((_, index) => (
                   <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                 ))}
               </Pie>

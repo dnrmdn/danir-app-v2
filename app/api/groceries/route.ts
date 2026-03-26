@@ -2,7 +2,7 @@ import { auth } from "@/lib/auth";
 import prisma from "@/lib/db";
 import { Session } from "better-auth";
 import { NextRequest, NextResponse } from "next/server";
-import { resolveFinanceUserIds } from "@/lib/finance/partner-helper";
+import { resolvePartnerAccess } from "@/lib/partner-access";
 
 /**
  * GET /api/groceries — Fetch all grocery categories + items for the user (or partner)
@@ -17,8 +17,16 @@ export async function GET(req: NextRequest) {
 
     const view = req.nextUrl.searchParams.get("view");
     const connectionId = req.nextUrl.searchParams.get("connectionId");
-    const resolved = await resolveFinanceUserIds(session.userId, view, connectionId);
+    const resolved = await resolvePartnerAccess({
+      userId: session.userId,
+      view,
+      connectionId,
+      feature: "MEAL",
+    });
     if (!resolved) return NextResponse.json({ success: false, error: "Invalid connection" }, { status: 403 });
+    if (resolved.kind === "locked") {
+      return NextResponse.json(resolved.payload, { status: resolved.status });
+    }
 
     const targetUserId = resolved.userIds[0];
 
@@ -52,8 +60,16 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const view = body.view || null;
     const connectionIdParam = body.connectionId || null;
-    const resolved = await resolveFinanceUserIds(session.userId, view, connectionIdParam);
+    const resolved = await resolvePartnerAccess({
+      userId: session.userId,
+      view,
+      connectionId: connectionIdParam,
+      feature: "MEAL",
+    });
     if (!resolved) return NextResponse.json({ success: false, error: "Invalid connection" }, { status: 403 });
+    if (resolved.kind === "locked") {
+      return NextResponse.json(resolved.payload, { status: resolved.status });
+    }
 
     const targetUserId = resolved.userIds[0];
     const incoming: Array<{ name: string; items: Array<{ name: string; checked: boolean }> }> = body.categories || [];

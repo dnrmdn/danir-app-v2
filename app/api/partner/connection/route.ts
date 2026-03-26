@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/db";
 import { headers } from "next/headers";
+import { requireSharedPlanAccess } from "@/lib/partner-access";
 
 export const dynamic = "force-dynamic";
 
@@ -52,6 +53,11 @@ export async function POST(req: Request) {
 
         const body = await req.json();
         const { email } = body;
+        const sharedPlan = await requireSharedPlanAccess(session.user.id);
+
+        if (sharedPlan && "payload" in sharedPlan) {
+            return NextResponse.json(sharedPlan.payload, { status: sharedPlan.status });
+        }
 
         const emailValue = typeof email === "string" ? email.trim() : "";
 
@@ -119,6 +125,11 @@ export async function PUT(req: Request) {
 
         const body = await req.json();
         const { connectionId, action } = body;
+        const sharedPlan = await requireSharedPlanAccess(session.user.id);
+
+        if (sharedPlan && "payload" in sharedPlan) {
+            return NextResponse.json(sharedPlan.payload, { status: sharedPlan.status });
+        }
 
         if (action !== "ACCEPT") {
             return NextResponse.json({ error: "Invalid action" }, { status: 400 });

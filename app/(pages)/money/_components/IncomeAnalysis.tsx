@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useCallback, useMemo } from "react";
 import { Card } from "@/components/ui/card";
 import { formatDashboardCurrency } from "../_lib/utils";
 import type { DashboardViewText, InsightsResponse } from "../_types";
@@ -23,7 +23,16 @@ const COLORS = [
   "#ef4444", // rose-500
 ];
 
-const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }: any) => {
+type PieLabelProps = {
+  cx: number;
+  cy: number;
+  midAngle: number;
+  innerRadius: number;
+  outerRadius: number;
+  percent: number;
+};
+
+const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }: PieLabelProps) => {
   const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
   const x = cx + radius * Math.cos(-midAngle * (Math.PI / 180));
   const y = cy + radius * Math.sin(-midAngle * (Math.PI / 180));
@@ -45,11 +54,11 @@ const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, per
 };
 
 export function IncomeAnalysis({ insights, t }: IncomeAnalysisProps) {
-  const currentIncomes = insights?.incomeByCategory || [];
-  const prevIncomes = insights?.incomeByCategoryPrev || [];
-  const categoryMap = insights?.categoryMap || [];
+  const currentIncomes = useMemo(() => insights?.incomeByCategory ?? [], [insights]);
+  const prevIncomes = useMemo(() => insights?.incomeByCategoryPrev ?? [], [insights]);
+  const categoryMap = useMemo(() => insights?.categoryMap ?? [], [insights]);
 
-  const getCatName = (id: number | null) => {
+  const getCatName = useCallback((id: number | null) => {
     if (!id) return t.otherItem;
     const targetId = Number(id);
     const found = categoryMap.find((c) => Number(c.id) === targetId);
@@ -62,7 +71,7 @@ export function IncomeAnalysis({ insights, t }: IncomeAnalysisProps) {
     if (inPrev && inPrev.category) return inPrev.category;
 
     return t.otherItem;
-  };
+  }, [categoryMap, currentIncomes, prevIncomes, t.otherItem]);
 
   // 1. PEMASUKAN TERTINGGI (Sub Kategori) - TOP 10
   const subCategoryRanking = useMemo(() => {
@@ -87,9 +96,7 @@ export function IncomeAnalysis({ insights, t }: IncomeAnalysisProps) {
       value: amount,
     }));
     return arr.sort((a, b) => b.value - a.value);
-  }, [currentIncomes, categoryMap]);
-
-  const totalParentAlloc = parentAllocations.reduce((idx, item) => idx + item.value, 0);
+  }, [currentIncomes, getCatName]);
 
   // 3. PEMASUKAN BULAN INI VS BULAN LALU (Chart Horizontal)
   const comparisonList = useMemo(() => {
@@ -107,7 +114,7 @@ export function IncomeAnalysis({ insights, t }: IncomeAnalysisProps) {
 
     // Top 8 perbandingan agar chart bar tidak terlalu sesak, diurutkan by bulan ini terbanyak.
     return list.sort((a, b) => b.current - a.current).slice(0, 8);
-  }, [currentIncomes, prevIncomes, categoryMap]);
+  }, [currentIncomes, getCatName, prevIncomes]);
 
   if (!insights) return null;
 
@@ -162,7 +169,7 @@ export function IncomeAnalysis({ insights, t }: IncomeAnalysisProps) {
                 labelLine={false}
                 label={renderCustomizedLabel}
               >
-                {parentAllocations.map((entry, index) => (
+                {parentAllocations.map((_, index) => (
                   <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                 ))}
               </Pie>

@@ -24,6 +24,12 @@ model User {
   bio           String?
   phone         String?
   location      String?
+  planType      PlanType @default(PRO_TRIAL)
+  subscriptionStatus SubscriptionStatus @default(TRIALING)
+  trialStartAt  DateTime? @default(now())
+  trialEndAt    DateTime?
+  proStartedAt  DateTime?
+  subscriptionEndsAt DateTime?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @default(now()) @updatedAt
 
@@ -73,6 +79,20 @@ enum MealType {
   SNACK
   LUNCH
   DINNER
+}
+
+enum PlanType {
+  FREE
+  PRO_TRIAL
+  PRO
+}
+
+enum SubscriptionStatus {
+  NONE
+  TRIALING
+  ACTIVE
+  EXPIRED
+  CANCELED
 }
 
 model MealPlanWeek {

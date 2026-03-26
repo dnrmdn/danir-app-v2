@@ -24,6 +24,7 @@ export default function MoneyPage() {
     locale,
     session,
     partnerName,
+    plan,
     active,
     setActive,
     month,
@@ -66,6 +67,7 @@ export default function MoneyPage() {
     expenseCategories,
     incomeCategories,
     monthStartEnd,
+    historyLimitMessage,
     reloadMonthData,
     openNewTransaction,
     openEditTransaction,
@@ -113,6 +115,8 @@ export default function MoneyPage() {
           importInputRef={importInputRef}
           handleImportFile={handleImportFile}
           partnerName={partnerName}
+          plan={plan}
+          historyLimitMessage={historyLimitMessage}
         />
         <MoneyTabs t={t} active={active} setActive={setActive} />
 

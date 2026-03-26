@@ -1,5 +1,6 @@
 import { auth } from "@/lib/auth"
 import prisma from "@/lib/db"
+import { Prisma } from "@/lib/generated/prisma"
 import { getUserIdFromSession } from "@/lib/finance/session"
 import { resolveFinanceUserIds, buildUserWhereClause } from "@/lib/finance/partner-helper"
 import { NextRequest, NextResponse } from "next/server"
@@ -15,9 +16,9 @@ export async function GET(req: NextRequest) {
     const resolved = await resolveFinanceUserIds(userId, view, connectionId)
     if (!resolved) return NextResponse.json({ success: false, error: "Invalid connection" }, { status: 403 })
 
-    const whereClause = buildUserWhereClause(resolved.userIds, resolved.connectionId)
+    const whereClause: Prisma.FinanceTagWhereInput = buildUserWhereClause(resolved.userIds, resolved.connectionId)
 
-    const tags = await prisma.financeTag.findMany({ where: whereClause as any, orderBy: { name: "asc" } })
+    const tags = await prisma.financeTag.findMany({ where: whereClause, orderBy: { name: "asc" } })
     return NextResponse.json({ success: true, data: tags })
   } catch (error) {
     console.error("finance tags GET error:", error)

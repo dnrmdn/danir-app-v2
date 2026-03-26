@@ -1,19 +1,15 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useLanguage } from "@/components/language-provider";
+import { useHasMounted } from "@/hooks/useHasMounted";
 import { cn } from "@/lib/utils";
 
 export function ThemeLanguageSwitcher({ className }: { className?: string }) {
   const { resolvedTheme, setTheme } = useTheme();
   const { locale, setLocale } = useLanguage();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const mounted = useHasMounted();
 
   if (!mounted) {
     return <div className={cn("h-11 w-[8.5rem] rounded-full border border-white/10 bg-white/5 animate-pulse", className)} />;

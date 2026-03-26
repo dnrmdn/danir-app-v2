@@ -7,6 +7,7 @@ import { Switch } from "@/components/ui/switch";
 import { usePartnerStore } from "@/lib/store/partner-store";
 import { useSession } from "@/lib/auth-client";
 import type { PartnerFeatureKey } from "@/types/partner";
+import { usePlanAccess } from "@/hooks/usePlanAccess";
 
 const FEATURES: { key: PartnerFeatureKey; label: { id: string; en: string } }[] = [
   { key: "TASKS", label: { id: "Tugas", en: "Tasks" } },
@@ -36,6 +37,10 @@ const contentLocal = {
     partner: "(Partner)",
     bothEnabled: "✓ Aktif",
     waitingPartner: "Menunggu partner",
+    planLockedTitle: "Partner sharing ada di Pro",
+    planLockedDesc: "Akun Free tetap bisa dipakai seperti biasa, tapi fitur berbagi partner hanya tersedia saat Pro Trial atau Pro aktif.",
+    planLockedHint: "Upgrade ke Pro untuk membuka shared tasks, money, meal plan, dan saved links.",
+    acceptLocked: "Terima undangan dengan Pro",
   },
   en: {
     title: "Partner Sharing",
@@ -57,12 +62,17 @@ const contentLocal = {
     partner: "(Partner)",
     bothEnabled: "✓ Active",
     waitingPartner: "Waiting for partner",
+    planLockedTitle: "Partner sharing is part of Pro",
+    planLockedDesc: "Free accounts can still use the app normally, but partner-sharing features are only available during Pro Trial or Pro.",
+    planLockedHint: "Upgrade to Pro to unlock shared tasks, money, meal plans, and saved links.",
+    acceptLocked: "Accept with Pro",
   },
 } as const;
 
 export function PartnerSection({ locale }: { locale: "id" | "en" }) {
   const t = contentLocal[locale];
   const { data: session } = useSession();
+  const { plan } = usePlanAccess();
   const {
     connection,
     featureAccess,
@@ -77,6 +87,7 @@ export function PartnerSection({ locale }: { locale: "id" | "en" }) {
 
   const [email, setEmail] = useState("");
   const [inviteError, setInviteError] = useState<string | null>(null);
+  const canUseSharedFeatures = plan?.hasSharedFeatures ?? false;
 
   useEffect(() => {
     fetchConnection();
@@ -101,6 +112,10 @@ export function PartnerSection({ locale }: { locale: "id" | "en" }) {
 
   const handleSendInvite = async () => {
     setInviteError(null);
+    if (!canUseSharedFeatures) {
+      setInviteError(t.planLockedHint);
+      return;
+    }
     const result = await sendInvite(email.trim());
     if (result.success) {
       setEmail("");
@@ -133,29 +148,37 @@ export function PartnerSection({ locale }: { locale: "id" | "en" }) {
         {/* No connection yet – show invite form */}
         {!connection && (
           <div className="space-y-3">
-            <div className="rounded-2xl border border-border bg-muted/50 p-4 dark:border-white/10 dark:bg-[#07111f]/75">
-              <div className="mb-3 flex items-center gap-2">
-                <UserPlus className="h-4 w-4 text-pink-500 dark:text-pink-300" />
-                <span className="text-sm font-semibold text-foreground dark:text-slate-100">{t.inviteLabel}</span>
+            {canUseSharedFeatures ? (
+              <div className="rounded-2xl border border-border bg-muted/50 p-4 dark:border-white/10 dark:bg-[#07111f]/75">
+                <div className="mb-3 flex items-center gap-2">
+                  <UserPlus className="h-4 w-4 text-pink-500 dark:text-pink-300" />
+                  <span className="text-sm font-semibold text-foreground dark:text-slate-100">{t.inviteLabel}</span>
+                </div>
+                <div className="flex gap-2">
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder={t.invitePlaceholder}
+                    className="flex-1 rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground outline-none transition focus:border-pink-400/50 focus:ring-1 focus:ring-pink-400/30 dark:border-white/10 dark:bg-[#0a1628] dark:text-white dark:placeholder-slate-500"
+                  />
+                  <Button
+                    onClick={handleSendInvite}
+                    disabled={isLoading || !email.trim() || !canUseSharedFeatures}
+                    className="rounded-xl border border-pink-300/20 bg-pink-500/10 text-sm text-pink-700 hover:bg-pink-500/15 dark:text-pink-200"
+                  >
+                    {t.inviteBtn}
+                  </Button>
+                </div>
+                {inviteError && <p className="mt-2 text-xs text-rose-500">{inviteError}</p>}
               </div>
-              <div className="flex gap-2">
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder={t.invitePlaceholder}
-                  className="flex-1 rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground outline-none transition focus:border-pink-400/50 focus:ring-1 focus:ring-pink-400/30 dark:border-white/10 dark:bg-[#0a1628] dark:text-white dark:placeholder-slate-500"
-                />
-                <Button
-                  onClick={handleSendInvite}
-                  disabled={isLoading || !email.trim()}
-                  className="rounded-xl border border-pink-300/20 bg-pink-500/10 text-sm text-pink-700 hover:bg-pink-500/15 dark:text-pink-200"
-                >
-                  {t.inviteBtn}
-                </Button>
+            ) : (
+              <div className="rounded-2xl border border-amber-300/20 bg-amber-400/10 p-4 dark:border-amber-400/15">
+                <p className="text-sm font-semibold text-amber-700 dark:text-amber-200">{t.planLockedTitle}</p>
+                <p className="mt-1 text-xs leading-5 text-amber-700/90 dark:text-amber-100/90">{t.planLockedDesc}</p>
+                <p className="mt-2 text-xs text-muted-foreground dark:text-slate-300">{t.planLockedHint}</p>
               </div>
-              {inviteError && <p className="mt-2 text-xs text-rose-500">{inviteError}</p>}
-            </div>
+            )}
             <p className="px-1 text-xs text-muted-foreground dark:text-slate-500">{t.noPartner}</p>
           </div>
         )}
@@ -199,10 +222,11 @@ export function PartnerSection({ locale }: { locale: "id" | "en" }) {
             <div className="mt-3 flex gap-2">
               <Button
                 onClick={() => acceptInvite(connection!.id)}
+                disabled={!canUseSharedFeatures}
                 className="rounded-xl border border-emerald-300/20 bg-emerald-500/10 text-sm text-emerald-700 hover:bg-emerald-500/15 dark:text-emerald-200"
               >
                 <Check className="mr-1 h-4 w-4" />
-                {t.accept}
+                {canUseSharedFeatures ? t.accept : t.acceptLocked}
               </Button>
               <Button
                 onClick={() => removeConnection(connection!.id)}
@@ -244,37 +268,45 @@ export function PartnerSection({ locale }: { locale: "id" | "en" }) {
             </div>
 
             {/* Feature toggles */}
-            <div className="rounded-2xl border border-border bg-muted/50 p-4 dark:border-white/10 dark:bg-[#07111f]/75">
-              <h3 className="mb-1 text-sm font-semibold text-foreground dark:text-slate-100">{t.featureTitle}</h3>
-              <p className="mb-3 text-xs text-muted-foreground dark:text-slate-400">{t.featureDesc}</p>
+            {canUseSharedFeatures ? (
+              <div className="rounded-2xl border border-border bg-muted/50 p-4 dark:border-white/10 dark:bg-[#07111f]/75">
+                <h3 className="mb-1 text-sm font-semibold text-foreground dark:text-slate-100">{t.featureTitle}</h3>
+                <p className="mb-3 text-xs text-muted-foreground dark:text-slate-400">{t.featureDesc}</p>
 
-              <div className="space-y-2">
-                {FEATURES.map((feat) => {
-                  const myAccess = getMyAccessForFeature(feat.key);
-                  const partnerAccess = getPartnerAccessForFeature(feat.key);
-                  const myEnabled = myAccess?.isEnabled ?? false;
-                  const partnerEnabled = partnerAccess?.isEnabled ?? false;
-                  const bothEnabled = myEnabled && partnerEnabled;
+                <div className="space-y-2">
+                  {FEATURES.map((feat) => {
+                    const myAccess = getMyAccessForFeature(feat.key);
+                    const partnerAccess = getPartnerAccessForFeature(feat.key);
+                    const myEnabled = myAccess?.isEnabled ?? false;
+                    const partnerEnabled = partnerAccess?.isEnabled ?? false;
+                    const bothEnabled = myEnabled && partnerEnabled;
 
-                  return (
-                    <div key={feat.key} className="flex items-center justify-between rounded-xl border border-border bg-background/50 px-4 py-3 dark:border-white/8 dark:bg-[#040b17]/60">
-                      <div className="flex-1">
-                        <span className="text-sm font-medium text-foreground dark:text-slate-200">{feat.label[locale]}</span>
-                        {myEnabled && (
-                          <span className={`ml-2 text-[11px] font-medium ${bothEnabled ? "text-emerald-600 dark:text-emerald-300" : "text-amber-600 dark:text-amber-300"}`}>
-                            {bothEnabled ? t.bothEnabled : t.waitingPartner}
-                          </span>
-                        )}
+                    return (
+                      <div key={feat.key} className="flex items-center justify-between rounded-xl border border-border bg-background/50 px-4 py-3 dark:border-white/8 dark:bg-[#040b17]/60">
+                        <div className="flex-1">
+                          <span className="text-sm font-medium text-foreground dark:text-slate-200">{feat.label[locale]}</span>
+                          {myEnabled && (
+                            <span className={`ml-2 text-[11px] font-medium ${bothEnabled ? "text-emerald-600 dark:text-emerald-300" : "text-amber-600 dark:text-amber-300"}`}>
+                              {bothEnabled ? t.bothEnabled : t.waitingPartner}
+                            </span>
+                          )}
+                        </div>
+                        <Switch
+                          checked={myEnabled}
+                          onCheckedChange={(checked) => toggleFeature(feat.key, checked)}
+                        />
                       </div>
-                      <Switch
-                        checked={myEnabled}
-                        onCheckedChange={(checked) => toggleFeature(feat.key, checked)}
-                      />
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
               </div>
-            </div>
+            ) : (
+              <div className="rounded-2xl border border-amber-300/20 bg-amber-400/10 p-4 dark:border-amber-400/15">
+                <p className="text-sm font-semibold text-amber-700 dark:text-amber-200">{t.planLockedTitle}</p>
+                <p className="mt-1 text-xs leading-5 text-amber-700/90 dark:text-amber-100/90">{t.planLockedDesc}</p>
+                <p className="mt-2 text-xs text-muted-foreground dark:text-slate-300">{t.planLockedHint}</p>
+              </div>
+            )}
           </div>
         )}
       </div>

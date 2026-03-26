@@ -3,13 +3,15 @@ import { Prisma } from "@/lib/generated/prisma";
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/db";
 import { getUserIdFromSession } from "@/lib/finance/session";
-import { resolveFinanceUserIds, buildUserWhereClause } from "@/lib/finance/partner-helper";
+import { buildUserWhereClause } from "@/lib/finance/partner-helper";
 import {
   assertPositiveDecimal,
   assertSufficientBalance,
   parseDate,
   toDecimal,
 } from "@/lib/finance/money";
+import { createPlanLimitResponse, isMoneyDateRangeRestricted } from "@/lib/plan";
+import { resolvePartnerAccess } from "@/lib/partner-access";
 
 function parseDateParam(value: string | null) {
   if (!value) return null;
@@ -32,17 +34,37 @@ export async function GET(req: NextRequest) {
     const view = searchParams.get("view");
     const connectionId = searchParams.get("connectionId");
 
-    const resolved = await resolveFinanceUserIds(userId, view, connectionId);
+    const resolved = await resolvePartnerAccess({
+      userId,
+      view,
+      connectionId,
+      feature: "MONEY",
+    });
     if (!resolved) return NextResponse.json({ success: false, error: "Invalid connection" }, { status: 403 });
+    if (resolved.kind === "locked") {
+      return NextResponse.json(resolved.payload, { status: resolved.status });
+    }
 
-    const whereClause = buildUserWhereClause(resolved.userIds, resolved.connectionId);
+    if (isMoneyDateRangeRestricted(resolved.access, start, end)) {
+      return NextResponse.json(
+        createPlanLimitResponse(
+          `Free plan can only view money history from the last ${resolved.access.moneyHistoryMonths} months. Upgrade to Pro to open older months.`,
+          resolved.access
+        ),
+        { status: 403 }
+      );
+    }
+
+    const whereClause: Prisma.FinanceTransactionWhereInput = buildUserWhereClause(resolved.userIds, resolved.connectionId);
+    const enforcedStart = resolved.access.moneyHistoryStartAt;
 
     const transactions = await prisma.financeTransaction.findMany({
       where: {
-        ...whereClause as any,
-        ...(start || end
+        ...whereClause,
+        ...(start || end || enforcedStart
           ? {
             date: {
+              ...(enforcedStart ? { gte: enforcedStart } : {}),
               ...(start ? { gte: start } : {}),
               ...(end ? { lte: end } : {}),
             },

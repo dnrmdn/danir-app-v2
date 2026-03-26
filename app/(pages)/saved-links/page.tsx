@@ -15,6 +15,7 @@ import { LinkCard } from "./_components/linkCard";
 import { ListRow } from "./_components/listRow";
 import { ViewModeToggle } from "@/components/partner/view-mode-toggle";
 import { usePartnerStore } from "@/lib/store/partner-store";
+import { usePlanAccess } from "@/hooks/usePlanAccess";
 
 export default function SavedLinksPage() {
   const { session } = useUserSession();
@@ -23,12 +24,13 @@ export default function SavedLinksPage() {
   const [links, setLinks] = useState<SavedLink[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [viewMode, setLayoutViewMode] = useState<"grid" | "list">("grid");
   const [filter, setFilter] = useState<FilterType>("all");
   const [showAddModal, setShowAddModal] = useState(false);
   const [visibleCount, setVisibleCount] = useState(24);
+  const { plan, reload: reloadPlan } = usePlanAccess();
 
-  const { viewMode: partnerViewMode, fetchConnection, fetchFeatureAccess, getActiveConnectionId, isFeatureShared } = usePartnerStore();
+  const { viewMode: partnerViewMode, setViewMode, fetchConnection, fetchFeatureAccess, getActiveConnectionId, isFeatureShared } = usePartnerStore();
 
   // Fetch partner data on mount
   useEffect(() => {
@@ -66,6 +68,12 @@ export default function SavedLinksPage() {
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session, partnerViewMode]);
+
+  useEffect(() => {
+    if (!plan?.hasSharedFeatures && partnerViewMode === "shared") {
+      setViewMode("personal");
+    }
+  }, [partnerViewMode, plan?.hasSharedFeatures, setViewMode]);
 
   const allLabels = useMemo(() => {
     const raw = links.flatMap((link) => (link.label ? link.label.split(",").map((item) => item.trim()) : []));
@@ -108,6 +116,7 @@ export default function SavedLinksPage() {
   }, [search, filter]);
 
   const recentCount = links.length;
+  const linkLimitReached = Boolean(plan && plan.savedLinksLimit !== null && plan.savedLinksCount >= plan.savedLinksLimit);
 
   const copyLink = async (url: string) => {
     try {
@@ -172,6 +181,45 @@ export default function SavedLinksPage() {
           />
         </section>
 
+        {plan && (
+          <Card className="max-w-none! rounded-4xl border border-border bg-card p-5 text-foreground backdrop-blur-xl dark:border-white/10 dark:bg-white/5 dark:text-white">
+            <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+              <div>
+                <div className="text-lg font-black">{plan.label}</div>
+                <div className="text-sm text-muted-foreground dark:text-slate-400">
+                  {plan.savedLinksLimit === null
+                    ? locale === "id"
+                      ? "Saved links tidak dibatasi dengan akses penuh."
+                      : "Unlimited saved links with full access."
+                    : locale === "id"
+                      ? `${plan.savedLinksCount}/${plan.savedLinksLimit} saved links terpakai di paket Free.`
+                      : `${plan.savedLinksCount}/${plan.savedLinksLimit} saved links used on Free plan.`}
+                </div>
+              </div>
+              {plan.isTrialActive && (
+                <div className="inline-flex rounded-full border border-cyan-300/20 bg-cyan-400/10 px-3 py-1 text-xs font-semibold text-cyan-700 dark:text-cyan-100">
+                  {locale === "id"
+                    ? `Sisa ${plan.trialDaysRemaining} hari Pro Trial`
+                    : `${plan.trialDaysRemaining} day${plan.trialDaysRemaining === 1 ? "" : "s"} left in Pro Trial`}
+                </div>
+              )}
+            </div>
+          </Card>
+        )}
+
+        {linkLimitReached && (
+          <Card className="max-w-none! rounded-4xl border border-amber-300/20 bg-amber-400/10 p-5 text-amber-900 dark:border-amber-400/15 dark:bg-amber-400/10 dark:text-amber-100">
+            <div className="text-lg font-black">
+              {locale === "id" ? "Batas link paket Free sudah tercapai" : "Free plan link limit reached"}
+            </div>
+            <div className="mt-1 text-sm leading-6 text-amber-900/80 dark:text-amber-100/80">
+              {locale === "id"
+                ? "Link lama tetap bisa dilihat, diedit, dan dihapus, tetapi menambah link baru membutuhkan Pro."
+                : "You can still view, edit, and delete your existing links, but adding a new one needs Pro."}
+            </div>
+          </Card>
+        )}
+
         <Card className="max-w-none! rounded-4xl border border-border bg-card p-5 text-foreground backdrop-blur-xl dark:border-white/10 dark:bg-white/5 dark:text-white">
           <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
             <div className="relative w-full xl:max-w-xl">
@@ -199,14 +247,14 @@ export default function SavedLinksPage() {
               <div className="ml-1 flex items-center gap-2 rounded-full border border-border bg-muted/50 p-1 dark:border-white/10 dark:bg-[#07111f]/80">
                 <button
                   type="button"
-                  onClick={() => setViewMode("grid")}
+                  onClick={() => setLayoutViewMode("grid")}
                   className={`rounded-full p-2 transition ${viewMode === "grid" ? "bg-foreground text-background dark:bg-white dark:text-slate-950" : "text-muted-foreground hover:text-foreground dark:text-slate-400 dark:hover:text-white"}`}
                 >
                   <Grid3X3 size={16} />
                 </button>
                 <button
                   type="button"
-                  onClick={() => setViewMode("list")}
+                  onClick={() => setLayoutViewMode("list")}
                   className={`rounded-full p-2 transition ${viewMode === "list" ? "bg-foreground text-background dark:bg-white dark:text-slate-950" : "text-muted-foreground hover:text-foreground dark:text-slate-400 dark:hover:text-white"}`}
                 >
                   <TableProperties size={16} />
@@ -284,7 +332,13 @@ export default function SavedLinksPage() {
 
       {/* FAB - Add Link Button */}
       <div className="fixed bottom-6 right-6 sm:bottom-8 sm:right-8 z-90 flex flex-col items-end gap-3">
-        <Button size="icon" className="h-14 w-14 rounded-full shadow-2xl bg-cyan-500 text-white hover:bg-cyan-600 transition-all duration-300 active:scale-90" onClick={() => setShowAddModal(true)} title={t.addNewLink}>
+        <Button
+          size="icon"
+          disabled={linkLimitReached}
+          className="h-14 w-14 rounded-full shadow-2xl bg-cyan-500 text-white hover:bg-cyan-600 transition-all duration-300 active:scale-90 disabled:bg-slate-400 disabled:hover:bg-slate-400 dark:disabled:bg-slate-700"
+          onClick={() => setShowAddModal(true)}
+          title={linkLimitReached ? (locale === "id" ? "Upgrade ke Pro untuk menambah link" : "Upgrade to Pro to add more links") : t.addNewLink}
+        >
           <Plus className="h-8 w-8" />
         </Button>
       </div>
@@ -299,6 +353,7 @@ export default function SavedLinksPage() {
             return [createdLink, ...withoutDuplicate];
           });
           setLoading(true);
+          void reloadPlan();
           void fetchLinks();
         }}
       />

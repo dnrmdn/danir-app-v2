@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Bell, LogOut, Palette, Sparkles, Languages, ShieldCheck, LockKeyhole } from "lucide-react";
 import { useUserSession } from "@/hooks/useUserSession";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,8 @@ import { useTheme } from "next-themes";
 import { useLanguage } from "@/components/language-provider";
 import { ChangePasswordDialog } from "@/components/setting/change-password-dialog";
 import { PartnerSection } from "@/components/setting/partner-section";
+import { usePlanAccess } from "@/hooks/usePlanAccess";
+import { useHasMounted } from "@/hooks/useHasMounted";
 
 const contentSettingsLocal = {
   id: {
@@ -37,6 +39,17 @@ const contentSettingsLocal = {
     accountActions: "Aksi Akun",
     accountDesc: "Opsi untuk mengontrol sesi masuk akun Anda.",
     logOut: "Keluar",
+    plan: "Paket",
+    planDesc: "Lihat status paket Anda dan batas akses yang sedang berlaku.",
+    currentPlan: "Paket saat ini",
+    trialDaysLeft: "Sisa trial",
+    sharedAccess: "Akses shared feature",
+    linksLimit: "Batas saved links",
+    moneyWindow: "Riwayat money",
+    enabled: "Aktif",
+    locked: "Terkunci",
+    unlimited: "Unlimited",
+    months: "bulan",
   },
   en: {
     pageTitle: "Settings",
@@ -64,20 +77,30 @@ const contentSettingsLocal = {
     accountActions: "Account actions",
     accountDesc: "Options to control your account login sessions.",
     logOut: "Log out",
+    plan: "Plan",
+    planDesc: "See your current plan status and the access limits that apply right now.",
+    currentPlan: "Current plan",
+    trialDaysLeft: "Trial left",
+    sharedAccess: "Shared features",
+    linksLimit: "Saved links limit",
+    moneyWindow: "Money history",
+    enabled: "Enabled",
+    locked: "Locked",
+    unlimited: "Unlimited",
+    months: "months",
   },
 } as const;
 
 function useLocalSetting(key: string, defaultValue: boolean) {
-  const [val, setVal] = useState(defaultValue);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-    const stored = localStorage.getItem(`setting_${key}`);
-    if (stored !== null) {
-      setVal(stored === "true");
+  const mounted = useHasMounted();
+  const [val, setVal] = useState(() => {
+    if (typeof window === "undefined") {
+      return defaultValue;
     }
-  }, [key]);
+
+    const stored = localStorage.getItem(`setting_${key}`);
+    return stored !== null ? stored === "true" : defaultValue;
+  });
 
   const updateVal = (newValue: boolean) => {
     setVal(newValue);
@@ -91,6 +114,7 @@ export default function SettingsPage() {
   const { handleSignOut } = useUserSession();
   const { resolvedTheme, setTheme } = useTheme();
   const { locale, setLocale } = useLanguage();
+  const { plan } = usePlanAccess();
   const t = contentSettingsLocal[locale];
 
   const [emailNotif, setEmailNotif, emailMounted] = useLocalSetting("email_notif", true);
@@ -99,11 +123,7 @@ export default function SettingsPage() {
   const [moneyReminder, setMoneyReminder, moneyMounted] = useLocalSetting("money_reminder", true);
   const [compactCards, setCompactCards, compactMounted] = useLocalSetting("compact_cards", false);
 
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const mounted = useHasMounted();
 
   const isDark = resolvedTheme === "dark";
 
@@ -122,6 +142,49 @@ export default function SettingsPage() {
         <div className="grid gap-5 lg:grid-cols-2">
           {/* Left Column */}
           <div className="space-y-5">
+          <div className="rounded-[1.75rem] border border-border bg-muted/30 p-5 dark:border-white/10 dark:bg-white/4">
+            <div className="mb-4 flex items-start gap-3">
+              <div className="rounded-2xl border border-emerald-300/15 bg-emerald-400/10 p-3 text-emerald-700 dark:text-emerald-200">
+                <Sparkles className="h-5 w-5" />
+              </div>
+              <div>
+                <h2 className="text-lg font-bold text-foreground dark:text-white sm:text-xl">{t.plan}</h2>
+                <p className="mt-1 text-xs leading-5 text-muted-foreground dark:text-slate-400 sm:text-sm">{t.planDesc}</p>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <div className="rounded-2xl border border-border bg-muted/50 px-4 py-3 dark:border-white/10 dark:bg-[#07111f]/75">
+                <div className="text-xs text-muted-foreground dark:text-slate-400">{t.currentPlan}</div>
+                <div className="mt-1 text-lg font-bold text-foreground dark:text-white">{plan?.label ?? "..."}</div>
+                {plan?.isTrialActive && (
+                  <div className="mt-2 inline-flex rounded-full border border-cyan-300/20 bg-cyan-400/10 px-3 py-1 text-xs font-semibold text-cyan-700 dark:text-cyan-100">
+                    {t.trialDaysLeft}: {plan.trialDaysRemaining}
+                  </div>
+                )}
+              </div>
+
+              <div className="grid gap-3 sm:grid-cols-3">
+                <div className="rounded-2xl border border-border bg-muted/50 px-4 py-3 dark:border-white/10 dark:bg-[#07111f]/75">
+                  <div className="text-xs text-muted-foreground dark:text-slate-400">{t.sharedAccess}</div>
+                  <div className="mt-1 text-sm font-semibold text-foreground dark:text-white">{plan?.hasSharedFeatures ? t.enabled : t.locked}</div>
+                </div>
+                <div className="rounded-2xl border border-border bg-muted/50 px-4 py-3 dark:border-white/10 dark:bg-[#07111f]/75">
+                  <div className="text-xs text-muted-foreground dark:text-slate-400">{t.linksLimit}</div>
+                  <div className="mt-1 text-sm font-semibold text-foreground dark:text-white">
+                    {plan?.savedLinksLimit ?? t.unlimited}
+                  </div>
+                </div>
+                <div className="rounded-2xl border border-border bg-muted/50 px-4 py-3 dark:border-white/10 dark:bg-[#07111f]/75">
+                  <div className="text-xs text-muted-foreground dark:text-slate-400">{t.moneyWindow}</div>
+                  <div className="mt-1 text-sm font-semibold text-foreground dark:text-white">
+                    {plan?.moneyHistoryMonths ? `${plan.moneyHistoryMonths} ${t.months}` : t.unlimited}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
           {/* Notifications Section */}
           <div className="rounded-[1.75rem] border border-border bg-muted/30 p-5 dark:border-white/10 dark:bg-white/4">
             <div className="mb-4 flex items-start gap-3">
