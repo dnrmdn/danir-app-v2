@@ -294,7 +294,7 @@ export default function SavedLinksPage() {
           </div>
 
           {loading ? (
-            <div className="grid grid-cols-8 gap-2 sm:grid-cols-4 xl:grid-cols-8">
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 xl:grid-cols-8">
               {Array.from({ length: 8 }).map((_, index) => (
                 <div key={index} className="h-36 animate-pulse rounded-2xl bg-muted/50 dark:bg-white/5" />
               ))}
@@ -302,7 +302,7 @@ export default function SavedLinksPage() {
           ) : filteredLinks.length === 0 ? (
             <div className="rounded-3xl border border-dashed border-border bg-muted/30 px-4 py-8 text-center text-sm text-muted-foreground dark:border-white/10 dark:bg-[#07111f]/50 dark:text-slate-400">{t.noResults}</div>
           ) : viewMode === "grid" ? (
-            <div className="grid grid-cols-4 gap-1.5 sm:grid-cols-4 sm:gap-2 xl:grid-cols-8">
+            <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-4 sm:gap-2 xl:grid-cols-8">
               {visibleLinks.map((link) => (
                 <LinkCard key={link.id} link={link} onCopy={copyLink} noLabelText={t.noLabel} />
               ))}

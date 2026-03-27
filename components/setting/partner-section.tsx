@@ -150,11 +150,11 @@ export function PartnerSection({ locale }: { locale: "id" | "en" }) {
           <div className="space-y-3">
             {canUseSharedFeatures ? (
               <div className="rounded-2xl border border-border bg-muted/50 p-4 dark:border-white/10 dark:bg-[#07111f]/75">
-                <div className="mb-3 flex items-center gap-2">
+                <div className="mb-3 flex flex-wrap items-center gap-2">
                   <UserPlus className="h-4 w-4 text-pink-500 dark:text-pink-300" />
                   <span className="text-sm font-semibold text-foreground dark:text-slate-100">{t.inviteLabel}</span>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex flex-col sm:flex-row gap-2">
                   <input
                     type="email"
                     value={email}
@@ -186,7 +186,7 @@ export function PartnerSection({ locale }: { locale: "id" | "en" }) {
         {/* Pending – sent by me */}
         {isPending && isSender && partnerUser && (
           <div className="rounded-2xl border border-amber-300/20 bg-amber-400/10 p-4 dark:border-amber-400/15">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
                 <p className="text-sm font-medium text-amber-700 dark:text-amber-200">
                   {t.pendingSent}
@@ -219,7 +219,7 @@ export function PartnerSection({ locale }: { locale: "id" | "en" }) {
                 {partnerUser.name} ({partnerUser.email})
               </p>
             </div>
-            <div className="mt-3 flex gap-2">
+            <div className="mt-3 flex flex-col sm:flex-row gap-2">
               <Button
                 onClick={() => acceptInvite(connection!.id)}
                 disabled={!canUseSharedFeatures}
@@ -245,9 +245,9 @@ export function PartnerSection({ locale }: { locale: "id" | "en" }) {
           <div className="space-y-3">
             {/* Connection info */}
             <div className="rounded-2xl border border-emerald-300/20 bg-emerald-400/10 p-4 dark:border-emerald-400/15">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full border border-emerald-300/20 bg-emerald-500/15 text-emerald-700 dark:text-emerald-200">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-emerald-300/20 bg-emerald-500/15 text-emerald-700 dark:text-emerald-200">
                     <Users className="h-5 w-5" />
                   </div>
                   <div>

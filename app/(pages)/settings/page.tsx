@@ -230,8 +230,8 @@ export default function SettingsPage() {
                 { label: t.mealNotif, checked: mealReminder, onCheckedChange: setMealReminder, mounted: mealMounted },
                 { label: t.moneyNotif, checked: moneyReminder, onCheckedChange: setMoneyReminder, mounted: moneyMounted },
               ].map((item, idx) => (
-                <div key={idx} className="flex items-center justify-between rounded-2xl border border-border bg-muted/50 px-4 py-3 dark:border-white/10 dark:bg-[#07111f]/75">
-                  <span className="pr-4 text-sm font-medium text-foreground dark:text-slate-200">{item.label}</span>
+                <div key={idx} className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border bg-muted/50 px-4 py-3 dark:border-white/10 dark:bg-[#07111f]/75">
+                  <span className="flex-1 min-w-0 pr-4 text-sm font-medium text-foreground dark:text-slate-200">{item.label}</span>
                   {item.mounted ? <Switch checked={item.checked} onCheckedChange={item.onCheckedChange} /> : <div className="h-5 w-9 rounded-full bg-muted dark:bg-white/10" />}
                 </div>
               ))}
@@ -257,17 +257,17 @@ export default function SettingsPage() {
               </div>
 
               <div className="space-y-3">
-                <div className="flex items-center justify-between rounded-2xl border border-border bg-muted/50 px-4 py-3 dark:border-white/10 dark:bg-[#07111f]/75">
-                  <span className="pr-4 text-sm font-medium text-foreground dark:text-slate-200">{t.darkMode}</span>
+                <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border bg-muted/50 px-4 py-3 dark:border-white/10 dark:bg-[#07111f]/75">
+                  <span className="flex-1 min-w-0 pr-4 text-sm font-medium text-foreground dark:text-slate-200">{t.darkMode}</span>
                   {mounted ? <Switch checked={isDark} onCheckedChange={(c) => setTheme(c ? "dark" : "light")} /> : <div className="h-5 w-9 rounded-full bg-muted dark:bg-white/10" />}
                 </div>
 
-                <div className="flex items-center justify-between rounded-2xl border border-border bg-muted/50 px-4 py-3 dark:border-white/10 dark:bg-[#07111f]/75">
-                  <span className="pr-4 text-sm font-medium text-foreground dark:text-slate-200">{t.compactCards}</span>
+                <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border bg-muted/50 px-4 py-3 dark:border-white/10 dark:bg-[#07111f]/75">
+                  <span className="flex-1 min-w-0 pr-4 text-sm font-medium text-foreground dark:text-slate-200">{t.compactCards}</span>
                   {compactMounted ? <Switch checked={compactCards} onCheckedChange={setCompactCards} /> : <div className="h-5 w-9 rounded-full bg-muted dark:bg-white/10" />}
                 </div>
 
-                <div className="flex items-center justify-between rounded-2xl border border-border bg-muted/50 px-4 py-3 dark:border-white/10 dark:bg-[#07111f]/75">
+                <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border bg-muted/50 px-4 py-3 dark:border-white/10 dark:bg-[#07111f]/75">
                   <div className="flex items-center gap-2">
                     <Languages className="h-4 w-4 text-muted-foreground dark:text-slate-400" />
                     <span className="text-sm font-medium text-foreground dark:text-slate-200">{t.language}</span>
